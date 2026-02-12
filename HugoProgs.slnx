@@ -3,6 +3,7 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Project Path="HugoDisable/HugoDisable.vcxproj" Id="29c9161d-c18a-4c2a-b0a5-975624561dee" />
   <Project Path="HugoFreezeApi/HugoFreezeApi.vcxproj" Id="63f11bd7-1abf-43e8-b1dc-e4122315e973">
     <BuildDependency Project="HugoUtils/HugoUtils.vcxproj" />
   </Project>
@@ -21,6 +22,7 @@
   <Project Path="HugoLockAssistant/HugoLockAssistant.vcxproj" Id="c5e5a14b-5d92-4c47-9526-171436bfe6bc">
     <BuildDependency Project="HugoUtils/HugoUtils.vcxproj" />
   </Project>
+  <Project Path="HugoMount/HugoMount.vcxproj" Id="7bd4dfd9-690b-4d01-9a86-612ffcd9ccb0" />
   <Project Path="HugoProgs/HugoProgs.vcxproj" Id="ab0106a3-58b6-4091-969e-74f167c743dd">
     <BuildDependency Project="HugoUtils/HugoUtils.vcxproj" />
   </Project>
