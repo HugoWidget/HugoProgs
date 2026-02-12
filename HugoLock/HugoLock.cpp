@@ -27,7 +27,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	Startup();
 	Console console;
 	console.setLocale();
-	Logger::Inst().AddStrategy(std::make_unique<ConsoleLogStrategy>());
+	LoggerCore::Inst().AddStrategy<ConsoleLogStrategy>();
+	LoggerCore::Inst().EnableApartment(DftLogger);
 	Injector injector;
 	EnableDebugPrivilege();
 	wstring dllPath = WinUtils::GetCurrentProcessDir() + L"HugoHook.dll";

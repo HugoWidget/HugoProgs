@@ -1,0 +1,3 @@
+[submodule "HugoUtils"]
+	path = HugoUtils
+	url = https://github.com/HugoWidget/HugoUtils

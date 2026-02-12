@@ -1,0 +1,31 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="HugoFreezeApi/HugoFreezeApi.vcxproj" Id="63f11bd7-1abf-43e8-b1dc-e4122315e973">
+    <BuildDependency Project="HugoUtils/HugoUtils.vcxproj" />
+  </Project>
+  <Project Path="HugoFreezeDriver/HugoFreezeDriver.vcxproj" Id="5bad38e5-7163-4851-9907-b6c7ea003137">
+    <BuildDependency Project="HugoUtils/HugoUtils.vcxproj" />
+  </Project>
+  <Project Path="HugoInjector/HugoInjector.vcxproj" Id="34734c62-3130-47ea-848e-10e9cf8c2580">
+    <BuildDependency Project="HugoUtils/HugoUtils.vcxproj" />
+  </Project>
+  <Project Path="HugoLaunchTool/HugoLaunchTool.vcxproj" Id="2f40801c-8967-424b-b0c5-08ec84cc9ba8">
+    <BuildDependency Project="HugoUtils/HugoUtils.vcxproj" />
+  </Project>
+  <Project Path="HugoLock/HugoLock.vcxproj" Id="e5dd3793-c3f8-4d64-8d1a-247d2c948e31">
+    <BuildDependency Project="HugoUtils/HugoUtils.vcxproj" />
+  </Project>
+  <Project Path="HugoLockAssistant/HugoLockAssistant.vcxproj" Id="c5e5a14b-5d92-4c47-9526-171436bfe6bc">
+    <BuildDependency Project="HugoUtils/HugoUtils.vcxproj" />
+  </Project>
+  <Project Path="HugoProgs/HugoProgs.vcxproj" Id="ab0106a3-58b6-4091-969e-74f167c743dd">
+    <BuildDependency Project="HugoUtils/HugoUtils.vcxproj" />
+  </Project>
+  <Project Path="HugoProtect/HugoProtect.vcxproj" Id="3f39f9b3-5755-45a9-9a6d-bba8ac177f8b">
+    <BuildDependency Project="HugoUtils/HugoUtils.vcxproj" />
+  </Project>
+  <Project Path="HugoUtils/HugoUtils.vcxproj" Id="351bb40b-1e2f-42b9-9145-d4079e5efc93" />
+</Solution>

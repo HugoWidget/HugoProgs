@@ -13,9 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="源文件\头文件">
+      <UniqueIdentifier>{36fc1a45-b50d-4618-abab-a6af2d6fbaba}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="HugoHttp.cpp">
+    <ClCompile Include="HugoFreezeDriver.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

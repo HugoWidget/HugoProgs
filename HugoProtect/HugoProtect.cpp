@@ -11,68 +11,94 @@
 #include "HugoUtils/Console.h"
 #include "HugoUtils/Logger.h"
 using namespace std;
-using namespace WinUtils;
 namespace fs = filesystem;
-int GetUserChoice() {
-	int choice = -1;
-	while (true) {
-		wcout << L"=====================================" << endl;
-		wcout << L"0 - 关闭 DriverService 服务" << endl;
-		wcout << L"1 - 开启 DriverService 服务" << endl;
-		wcout << L"=====================================" << endl;
-		wcout << L"请输入数字（0/1）：";
+using namespace WinUtils;
 
-		wcin >> choice;
-
-		if (wcin.fail() || (choice != 0 && choice != 1)) {
-			wcin.clear();
-			wcin.ignore((numeric_limits<streamsize>::max)(), L'\n');
-			WLog(LogLevel::Error, L"输入无效！请仅输入0或1");
-		}
-		else {
-			break;
-		}
-	}
-	return choice;
+// 解析命令行参数
+static optional<int> ParseCommandLineArgs(int argc, wchar_t* argv[])
+{
+    if (argc < 2) return nullopt;
+    try
+    {
+        int op = -1;
+        wstring var = argv[1];
+        if (var == L"-enable")op = 1;
+        if (var == L"-disable")op = 0;
+        return (op == 0 || op == 1) ? optional<int>(op) : nullopt;
+    }
+    catch (...)
+    {
+        WLog(LogLevel::Error, L"参数无效！");
+        return nullopt;
+    }
 }
 
-// 执行安装
-bool RunDriverServiceOperation(const int operation) {
-	HugoInfo info;
-	auto driverServicePath = info.getHugoProtectDriverPath();
-	if (!driverServicePath.has_value()) {
-		WLog(LogLevel::Error, L"找不到DriverService.exe");
-		return false;
-	}
-	WLog(LogLevel::Info, format(L"{}DriverService路径：", *driverServicePath));
-	const wstring operationName = operation ? L"安装" : L"卸载";
-	if (WinUtils::RunExternalProgram(*driverServicePath, L"runas",
-		operation ? L"install" : L"uninstall",
-		*info.getHugoProtectDriverPath()))
-	{
-		WLog(LogLevel::Info, format(L"{}操作执行完成！", operationName));
-		return true;
-	}
-	else {
-		WLog(LogLevel::Error, format(L"{}操作执行失败！",operationName));
-		return false;
-	}
+// 交互获取用户选择
+static int GetInteractiveUserChoice()
+{
+    int choice = -1;
+    while (true)
+    {
+        wcout << L"0 - 关闭 文件保护" << endl;
+        wcout << L"1 - 开启 文件保护" << endl;
+        wcout << L"请输入数字：";
+
+        wcin >> choice;
+        if (wcin.fail() || (choice != 0 && choice != 1))
+        {
+            wcin.clear();
+            wcin.ignore((numeric_limits<streamsize>::max)(), L'\n');
+            WLog(LogLevel::Error, L"输入无效");
+        }
+        else break;
+    }
+    return choice;
 }
 
-int main() {
-	Console console;
-	console.setLocale();
-	Logger::Inst().AddStrategy(make_unique<ConsoleLogStrategy>());
-	Logger::Inst().AddFormat(LogFormat::Level);
-	if (!WinUtils::IsCurrentProcessAdmin()) {
-		WLog(LogLevel::Info, L"无管理员权限，按任意键以请求提权");
-		(void)_getwch();
-		WinUtils::RequireAdminPrivilege(true);
-	}
-	wcout << L"===== Seewo DriverService 文件保护开启/关闭工具 =====" << endl << endl;
-	const int userChoice = GetUserChoice();
-	const bool result = RunDriverServiceOperation(userChoice);
-	WLog(LogLevel::Info, L"操作完成，按任意键退出");
-	(void)_getwch();
-	return !result;
+// 执行 DriverService 核心操作
+static bool ExecuteDriverServiceOp(int operation)
+{
+    HugoInfo info;
+    auto driverPath = info.getHugoProtectDriverPath();
+
+    if (!driverPath.has_value())
+    {
+        WLog(LogLevel::Error, L"未找到 DriverService.exe 路径");
+        return false;
+    }
+
+    const wstring opDesc = operation ? L"开启" : L"关闭";
+    const wstring opCmd = operation ? L"install" : L"uninstall";
+
+    WLog(LogLevel::Info, format(L"[执行{}] DriverService 路径：{}", opDesc, *driverPath));
+
+    bool success = RunExternalProgram(*driverPath, L"runas", opCmd, *driverPath);
+    WLog(success ? LogLevel::Info : LogLevel::Error,
+        format(L"{}操作{}！", opDesc, success ? L"成功" : L"失败"));
+
+    return success;
+}
+
+int wmain(int argc, wchar_t* argv[])
+{
+    if (!IsCurrentProcessAdmin())
+    {
+        RequireAdminPrivilege(true);
+    }
+    Console console;
+    console.setLocale();
+    LoggerCore::Inst().AddStrategy<ConsoleLogStrategy>();
+    LoggerCore::Inst().EnableApartment(DftLogger);
+
+    optional<int> op = ParseCommandLineArgs(argc, argv);
+    int operation = op.has_value() ? *op : GetInteractiveUserChoice();
+
+    const bool result = ExecuteDriverServiceOp(operation);
+    if (!op.has_value())
+    {
+        WLog(LogLevel::Info, L"\n操作完成，按任意键退出...");
+        (void)_getwch();
+    }
+
+    return result ? 0 : 1;
 }

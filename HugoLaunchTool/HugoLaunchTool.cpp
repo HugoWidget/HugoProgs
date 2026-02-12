@@ -9,16 +9,16 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	wstring cmd = lpCmdLine;
 	Console console;
 	console.setLocale();
-	Logger::Inst().AddStrategy(std::make_unique<ConsoleLogStrategy>());
+	LoggerCore::Inst().AddStrategy<ConsoleLogStrategy>();
 
 	if (cmd == L"-start") {
 		TerminateProcessesByName(L"HugoLaunchTool.exe");
 		std::wstring serviceName = L"SeewoCoreService";
 		bool result = WinSvcMgr(serviceName).StartWinService();
 	}
-	else if(cmd == L"-stop"){
+	else if (cmd == L"-stop") {
 		WinUtils::EnsureSingleInstance();
-		return WinUtils::MonitorAndTerminateProcesses(hInstance, { L"SeewoServiceAssistant.exe", L"SeewoCore.exe", L"SeewoAbility.exe" });
+		return WinUtils::MonitorAndTerminateProcesses(hInstance, { L"SeewoServiceAssistant.exe", L"SeewoCore.exe", L"SeewoAbility.exe",L"SeewoLauncherGuard.exe" });
 	}
 	return 0;
 }

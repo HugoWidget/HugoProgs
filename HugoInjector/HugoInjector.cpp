@@ -1,31 +1,48 @@
-#include "HugoUtils/Injector.h"
+ï»¿#include "HugoUtils/Injector.h"
 #include "HugoUtils/Console.h"
 #include "HugoUtils/WinUtils.h"
 #include "HugoUtils/Logger.h"
 using namespace WinUtils;
+using namespace std;
 int wmain(int argc, wchar_t* argv[])
 {
-    Console console;
-    console.setLocale();
-    Logger::Inst().AddStrategy(std::make_unique<ConsoleLogStrategy>());
-    if (argc != 3)
-    {
-        std::wcerr << L"ÓÃ·¨: Injector.exe <DLLÂ·¾¶> <Ä¿±ê½ø³ÌÃû>" << std::endl;
-        std::wcerr << L"Ê¾Àý: Injector.exe C:\\mydll.dll myexe.exe" << std::endl;
-        return 1;
-    }
-    std::wstring dllPath = argv[1];
-    std::wstring targetProcess = argv[2];
-    Injector injector;
-    EnableDebugPrivilege();
-    try
-    {
-        injector.MonitorAndInject(dllPath, targetProcess, 2000);
-    }
-    catch (const std::exception& e)
-    {
-        std::wcerr << L"³ÌÐòÒì³£: " << e.what() << std::endl;
-        return 1;
-    }
-    return 0;
+	Console console;
+	console.setLocale();
+	if (argc <= 2)
+	{
+		std::wcerr << L"inject1: <DLLè·¯å¾„> <ç›®æ ‡è¿›ç¨‹å>" << std::endl;
+		std::wcerr << L"inject2: inject <DLLè·¯å¾„> <ç›®æ ‡è¿›ç¨‹å>" << std::endl;
+		std::wcerr << L"uninject:  uninject <DLLè·¯å¾„> <ç›®æ ‡è¿›ç¨‹å>" << std::endl;
+		return 1;
+	}
+	Injector injector;
+	try
+	{
+		EnableDebugPrivilege();
+		if (argc == 4 && argv[1] == L"-uninject") {
+			std::wstring dllPath = argv[2];
+			std::wstring targetProcess = argv[3];
+			injector.UninjectFromAllProcesses(targetProcess, dllPath);
+		}
+		else if ((argc == 4 && ((wstring)argv[1] == L"-inject")) || argc == 3) {
+			std::wstring dllPath;
+			std::wstring targetProcess;
+			if (argc == 4) {
+				dllPath = argv[2];
+				targetProcess = argv[3];
+			}
+			else {
+				dllPath = argv[1];
+				targetProcess = argv[2];
+			}
+			EnsureSingleInstance(L"", L"", L"", dllPath + targetProcess);
+			injector.MonitorAndInject(dllPath, targetProcess, 100);
+		}
+	}
+	catch (const std::exception& e)
+	{
+		std::wcerr << L"ç¨‹åºå¼‚å¸¸: " << e.what() << std::endl;
+		return 1;
+	}
+	return 0;
 }
