@@ -8,6 +8,9 @@ int wmain(int argc, wchar_t* argv[])
 {
 	Console console;
 	console.setLocale();
+	LoggerCore::Inst().AddStrategy<ConsoleLogStrategy>();
+	LoggerCore::Inst().EnableApartment(DftLogger);
+
 	if (argc <= 2)
 	{
 		std::wcerr << L"inject1: <DLL路径> <目标进程名>" << std::endl;
@@ -15,9 +18,9 @@ int wmain(int argc, wchar_t* argv[])
 		std::wcerr << L"uninject:  uninject <DLL路径> <目标进程名>" << std::endl;
 		return 1;
 	}
-	Injector injector;
 	try
 	{
+		Injector injector;
 		EnableDebugPrivilege();
 		if (argc == 4 && argv[1] == L"-uninject") {
 			std::wstring dllPath = argv[2];

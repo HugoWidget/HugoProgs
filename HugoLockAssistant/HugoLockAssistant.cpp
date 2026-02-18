@@ -34,9 +34,12 @@ BOOL CALLBACK  IsSpecifiedWnds(HWND hwnd, LPARAM cursor) {
 }
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nShowCmd) {
-	WinUtils::RequireAdminPrivilege();
-	WinUtils::EnsureSingleInstance();
+	RequireAdminPrivilege(true);
+	EnsureSingleInstance();
+	Console console;
+	console.setLocale();
 	LoggerCore::Inst().AddStrategy<ConsoleLogStrategy>();
+	LoggerCore::Inst().EnableApartment(DftLogger);
 	const auto RunLock = []() { RunExternalProgram(GetCurrentProcessDir() + TARGET_PROCESS_NAME); };
 	RunLock();
 	while (true) {

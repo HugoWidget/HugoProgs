@@ -5,6 +5,8 @@
 #include "HugoUtils/regedit.h"
 #include "HugoUtils/Console.h"
 #include "HugoUtils/StrConvert.h"
+#include "HugoUtils/Logger.h"
+#include <HugoUtils/WinUtils.h>
 using namespace WinUtils;
 using namespace std;
 
@@ -25,7 +27,7 @@ bool DisableSeewoService()
 			REGISTRY_ROOT_KEY, REGISTRY_PATH, REGISTRY_VALUE_NAME, REGISTRY_DISABLE_VALUE
 		);
 	}
-	if(!writeResult)
+	if (!writeResult)
 		throw runtime_error("写入注册表失败");
 	wstring readValue;
 	if (!GenericRegistry::ReadStringValue(REGISTRY_ROOT_KEY, REGISTRY_PATH, REGISTRY_VALUE_NAME, readValue))
@@ -66,8 +68,13 @@ void ExecuteOperation(int operationMode)
 
 int main(int argc, wchar_t* argv[])
 {
+	RequireAdminPrivilege(true);
+	EnsureSingleInstance();
 	Console console;
 	console.setLocale();
+	LoggerCore::Inst().AddStrategy<ConsoleLogStrategy>();
+	LoggerCore::Inst().EnableApartment(DftLogger);
+
 	if (argc > 1)
 	{
 		wstring var = argv[1];

@@ -81,10 +81,7 @@ static bool ExecuteDriverServiceOp(int operation)
 
 int wmain(int argc, wchar_t* argv[])
 {
-    if (!IsCurrentProcessAdmin())
-    {
-        RequireAdminPrivilege(true);
-    }
+    RequireAdminPrivilege(true);
     Console console;
     console.setLocale();
     LoggerCore::Inst().AddStrategy<ConsoleLogStrategy>();

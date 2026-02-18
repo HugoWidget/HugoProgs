@@ -4,6 +4,7 @@
 #include <iostream>
 #include <format>
 #include <algorithm>
+#include <HugoUtils/WinUtils.h>
 using namespace std;
 using namespace WinUtils;
 void PrintHexDump(const unsigned char* data, int len) {
@@ -25,10 +26,13 @@ void PrintHexDump(const unsigned char* data, int len) {
 }
 
 int main() noexcept {
+	RequireAdminPrivilege(true);
 	Console console;
 	console.setLocale();
-	HugoFreezeDriver& driver = HugoFreezeDriver::Instance();
 	LoggerCore::Inst().SetDefaultStrategies(L"HugoFreezeTool.log");
+	LoggerCore::Inst().EnableApartment(DftLogger);
+
+	HugoFreezeDriver& driver = HugoFreezeDriver::Instance();
 
 	wcout << L"\n[查询驱动状态]" << endl;
 	QueryResult result = driver.QueryDriverStatus();

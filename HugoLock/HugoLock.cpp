@@ -15,7 +15,6 @@ RECT deskSize = WinUtils::GetWindowRect(deskHWND);
 bool hiden = false;
 BOOL injected = false;
 
-void Startup();
 BOOL CALLBACK IsSpecifiedWnds(HWND hwnd, LPARAM cursor);
 void Unlock();
 
@@ -24,14 +23,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_ LPWSTR    lpCmdLine,
 	_In_ int       nCmdShow)
 {
-	Startup();
+	RequireAdminPrivilege(true);
+	EnsureSingleInstance();
 	Console console;
 	console.setLocale();
 	LoggerCore::Inst().AddStrategy<ConsoleLogStrategy>();
 	LoggerCore::Inst().EnableApartment(DftLogger);
+
 	Injector injector;
 	EnableDebugPrivilege();
-	wstring dllPath = WinUtils::GetCurrentProcessDir() + L"HugoHook.dll";
+	wstring dllPath = GetCurrentProcessDir() + L"HugoHook.dll";
 	vector<DWORD> injectedProcess;
 	while (true) {
 		Unlock();
@@ -43,11 +44,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		}
 	}
 	return 0;
-}
-void Startup()
-{
-	if (!IsUserAnAdmin())WinUtils::RequireAdminPrivilege(true);
-	WinUtils::EnsureSingleInstance();
 }
 void Unlock() {
 	deskHWND = GetDesktopWindow();
