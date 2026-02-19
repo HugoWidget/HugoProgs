@@ -6,6 +6,9 @@
   <Project Path="HugoDisable/HugoDisable.vcxproj" Id="29c9161d-c18a-4c2a-b0a5-975624561dee">
     <BuildDependency Project="HugoUtils/HugoUtils.vcxproj" />
   </Project>
+  <Project Path="HugoFakeVerify/HugoFakeVerify.vcxproj" Id="9cc0d830-a2f4-47aa-ab75-664316d54159">
+    <BuildDependency Project="HugoUtils/HugoUtils.vcxproj" />
+  </Project>
   <Project Path="HugoFreezeApi/HugoFreezeApi.vcxproj" Id="63f11bd7-1abf-43e8-b1dc-e4122315e973">
     <BuildDependency Project="HugoUtils/HugoUtils.vcxproj" />
   </Project>
@@ -13,6 +16,9 @@
     <BuildDependency Project="HugoUtils/HugoUtils.vcxproj" />
   </Project>
   <Project Path="HugoInjector/HugoInjector.vcxproj" Id="34734c62-3130-47ea-848e-10e9cf8c2580">
+    <BuildDependency Project="HugoUtils/HugoUtils.vcxproj" />
+  </Project>
+  <Project Path="HugoInstaller/HugoInstaller.vcxproj" Id="3f065aa4-bd5f-4884-855b-b4c40b439084">
     <BuildDependency Project="HugoUtils/HugoUtils.vcxproj" />
   </Project>
   <Project Path="HugoLaunchTool/HugoLaunchTool.vcxproj" Id="2f40801c-8967-424b-b0c5-08ec84cc9ba8">
@@ -28,6 +34,9 @@
     <BuildDependency Project="HugoUtils/HugoUtils.vcxproj" />
   </Project>
   <Project Path="HugoPanel/HugoPanel.vcxproj" Id="f24bf0f9-fb32-4a00-9a81-ae8055c9619d">
+    <BuildDependency Project="HugoUtils/HugoUtils.vcxproj" />
+  </Project>
+  <Project Path="HugoPassword/HugoPassword.vcxproj" Id="8cf91478-35c8-4d16-9604-92687f055233">
     <BuildDependency Project="HugoUtils/HugoUtils.vcxproj" />
   </Project>
   <Project Path="HugoProgs/HugoProgs.vcxproj" Id="ab0106a3-58b6-4091-969e-74f167c743dd">
