@@ -1,14 +1,14 @@
 ﻿#include <iostream>
 #include <string>
 #include <filesystem>
+#include <conio.h>
+#include <ShlObj.h>
+
 #include "HugoUtils/Console.h"
 #include "HugoUtils/WinUtils.h" 
 #include "HugoUtils/HugoArt.h"
 #include "HugoUtils/ConsoleMenu.h"
 #include "HugoUtils/GPL3.h"
-#include <conio.h>
-#include <ShlObj.h>
-
 using namespace std;
 using namespace WinUtils;
 namespace fs = filesystem;

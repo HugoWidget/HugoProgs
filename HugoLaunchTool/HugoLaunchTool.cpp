@@ -16,7 +16,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	if (cmd == L"-start") {
 		TerminateProcessesByName(L"HugoLaunchTool.exe");
 		std::wstring serviceName = L"SeewoCoreService";
-		bool result = WinSvcMgr(serviceName).StartWinService();
+		bool result = WinSvcMgr(serviceName).Start();
 	}
 	else if (cmd == L"-stop") {
 		EnsureSingleInstance();
