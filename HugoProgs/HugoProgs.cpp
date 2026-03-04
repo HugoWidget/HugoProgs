@@ -133,34 +133,79 @@ int main()
 		});
 	auto& mountMenu = menu.addSubmenu(L"mount", L"希沃虚拟磁盘管理器");
 	{
-		mountMenu.addCommand(L"log", L"挂载日志盘", [](ConsoleMenu&, Args) {
-			wstring progPath = GetExternalProgramPath(L"HugoMount.exe");
-			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"mount 0 1 p");
-			});
-		mountMenu.addCommand(L"mnt", L"挂载", [](ConsoleMenu&, Args args) {
-			auto params = args.getParams(L"");
-			if (params.size() <= 2) {
-				wcout << L"<disk> <partition> <driveLetter>:\n";
-				return;
-			}
-			wstring disk = params[0], partition = params[1];
-			wstring driveLetter = params[2];
-			wstring progPath = GetExternalProgramPath(L"HugoMount.exe");
-			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"mount " + disk + L" " + partition + L" " + driveLetter);
-			});
+		// list 命令：无参数
 		mountMenu.addCommand(L"list", L"枚举虚拟磁盘", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoMount.exe");
 			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"list");
 			});
-		mountMenu.addCommand(L"conf", L"挂载配置盘", [](ConsoleMenu&, Args) {
+
+		// mount 命令：disk part [drive]
+		mountMenu.addCommand(L"mnt", L"挂载 <disk> <part> [drive]", [](ConsoleMenu&, Args args) {
+			auto params = args.getParams(L"");
+			if (params.size() < 2) {
+				wcout << L"用法: mnt <disk> <partition> [driveLetter]\n";
+				return;
+			}
 			wstring progPath = GetExternalProgramPath(L"HugoMount.exe");
-			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"mount 1 1 q");
+			if (progPath.empty()) return;
+
+			wstring cmdLine = L"mount " + params[0] + L" " + params[1];
+			if (params.size() >= 3) {
+				cmdLine += L" " + params[2];
+			}
+			ExecuteProgramInCurrentConsole(progPath, cmdLine);
 			});
-		mountMenu.addCommand(L"unmnt", L"卸载", [](ConsoleMenu&, Args) {
+
+		// unmount 命令：支持 drive 或 disk+part 两种形式
+		mountMenu.addCommand(L"unmnt", L"卸载 <disk> <part>/<drive>", [](ConsoleMenu&, Args args) {
+			auto params = args.getParams(L"");
+			if (params.empty()) {
+				wcout << L"用法: unmnt <driveLetter>  或  unmnt <disk> <partition>\n";
+				return;
+			}
 			wstring progPath = GetExternalProgramPath(L"HugoMount.exe");
-			wcout << L"<driveLetter>:\n";
-			wchar_t diskLetter = getwchar();
-			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"unmount " + wstring(1, diskLetter));
+			if (progPath.empty()) return;
+
+			wstring cmdLine = L"unmount ";
+			if (params.size() == 1 && iswalpha(params[0][0])) {
+				// 按盘符卸载
+				cmdLine += wstring(1, towupper(params[0][0]));
+			}
+			else if (params.size() >= 2) {
+				// 按磁盘/分区卸载
+				cmdLine += params[0] + L" " + params[1];
+			}
+			else {
+				wcout << L"用法: unmnt <driveLetter>  或  unmnt <disk> <partition>\n";
+				return;
+			}
+			ExecuteProgramInCurrentConsole(progPath, cmdLine);
+			});
+
+		// log 命令：挂载日志盘
+		mountMenu.addCommand(L"log", L"挂载日志盘 [drive]", [](ConsoleMenu&, Args args) {
+			auto params = args.getParams(L"");
+			wstring progPath = GetExternalProgramPath(L"HugoMount.exe");
+			if (progPath.empty()) return;
+
+			wstring cmdLine = L"log";
+			if (!params.empty()) {
+				cmdLine += L" " + params[0];
+			}
+			ExecuteProgramInCurrentConsole(progPath, cmdLine);
+			});
+
+		// conf 命令：挂载配置盘
+		mountMenu.addCommand(L"conf", L"挂载配置盘 [drive]", [](ConsoleMenu&, Args args) {
+			auto params = args.getParams(L"");
+			wstring progPath = GetExternalProgramPath(L"HugoMount.exe");
+			if (progPath.empty()) return;
+
+			wstring cmdLine = L"conf";
+			if (!params.empty()) {
+				cmdLine += L" " + params[0];
+			}
+			ExecuteProgramInCurrentConsole(progPath, cmdLine);
 			});
 	}
 	auto& freezeMenu = menu.addSubmenu(L"freeze", L"希沃冰点配置工具");
@@ -175,7 +220,7 @@ int main()
 			if (!progPath.empty())ExecuteProgramInCurrentConsole(progPath);
 			});
 		freezeMenu.addCommand(L"off", L"希沃官方冰点工具", [](ConsoleMenu&, Args) {
-			wstring progPath = GetExternalProgramPath(L"SeewoFreeze/SeewoFreezeUI.exe");
+			wstring progPath = GetExternalProgramPath(L"SeewoFreeze\\SeewoFreezeUI.exe");
 			if (!progPath.empty())ExecuteProgramInCurrentConsole(progPath, L"", false);
 			});
 	}
