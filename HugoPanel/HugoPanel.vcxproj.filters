@@ -45,14 +45,14 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="small.ico">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="HugoPanel.ico">
-      <Filter>资源文件</Filter>
-    </Image>
+    <Manifest Include="HugoPanel.exe.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="HugoPanel.exe.manifest" />
+    <Image Include="..\icons\light.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\icons\dark.ico">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>

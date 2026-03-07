@@ -145,11 +145,11 @@
     <ResourceCompile Include="HugoPanel.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="HugoPanel.ico" />
-    <Image Include="small.ico" />
+    <Manifest Include="HugoPanel.exe.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="HugoPanel.exe.manifest" />
+    <Image Include="..\icons\dark.ico" />
+    <Image Include="..\icons\light.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

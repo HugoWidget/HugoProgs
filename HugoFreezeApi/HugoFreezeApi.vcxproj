@@ -21,6 +21,15 @@
   <ItemGroup>
     <ClCompile Include="HugoFreezeApi.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="HugoFreezeApi.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\icons\dark.ico" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

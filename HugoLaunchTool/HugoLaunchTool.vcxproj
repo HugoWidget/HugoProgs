@@ -138,10 +138,10 @@
     <ClInclude Include="resource1.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="LightPanel.ico" />
+    <ResourceCompile Include="HugoLaunchTool.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="HugoLaunchTool.rc" />
+    <Image Include="..\icons\dark.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

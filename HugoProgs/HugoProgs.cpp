@@ -219,9 +219,12 @@ int main()
 			wstring progPath = GetExternalProgramPath(L"HugoFreezeApi.exe");
 			if (!progPath.empty())ExecuteProgramInCurrentConsole(progPath);
 			});
-		freezeMenu.addCommand(L"off", L"希沃官方冰点工具", [](ConsoleMenu&, Args) {
+		freezeMenu.addCommand(L"off", L"希沃官方工具，可能需要先关闭SeewoCore.exe", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"SeewoFreeze\\SeewoFreezeUI.exe");
 			if (!progPath.empty())ExecuteProgramInCurrentConsole(progPath, L"", false);
+			});
+		freezeMenu.addCommand(L"stop", L"launch/stop 关闭希沃", [](ConsoleMenu& menu, Args) {
+			menu.excute(L"launch/stop",false);
 			});
 	}
 
@@ -321,6 +324,15 @@ int main()
 			});
 		lockMenu.addCommand(L"HugoPanel", L"说明", [=](ConsoleMenu&, Args) {
 			wcout << explainText << L"自带UIAccess的简洁面板，运行后，锁屏时自动出现\n";
+			});
+	}
+
+	auto& pswMenu = menu.addSubmenu(L"psw", L"希沃密码工具");
+	{
+		pswMenu.addCommand(L"run", L"启动", [=](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoPassword.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath);
 			});
 	}
 

@@ -236,8 +236,8 @@ int wmain(int argc, wchar_t* argv[]) {
 		}
 	}
 	catch (const exception& e) {
-		wcerr << L"程序异常: " << AnsiToWideString(e.what()) << endl;
-		WLog(LogLevel::Error, format(L"程序异常: {}", AnsiToWideString(e.what())));
+		wcerr << L"程序异常: " << ConvertString<wstring>(e.what()) << endl;
+		WLog(LogLevel::Error, format(L"程序异常: {}", ConvertString<wstring>(e.what())));
 		return 1;
 	}
 

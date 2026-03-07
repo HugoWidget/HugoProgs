@@ -2,11 +2,12 @@
 #include <iostream>
 #include <string>
 #include <stdexcept>
-#include "HugoUtils/regedit.h"
+#include "HugoUtils/WinReg.h"
 #include "HugoUtils/Console.h"
 #include "HugoUtils/StrConvert.h"
 #include "HugoUtils/Logger.h"
 #include <HugoUtils/WinUtils.h>
+
 using namespace WinUtils;
 using namespace std;
 
@@ -18,28 +19,22 @@ const wstring REGISTRY_DISABLE_VALUE = L"1";
 // 禁用希沃服务
 bool DisableSeewoService()
 {
-	bool writeResult = GenericRegistry::CreateKeyAndWriteValue(
-		REGISTRY_ROOT_KEY, REGISTRY_PATH, REGISTRY_VALUE_NAME, REGISTRY_DISABLE_VALUE
-	);
-	if (!writeResult)
-	{
-		writeResult = GenericRegistry::WriteStringValue(
-			REGISTRY_ROOT_KEY, REGISTRY_PATH, REGISTRY_VALUE_NAME, REGISTRY_DISABLE_VALUE
-		);
-	}
-	if (!writeResult)
-		throw runtime_error("写入注册表失败");
-	wstring readValue;
-	if (!GenericRegistry::ReadStringValue(REGISTRY_ROOT_KEY, REGISTRY_PATH, REGISTRY_VALUE_NAME, readValue))
+	RegKey key;
+	key.Create(REGISTRY_ROOT_KEY, REGISTRY_PATH, KEY_READ | KEY_WRITE | KEY_WOW64_64KEY);
+	key.SetStringValue(REGISTRY_VALUE_NAME, REGISTRY_DISABLE_VALUE);
+	wstring readValue = key.GetStringValue(REGISTRY_VALUE_NAME);
+	if (readValue != REGISTRY_DISABLE_VALUE)
 		throw runtime_error("验证注册表写入结果失败");
-
 	return true;
 }
 
 // 启用希沃服务
 bool EnableSeewoService()
 {
-	GenericRegistry::DeleteValue(REGISTRY_ROOT_KEY, REGISTRY_PATH, REGISTRY_VALUE_NAME);
+	RegKey key;
+	if (auto result = key.TryOpen(REGISTRY_ROOT_KEY, REGISTRY_PATH, KEY_WRITE | KEY_WOW64_64KEY);
+		result.Failed()) return true;
+	key.TryDeleteValue(REGISTRY_VALUE_NAME);
 	return true;
 }
 
@@ -61,7 +56,7 @@ void ExecuteOperation(int operationMode)
 	}
 	catch (const exception& e)
 	{
-		wcerr << L"错误：" << AnsiToWideString(e.what()) << endl;
+		wcerr << L"错误：" << ConvertString<wstring>(e.what()) << endl;
 		exit(1);
 	}
 }

@@ -15,4 +15,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="HugoLock.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\icons\dark.ico" />
+  </ItemGroup>
 </Project>

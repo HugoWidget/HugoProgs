@@ -15,6 +15,7 @@
 #define IDD_MAIN                        129
 #define IDR_MANIFEST2                   132
 #define IDR_RT_MANIFEST1                135
+#define IDI_ICON1                       136
 #define IDD_                            1000
 #define IDC_MAIN_OPEN                   1000
 #define IDC_BUTTON_ESC                  1001
@@ -25,7 +26,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        136
+#define _APS_NEXT_RESOURCE_VALUE        137
 #define _APS_NEXT_COMMAND_VALUE         32772
 #define _APS_NEXT_CONTROL_VALUE         1002
 #define _APS_NEXT_SYMED_VALUE           110
