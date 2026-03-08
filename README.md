@@ -22,6 +22,13 @@ Visual Studio 2022
   8. 希沃映像劫持
   9. 希沃下载与卸载
   10. 希沃管家密码找回
+* 将完成
+  1. 禁用希沃自更新
+  2. 暂时禁用希沃网络连接
+
+## 说明
+
+Release中HugoProgs.zip为该项目完整编译产物，HugoProgs-bundle.zip还包含其他辅助工具
 
 ## 免责声明
 
@@ -29,7 +36,9 @@ Visual Studio 2022
 
 ## 许可证
 
-本项目采用 GPLv3 许可证，详情参见 LICENSE 文件。
+本项目采用 GPLv3 许可证，详情参见 [LICENSE](LICENSE) 文件。
+
+[swhelper](https://s3.fan/2025/11/25/SWHelper%E5%B8%8C%E6%B2%83%E4%BF%AE%E6%94%B9%E5%B7%A5%E5%85%B7%E5%AE%89%E8%A3%85%E5%8F%8A%E7%AE%80%E5%8D%95%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/) ：SWHelper希沃修改工具([MIT 许可证](LICENSE-MIT)) 
 
 ## 项目依赖
 
