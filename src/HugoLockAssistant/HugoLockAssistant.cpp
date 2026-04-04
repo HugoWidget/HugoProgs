@@ -101,7 +101,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 			WinUtils::TerminateProcessesByName(TARGET_PROCESS_NAME);
 			Sleep(500);
 			Injector injector;
-			injector.UninjectFromAllProcesses(L"SeewoServiceAssistant.exe", WinUtils::GetCurrentProcessDir() + L"HugoHook.dll");
+			injector.UninjectFromAllProcesses(L"SeewoServiceAssistant.exe", WinUtils::GetCurrentProcessDir() + L"HugoHSSA.dll");
 			RunLock();
 		}
 		Sleep(500);

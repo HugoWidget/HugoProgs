@@ -12,11 +12,11 @@ Visual Studio 2022
 
 | 程序文件                               | 核心功能                                                     |
 | -------------------------------------- | ------------------------------------------------------------ |
-| **[HugoDisable](docs/HugoDisable.md)** | 通过注册表彻底禁用 `SeewoServiceAssistant.exe`，使其无法启动。（没什么用） |
+| **[HugoDisable](docs/HugoDisable.md)** | 禁用 `SeewoServiceAssistant.exe`或阻止其通过防火墙；禁用希沃更新 |
 | **[HugoFakeVerify](docs/HugoFakeVerify.md)** | 一个空程序。                                                 |
 | **[HugoFreezeApi](docs/HugoFreezeApi.md)** | 通过本地服务 API 与希沃冰点服务交互，可设置冻结磁盘、查询冻结状态、尝试保护操作。 |
 | **[HugoFreezeDriver](docs/HugoFreezeDriver.md)** | 驱动级冰点控制工具，可查询驱动状态、运行时配置，并冻结/解冻指定盘符。 |
-| **[HugoInjector](docs/HugoInjector.md)** | 通用 DLL 注入器，结合 `HugoHook.dll` 解除锁屏与热键限制。    |
+| **[HugoInjector](docs/HugoInjector.md)** | 通用 DLL 注入器，结合 `HugoHSSA.dll` 解除锁屏与热键限制。 |
 | **[HugoInstaller](docs/HugoInstaller.md)** | 希沃安装/卸载管理器：可下载指定版本或最新版。                |
 | **[HugoLaunchTool](docs/HugoLaunchTool.md)** | 控制希沃核心进程的启动与终止。                               |
 | **[HugoLock](docs/HugoLock.md)** | 实时隐藏“希沃管家”锁屏窗口，强制解除锁屏。                   |
@@ -49,6 +49,8 @@ Release中HugoProgs.zip为该项目完整编译产物，前往[HugoSetup](https:
 HugoUtils: [LGPLv3 许可证](licenses/LICENSE.LESSER-HugoUtils)
 
 WinUtils:  [MIT 许可证](licenses/LICENSE-WinUtils)
+
+hash-library: [zlib 许可证](licenses/LICENSE-hash-library)
 
 swhelper：[MIT 许可证](licenses/LICENSE-swhelper)
 

@@ -52,7 +52,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	Injector injector;
 	EnableDebugPrivilege();
-	wstring dllPath = GetCurrentProcessDir() + L"HugoHook.dll";
+	wstring dllPath = GetCurrentProcessDir() + L"HugoHSSA.dll";
 	vector<DWORD> injectedProcess;
 	while (true) {
 		Unlock();
