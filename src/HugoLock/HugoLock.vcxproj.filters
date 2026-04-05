@@ -14,9 +14,21 @@
     <ClCompile Include="HugoLock.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="HugoPanel.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="uiaccess.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="HugoLock.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="uiaccess.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -25,5 +37,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\icons\dark.ico" />
+    <Image Include="..\..\icons\light.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="HugoLock.exe.manifest" />
   </ItemGroup>
 </Project>

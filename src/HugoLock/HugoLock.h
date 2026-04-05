@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright 2025-2026 howdy213, JYardX
  *
  * This file is part of HugoProgs.
@@ -16,32 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with HugoProgs. If not, see <https://www.gnu.org/licenses/>.
  */
-#include "WinUtils/WinPch.h"
-
+#pragma once
 #include <windows.h>
-#include <string>
-#include "WinUtils/WinUtils.h"
 
-using namespace WinUtils;
-
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-	_In_opt_ HINSTANCE hPrevInstance,
-	_In_ LPWSTR lpCmdLine,
-	_In_ int nCmdShow) {
-	std::wstring exePath = GetCurrentProcessDir() + L"HugoLock.exe";
-	std::wstring cmdLine = exePath + L" " + (lpCmdLine ? lpCmdLine : L"");
-
-	STARTUPINFOW si = { sizeof(si) };
-	PROCESS_INFORMATION pi = {};
-
-	if (CreateProcessW(exePath.c_str(), cmdLine.data(), nullptr, nullptr,
-		FALSE, 0, nullptr, nullptr, &si, &pi)) {
-		CloseHandle(pi.hProcess);
-		CloseHandle(pi.hThread);
-		return 0;
-	}
-	else {
-		MessageBoxW(nullptr, L"Failed to start HugoLock.exe", L"Error", MB_ICONERROR);
-		return 1;
-	}
-}
+void SetInterceptEnabled(bool enable);
+bool GetInterceptEnabled();
+void UnlockOnce();
+INT_PTR CALLBACK SimpleDialogProc(HWND hdlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK MainDialogProc(HWND hdlg, UINT uMsg, WPARAM wParam, LPARAM lParam);

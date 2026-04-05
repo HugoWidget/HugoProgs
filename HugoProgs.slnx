@@ -33,11 +33,9 @@
   </Project>
   <Project Path="src/HugoLockAssistant/HugoLockAssistant.vcxproj" Id="c5e5a14b-5d92-4c47-9526-171436bfe6bc">
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
+    <BuildDependency Project="src/HugoLock/HugoLock.vcxproj" />
   </Project>
   <Project Path="src/HugoMount/HugoMount.vcxproj" Id="7bd4dfd9-690b-4d01-9a86-612ffcd9ccb0">
-    <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
-  </Project>
-  <Project Path="src/HugoPanel/HugoPanel.vcxproj" Id="f24bf0f9-fb32-4a00-9a81-ae8055c9619d">
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>
   <Project Path="src/HugoPassword/HugoPassword.vcxproj" Id="8cf91478-35c8-4d16-9604-92687f055233">

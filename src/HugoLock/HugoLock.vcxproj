@@ -132,15 +132,23 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="HugoLock.cpp" />
+    <ClCompile Include="HugoPanel.cpp" />
+    <ClCompile Include="uiaccess.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="HugoLock.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="uiaccess.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="HugoLock.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\icons\light.ico" />
     <Image Include="..\icons\dark.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="HugoLock.exe.manifest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
