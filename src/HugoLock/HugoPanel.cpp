@@ -53,6 +53,11 @@ static POINT g_ptMouseDownClientPos = {};
 static BOOL g_bMouseLeftButtonDown = FALSE;
 static BOOL g_bSeewoManagerFound = FALSE;
 
+
+static void setLayeredAttribute(HWND hWnd) {
+	//SetWindowLong(hWnd, GWL_EXSTYLE, GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+	//SetLayeredWindowAttributes(hWnd, RGB(100,100,100), 40, LWA_ALPHA | LWA_COLORKEY);
+}
 // 获取当前对话框上的主按钮句柄
 static HWND GetMainButton() {
 	HWND hBtn = GetDlgItem(g_hMainDialog, IDC_MAIN_OPEN);
@@ -148,6 +153,7 @@ INT_PTR CALLBACK SimpleDialogProc(HWND hdlg, UINT uMsg, WPARAM wParam, LPARAM lP
 	switch (uMsg) {
 	case WM_INITDIALOG:
 		SetWindowLongPtrW(hdlg, GWL_EXSTYLE, GetWindowLongPtrW(hdlg, GWL_EXSTYLE) | WS_EX_TOOLWINDOW);
+		setLayeredAttribute(hdlg);
 		g_hMainDialog = hdlg;
 		CreateCommonTimers();
 		ShowWindow(hdlg, IsSeewoManagerFullscreen() ? SW_SHOW : SW_HIDE);
@@ -177,6 +183,7 @@ INT_PTR CALLBACK MainDialogProc(HWND hdlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 	case WM_INITDIALOG:
 		CreateCommonTimers();
 		SetWindowLongPtrW(hdlg, GWL_EXSTYLE, GetWindowLongPtrW(hdlg, GWL_EXSTYLE) | WS_EX_TOOLWINDOW);
+		setLayeredAttribute(hdlg);
 		g_hMainDialog = hdlg;
 		SetWindowPos(hdlg, HWND_TOPMOST, 0, 0, 0, 0, WINDOW_POS_FLAGS);
 		return TRUE;

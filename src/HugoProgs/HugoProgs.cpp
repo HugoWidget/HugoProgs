@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with HugoProgs. If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "WinUtils/WinPch.h"
 
 #include <iostream>
@@ -29,10 +30,12 @@
 #include "HugoUtils/HugoArt.h"
 #include "WinUtils/ConsoleMenu.h"
 #include "HugoUtils/GPL3.h"
+
 using namespace std;
 using namespace WinUtils;
 namespace fs = filesystem;
 
+// 获取外部程序完整路径
 wstring GetExternalProgramPath(const wstring& programName)
 {
 	wstring fullPath = GetCurrentProcessDir() + programName;
@@ -44,6 +47,7 @@ wstring GetExternalProgramPath(const wstring& programName)
 	return fullPath;
 }
 
+// 读取用户输入
 wstring ReadUserInput(const wstring& prompt)
 {
 	wcout << prompt;
@@ -52,6 +56,7 @@ wstring ReadUserInput(const wstring& prompt)
 	return input;
 }
 
+// 在当前控制台执行程序（可选等待）
 bool ExecuteProgramInCurrentConsole(const wstring& programPath, const wstring& args = L"", bool wait = true)
 {
 	if (!wait) {
@@ -85,7 +90,6 @@ bool ExecuteProgramInCurrentConsole(const wstring& programPath, const wstring& a
 	if (ret)
 	{
 		WaitForSingleObject(pi.hProcess, INFINITE);
-
 		DWORD exitCode = 0;
 		GetExitCodeProcess(pi.hProcess, &exitCode);
 		CloseHandle(pi.hProcess);
@@ -115,12 +119,13 @@ int main()
 
 	ConsoleMenu menu;
 
+	// 通用命令
 	menu.addCommonCommand(L"exit", L"退出", [](ConsoleMenu&, Args) {
 		wcout << L"\n程序已退出";
 		exit(0);
 		});
 
-	menu.addCommonCommand(L"help", L"帮助", [&menu](ConsoleMenu& menu, Args) {
+	menu.addCommonCommand(L"help", L"帮助", [&menu](ConsoleMenu&, Args) {
 		menu.setDisplayMode(MenuDisplayMode::Exclusive);
 		wcout << L"\n==================================== HugoProgs 帮助 ====================================\n";
 		wcout << L"命令格式1：<command> [parameters]\n";
@@ -151,15 +156,19 @@ int main()
 		wchar_t ch = _getwch();
 		if (ch == L'G' || ch == L'g') RunExternalProgram(url);
 		});
+
+	// ==================== 子菜单：希沃虚拟磁盘管理器 ====================
 	auto& mountMenu = menu.addSubmenu(L"mount", L"希沃虚拟磁盘管理器");
 	{
-		// list 命令：无参数
 		mountMenu.addCommand(L"list", L"枚举虚拟磁盘", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoMount.exe");
-			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"list");
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--list");
+			});
+		mountMenu.addCommand(L"hlp", L"帮助", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoMount.exe");
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--help");
 			});
 
-		// mount 命令：disk part [drive]
 		mountMenu.addCommand(L"mnt", L"挂载 <disk> <part> [drive]", [](ConsoleMenu&, Args args) {
 			auto params = args.getParams(L"");
 			if (params.size() < 2) {
@@ -169,14 +178,13 @@ int main()
 			wstring progPath = GetExternalProgramPath(L"HugoMount.exe");
 			if (progPath.empty()) return;
 
-			wstring cmdLine = L"mount " + params[0] + L" " + params[1];
+			wstring cmdLine = L"--mount " + params[0] + L" " + params[1];
 			if (params.size() >= 3) {
 				cmdLine += L" " + params[2];
 			}
 			ExecuteProgramInCurrentConsole(progPath, cmdLine);
 			});
 
-		// unmount 命令：支持 drive 或 disk+part 两种形式
 		mountMenu.addCommand(L"unmnt", L"卸载 <disk> <part>/<drive>", [](ConsoleMenu&, Args args) {
 			auto params = args.getParams(L"");
 			if (params.empty()) {
@@ -186,13 +194,11 @@ int main()
 			wstring progPath = GetExternalProgramPath(L"HugoMount.exe");
 			if (progPath.empty()) return;
 
-			wstring cmdLine = L"unmount ";
+			wstring cmdLine = L"--unmount ";
 			if (params.size() == 1 && iswalpha(params[0][0])) {
-				// 按盘符卸载
 				cmdLine += wstring(1, towupper(params[0][0]));
 			}
 			else if (params.size() >= 2) {
-				// 按磁盘/分区卸载
 				cmdLine += params[0] + L" " + params[1];
 			}
 			else {
@@ -202,53 +208,131 @@ int main()
 			ExecuteProgramInCurrentConsole(progPath, cmdLine);
 			});
 
-		// log 命令：挂载日志盘
 		mountMenu.addCommand(L"log", L"挂载日志盘 [drive]", [](ConsoleMenu&, Args args) {
 			auto params = args.getParams(L"");
 			wstring progPath = GetExternalProgramPath(L"HugoMount.exe");
 			if (progPath.empty()) return;
 
-			wstring cmdLine = L"log";
+			wstring cmdLine = L"--log";
 			if (!params.empty()) {
 				cmdLine += L" " + params[0];
 			}
 			ExecuteProgramInCurrentConsole(progPath, cmdLine);
 			});
 
-		// conf 命令：挂载配置盘
 		mountMenu.addCommand(L"conf", L"挂载配置盘 [drive]", [](ConsoleMenu&, Args args) {
 			auto params = args.getParams(L"");
 			wstring progPath = GetExternalProgramPath(L"HugoMount.exe");
 			if (progPath.empty()) return;
 
-			wstring cmdLine = L"conf";
+			wstring cmdLine = L"--conf";
 			if (!params.empty()) {
 				cmdLine += L" " + params[0];
 			}
 			ExecuteProgramInCurrentConsole(progPath, cmdLine);
 			});
 	}
+
+	// ==================== 子菜单：希沃冰点配置工具 ====================
 	auto& freezeMenu = menu.addSubmenu(L"freeze", L"希沃冰点配置工具");
 	{
-		freezeMenu.addCommand(L"drv", L"希沃Freeze 驱动配置工具", [](ConsoleMenu&, Args) {
+		// 驱动版本
+		freezeMenu.addCommand(L"drv.query", L"查询驱动冻结状态", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoFreezeDriver.exe");
-			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath);
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--query");
 			});
-
-		freezeMenu.addCommand(L"api", L"希沃Freeze API配置工具", [](ConsoleMenu&, Args) {
+		freezeMenu.addCommand(L"drv.set", L"设置驱动冻结盘符", [](ConsoleMenu&, Args) {
+			wstring input = ReadUserInput(L"请输入要冻结的盘符（如 CD 表示C和D盘），输入 0 解除所有冻结：");
+			if (input.empty()) {
+				wcout << L"输入无效\n";
+				return;
+			}
+			wstring progPath = GetExternalProgramPath(L"HugoFreezeDriver.exe");
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--set " + input);
+			});
+		freezeMenu.addCommand(L"drv.hlp", L"帮助", [](ConsoleMenu& menu, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoFreezeDriver.exe");
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--help");
+			});
+		// API版本
+		freezeMenu.addCommand(L"api.get", L"查询API冻结状态", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoFreezeApi.exe");
-			if (!progPath.empty())ExecuteProgramInCurrentConsole(progPath);
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--get-disk");
 			});
-		freezeMenu.addCommand(L"off", L"希沃官方工具，可能需要先关闭SeewoCore.exe", [](ConsoleMenu&, Args) {
+		freezeMenu.addCommand(L"api.set", L"设置API冻结磁盘", [](ConsoleMenu&, Args) {
+			wstring vol = ReadUserInput(L"请输入磁盘标识（0代表解除全部冻结）：");
+			if (vol.empty()) {
+				wcout << L"输入无效\n";
+				return;
+			}
+			wstring progPath = GetExternalProgramPath(L"HugoFreezeApi.exe");
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--set-vol " + vol);
+			});
+		freezeMenu.addCommand(L"api.try", L"尝试API冻结磁盘", [](ConsoleMenu&, Args) {
+			wstring disk = ReadUserInput(L"请输入磁盘标识（0代表解除全部冻结）：");
+			if (disk.empty()) {
+				wcout << L"输入无效\n";
+				return;
+			}
+			wstring progPath = GetExternalProgramPath(L"HugoFreezeApi.exe");
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--try-protect " + disk);
+			});
+		freezeMenu.addCommand(L"api.hlp", L"帮助", [](ConsoleMenu& menu, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoFreezeApi.exe");
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--help");
+			});
+		freezeMenu.addCommand(L"off", L"希沃官方工具（可能需要先关闭SeewoCore）", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"SeewoFreeze\\SeewoFreezeUI.exe");
-			if (!progPath.empty())ExecuteProgramInCurrentConsole(progPath, L"", false);
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"", false);
 			});
-		freezeMenu.addCommand(L"stop", L"launch/stop 关闭希沃", [](ConsoleMenu& menu, Args) {
-			menu.excute(L"launch/stop",false);
+		freezeMenu.addCommand(L"stop", L"关闭希沃进程", [](ConsoleMenu& menu, Args) {
+			menu.execute(L"launch/stop", false);
 			});
 	}
 
-	auto& injectMenu = menu.addSubmenu(L"inject", L"DLL注入工具"); {
+	// ==================== 子菜单：希沃服务与网络控制 ====================
+	auto& disableMenu = menu.addSubmenu(L"basic", L"希沃服务与网络控制");
+	{
+		disableMenu.addCommand(L"off", L"关闭文件保护", [](ConsoleMenu& menu, Args) {
+			menu.execute(L"fprotect/disable", false);
+			});
+		disableMenu.addCommand(L"disable", L"禁用希沃服务", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoDisable.exe");
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--disable");
+			});
+		disableMenu.addCommand(L"enable", L"启用希沃服务", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoDisable.exe");
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--enable");
+			});
+		disableMenu.addCommand(L"update.off", L"禁用希沃更新", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoDisable.exe");
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--disable-update");
+			});
+		disableMenu.addCommand(L"update.on", L"启用希沃更新", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoDisable.exe");
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--enable-update");
+			});
+		disableMenu.addCommand(L"net.off", L"禁用希沃网络", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoDisable.exe");
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--disable-net");
+			});
+		disableMenu.addCommand(L"net.on", L"启用希沃网络", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoDisable.exe");
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--enable-net");
+			});
+		disableMenu.addCommand(L"clear", L"清除所有防火墙规则", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoDisable.exe");
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--clear-rules");
+			});
+		disableMenu.addCommand(L"hlp", L"帮助", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoDisable.exe");
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--help");
+			});
+	}
+
+	// ==================== 子菜单：DLL注入工具 ====================
+	auto& injectMenu = menu.addSubmenu(L"inject", L"DLL注入工具");
+	{
 		injectMenu.addCommand(L"in", L"进程监控+注入", [](ConsoleMenu&, Args) {
 			wcout << L"\nDLL注入配置\n";
 			wstring dllPath = ReadUserInput(L"请输入DLL文件完整路径：");
@@ -257,17 +341,16 @@ int main()
 				return;
 			}
 			wstring procName = ReadUserInput(L"请输入目标进程名：");
-			if (procName.empty())
-			{
+			if (procName.empty()) {
 				wcout << L"错误：进程名不能为空\n";
 				return;
 			}
 			wstring progPath = GetExternalProgramPath(L"HugoInjector.exe");
 			if (!progPath.empty())
-				ExecuteProgramInCurrentConsole(progPath, (wstring)L"-inject" + dllPath + L" " + procName, false);
+				ExecuteProgramInCurrentConsole(progPath, L"--inject " + dllPath + L" " + procName, false);
 			});
 
-		injectMenu.addCommand(L"un", L"卸载dll", [](ConsoleMenu&, Args) {
+		injectMenu.addCommand(L"un", L"卸载DLL", [](ConsoleMenu&, Args) {
 			wcout << L"\nDLL卸载配置\n";
 			wstring dllPath = ReadUserInput(L"请输入DLL文件完整路径：");
 			if (dllPath.empty() || !fs::exists(dllPath)) {
@@ -275,89 +358,115 @@ int main()
 				return;
 			}
 			wstring procName = ReadUserInput(L"请输入目标进程名：");
-			if (procName.empty())
-			{
+			if (procName.empty()) {
 				wcout << L"错误：进程名不能为空\n";
 				return;
 			}
 			wstring progPath = GetExternalProgramPath(L"HugoInjector.exe");
 			if (!progPath.empty())
-				ExecuteProgramInCurrentConsole(progPath, (wstring)L"-uninject" + dllPath + L" " + procName);
+				ExecuteProgramInCurrentConsole(progPath, L"--uninject " + dllPath + L" " + procName);
 			});
 
-		injectMenu.addCommand(L"h", L"帮助", [](ConsoleMenu&, Args) {
+		injectMenu.addCommand(L"hlp", L"帮助", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoInjector.exe");
 			if (!progPath.empty())
-				ExecuteProgramInCurrentConsole(progPath);
+				ExecuteProgramInCurrentConsole(progPath, L"--help");
 			});
 	}
 
+	// ==================== 子菜单：希沃启动工具 ====================
 	auto& launchMenu = menu.addSubmenu(L"launch", L"希沃启动工具");
 	{
 		launchMenu.addCommand(L"start", L"启动希沃", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoLaunchTool.exe");
 			if (!progPath.empty())
-				ExecuteProgramInCurrentConsole(progPath, L"-start");
+				ExecuteProgramInCurrentConsole(progPath, L"--start");
 			});
 
 		launchMenu.addCommand(L"stop", L"终止希沃进程", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoLaunchTool.exe");
 			if (!progPath.empty())
-				ExecuteProgramInCurrentConsole(progPath, L"-stop", false);
+				ExecuteProgramInCurrentConsole(progPath, L"--stop", false);
 			});
 
 		launchMenu.addCommand(L"inst", L"安装希沃管家", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoInstaller.exe");
 			if (!progPath.empty())
-				ExecuteProgramInCurrentConsole(progPath, L"-install", true);
+				ExecuteProgramInCurrentConsole(progPath, L"--install");
 			});
 
 		launchMenu.addCommand(L"uninst", L"卸载希沃管家", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoInstaller.exe");
 			if (!progPath.empty())
-				ExecuteProgramInCurrentConsole(progPath, L"-uninstall", true);
+				ExecuteProgramInCurrentConsole(progPath, L"--uninstall");
+			});
+		launchMenu.addCommand(L"hlp", L"帮助", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoInstaller.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath, L"--help");
 			});
 	}
 
+	// ==================== 子菜单：希沃文件保护工具 ====================
 	auto& fprotectMenu = menu.addSubmenu(L"fprotect", L"希沃文件保护工具");
 	{
 		fprotectMenu.addCommand(L"enable", L"启用文件保护", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoProtect.exe");
 			if (!progPath.empty())
-				ExecuteProgramInCurrentConsole(progPath, L"-enable");
+				ExecuteProgramInCurrentConsole(progPath, L"--enable");
 			});
 		fprotectMenu.addCommand(L"disable", L"禁用文件保护", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoProtect.exe");
 			if (!progPath.empty())
-				ExecuteProgramInCurrentConsole(progPath, L"-disable");
+				ExecuteProgramInCurrentConsole(progPath, L"--disable");
+			});
+		fprotectMenu.addCommand(L"hlp", L"帮助", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoProtect.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath, L"--help");
 			});
 	}
 
+	// ==================== 子菜单：希沃锁屏工具 ====================
 	auto& lockMenu = menu.addSubmenu(L"lock", L"希沃锁屏工具");
 	{
-		wstring explainText = L"这个工具不适合在命令行运行\n";
-		lockMenu.addCommand(L"HugoLock", L"说明", [=](ConsoleMenu&, Args) {
-			wcout << explainText << L"直接运行HugoLock.exe即可使用解除锁屏功能\n";
+		lockMenu.addCommand(L"lock", L"说明", [=](ConsoleMenu&, Args) {
+			wcout << L"HugoLock在method=lock时被HugoLockAssistant调用\n";
 			});
-		lockMenu.addCommand(L"HugoLockAssistant", L"说明", [=](ConsoleMenu&, Args) {
-			wcout << explainText << L"HugoLock的辅助程序，处理特殊情况\n";
+		lockMenu.addCommand(L"assistant", L"说明", [=](ConsoleMenu&, Args) {
+			wcout << L"命令：HugoLockAssistant.exe --mode=xxx --method=xxx\n";
 			});
-		lockMenu.addCommand(L"HugoPanel", L"说明", [=](ConsoleMenu&, Args) {
-			wcout << explainText << L"自带UIAccess的简洁面板，运行后，锁屏时自动出现\n";
+		lockMenu.addCommand(L"mode", L"HugoLockAssistant参数", [=](ConsoleMenu&, Args) {
+			wcout << L"支持assist或direct，即辅助解锁（需要主动点击解锁）或直接解锁\n";
+			});
+		lockMenu.addCommand(L"method", L"HugoLockAssistant参数", [=](ConsoleMenu&, Args) {
+			wcout << L"支持lock、dbg、frontend、launchtool\n";
 			});
 	}
 
+	// ==================== 子菜单：希沃密码工具 ====================
 	auto& pswMenu = menu.addSubmenu(L"psw", L"希沃密码工具");
 	{
-		pswMenu.addCommand(L"run", L"启动", [=](ConsoleMenu&, Args) {
+		pswMenu.addCommand(L"manual", L"手动", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoPassword.exe");
 			if (!progPath.empty())
-				ExecuteProgramInCurrentConsole(progPath);
+				ExecuteProgramInCurrentConsole(progPath, L"--manual");
+			});
+		pswMenu.addCommand(L"auto", L"自动", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoPassword.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath, L"--auto");
+			});
+		pswMenu.addCommand(L"hlp", L"帮助", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoPassword.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath, L"--help");
 			});
 	}
 
+	// 空命令占位，确保 common 可用
 	menu.addCommandAtPath(L"", L"common", L"查看通用命令", [](ConsoleMenu&, Args) {});
-	menu.run();
 
+	menu.run();
 	return 0;
 }

@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with HugoProgs. If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "WinUtils/WinPch.h"
 
 #include <Windows.h>
@@ -26,87 +27,125 @@
 #include <shlobj.h>
 #include <fcntl.h>
 #include <io.h>
+#include <memory>
+#include <cstdlib>
+#include <stdexcept>
 
 #include "HugoUtils/HugoPassword.h"
 #include "WinUtils/Console.h"
 #include "WinUtils/StrConvert.h"
+#include "WinUtils/Logger.h"
+#include "WinUtils/WinUtils.h"
+#include "WinUtils/CmdParser.h"
 
 using namespace WinUtils;
 using namespace std;
 
-class ManualInfoAcquirer : public InfoAcquirer {
-private:
-    int version;
-    string ciphertext;
-    PasswordType type;
+// 常量定义
+const wstring kSeewoCoreIniRelativePath = L"\\Seewo\\SeewoCore\\SeewoCore.ini";
+const char* kRegistryMachineIdPath = "SOFTWARE\\Microsoft\\SQMClient";
+const char* kRegistryMachineIdValue = "MachineId";
+const char* kIniSectionDevice = "device";
+const char* kIniKeyId = "id";
 
-    bool GetRegistryMachineId(string& machine_id);
+// 辅助函数：清屏
+void ClearScreen()
+{
+    system("cls");
+}
+
+// 手动信息获取器
+class ManualInfoAcquirer : public InfoAcquirer
+{
+private:
+    int version_;
+    string ciphertext_;
+    PasswordType type_;
+
+    bool GetRegistryMachineId(string& machineId);
+
 public:
     ManualInfoAcquirer(int ver, const string& ct, PasswordType t = TYPE_ADMIN);
     vector<CrackTask> acquire() override;
 };
 
-bool ManualInfoAcquirer::GetRegistryMachineId(string& machine_id) {
+bool ManualInfoAcquirer::GetRegistryMachineId(string& machineId)
+{
     char buffer[128] = { 0 };
-    DWORD buffer_size = sizeof(buffer);
+    DWORD bufferSize = sizeof(buffer);
     HKEY hKey;
     LONG result = RegOpenKeyExA(HKEY_LOCAL_MACHINE,
-        "SOFTWARE\\Microsoft\\SQMClient",
-        0, KEY_READ | KEY_WOW64_64KEY, &hKey);
+        kRegistryMachineIdPath, 0, KEY_READ | KEY_WOW64_64KEY, &hKey);
     if (result != ERROR_SUCCESS) {
         result = RegOpenKeyExA(HKEY_LOCAL_MACHINE,
-            "SOFTWARE\\Microsoft\\SQMClient",
-            0, KEY_READ, &hKey);
+            kRegistryMachineIdPath, 0, KEY_READ, &hKey);
     }
-    if (result != ERROR_SUCCESS) return false;
+    if (result != ERROR_SUCCESS) {
+        return false;
+    }
 
-    result = RegQueryValueExA(hKey, "MachineId", nullptr, nullptr,
-        reinterpret_cast<LPBYTE>(buffer), &buffer_size);
+    result = RegQueryValueExA(hKey, kRegistryMachineIdValue, nullptr, nullptr,
+        reinterpret_cast<LPBYTE>(buffer), &bufferSize);
     RegCloseKey(hKey);
 
     if (result == ERROR_SUCCESS) {
-        machine_id = buffer;
+        machineId = buffer;
         return true;
     }
     return false;
 }
 
 ManualInfoAcquirer::ManualInfoAcquirer(int ver, const string& ct, PasswordType t)
-    : version(ver), ciphertext(ct), type(t) {
+    : version_(ver), ciphertext_(ct), type_(t)
+{
 }
 
-vector<CrackTask> ManualInfoAcquirer::acquire() {
+vector<CrackTask> ManualInfoAcquirer::acquire()
+{
     vector<CrackTask> tasks;
-    string device_id, machine_id;
+    string deviceId;
+    string machineId;
 
-    char seewocore_ini_path[MAX_PATH] = { 0 };
-    if (SUCCEEDED(SHGetFolderPathA(nullptr, CSIDL_COMMON_APPDATA, nullptr, 0, seewocore_ini_path))) {
-        strcat_s(seewocore_ini_path, MAX_PATH, "\\Seewo\\SeewoCore\\SeewoCore.ini");
-        char buf_device[256] = { 0 };
-        GetPrivateProfileStringA("device", "id", "", buf_device, sizeof(buf_device), seewocore_ini_path);
-        device_id = buf_device;
+    wchar_t seewocoreIniPath[MAX_PATH] = { 0 };
+    if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_COMMON_APPDATA, nullptr, 0, seewocoreIniPath))) {
+        wcscat_s(seewocoreIniPath, MAX_PATH, kSeewoCoreIniRelativePath.c_str());
+        char bufDevice[256] = { 0 };
+        GetPrivateProfileStringA(kIniSectionDevice, kIniKeyId, "",
+            bufDevice, sizeof(bufDevice), ConvertString<string>(seewocoreIniPath).c_str());
+        deviceId = bufDevice;
     }
 
-    GetRegistryMachineId(machine_id);
+    GetRegistryMachineId(machineId);
 
     CrackMode mode;
-    if (version == 1) mode = MODE_V1;
-    else if (version == 2) mode = MODE_V2;
-    else mode = MODE_V3;
+    if (version_ == 1) {
+        mode = MODE_V1;
+    }
+    else if (version_ == 2) {
+        mode = MODE_V2;
+    }
+    else {
+        mode = MODE_V3;
+    }
 
-    tasks.push_back({ mode, type, ciphertext, device_id, machine_id });
+    tasks.push_back({ mode, type_, ciphertext_, deviceId, machineId });
     return tasks;
 }
 
-class ConsoleOutput : public ResultOutput {
+// 控制台结果输出类
+class ConsoleOutput : public ResultOutput
+{
 private:
-    static bool compareResult(const CrackResult& a, const CrackResult& b) {
-        if (a.task.mode != b.task.mode)
+    static bool CompareResult(const CrackResult& a, const CrackResult& b)
+    {
+        if (a.task.mode != b.task.mode) {
             return a.task.mode < b.task.mode;
+        }
         return a.task.type < b.task.type;
     }
 
-    wstring modeToString(CrackMode mode) {
+    wstring ModeToString(CrackMode mode)
+    {
         switch (mode) {
         case MODE_V1: return L"V1";
         case MODE_V2: return L"V2";
@@ -115,19 +154,21 @@ private:
         }
     }
 
-    wstring typeToString(PasswordType type) {
+    wstring TypeToString(PasswordType type)
+    {
         return (type == TYPE_ADMIN) ? L"管理密码" : L"锁屏密码";
     }
 
 public:
-    void output(const vector<CrackResult>& results) override {
+    void output(const vector<CrackResult>& results) override
+    {
         vector<CrackResult> sorted = results;
-        sort(sorted.begin(), sorted.end(), compareResult);
+        sort(sorted.begin(), sorted.end(), CompareResult);
 
         wcout << L"\n==================== 破解结果 ====================\n";
         for (const auto& res : sorted) {
-            wcout << L"[" << modeToString(res.task.mode) << L"] "
-                << typeToString(res.task.type) << L" : ";
+            wcout << L"[" << ModeToString(res.task.mode) << L"] "
+                << TypeToString(res.task.type) << L" : ";
             if (res.success) {
                 wcout << L"成功 -> " << ConvertString<wstring>(res.plaintext) << endl;
             }
@@ -139,40 +180,27 @@ public:
     }
 };
 
-int main() {
-    Console console;
-    console.setLocale();
+// 手动输入模式
+int RunManualMode()
+{
+    int version;
+    wstring wcipher;
+    wcout << L"密文版本 (1/2/3): ";
+    wcin >> version;
+    wcout << L"密文: ";
+    wcin >> wcipher;
+    string cipher = ConvertString<string>(wcipher);
 
-    int choice = -1;
-    wcout << L"选择模式:\n"
-        << L"0 - 手动输入\n"
-        << L"1 - 自动读取\n";
-    wcin >> choice;
-
-    InfoAcquirer* acquirer = nullptr;
-    if (choice == 1) {
-        acquirer = new AutoInfoAcquirer();
-    }
-    else {
-        int ver;
-        wstring wcipher;
-        wcout << L"密文版本 (1/2/3): ";
-        wcin >> ver;
-        wcout << L"密文: ";
-        wcin >> wcipher;
-        string cipher = ConvertString<string>(wcipher);
-        acquirer = new ManualInfoAcquirer(ver, cipher, TYPE_ADMIN);
-    }
-
+    unique_ptr<InfoAcquirer> acquirer = make_unique<ManualInfoAcquirer>(version, cipher, TYPE_ADMIN);
     vector<CrackTask> tasks = acquirer->acquire();
-    delete acquirer;
 
     if (tasks.empty()) {
-        wcerr << L"[!] 无破解任务" << endl;
+        wcerr << L"错误: 无破解任务" << endl;
+        WLog(LogLevel::Error, L"No crack tasks generated");
         return 1;
     }
 
-    // 打印任务信息（使用宽字符）
+    // 打印任务信息
     wcout << L"\n==================== 破解任务 ====================\n";
     for (const auto& task : tasks) {
         wstring modeStr = (task.mode == MODE_V1) ? L"V1" :
@@ -201,7 +229,152 @@ int main() {
     ConsoleOutput output;
     output.output(results);
 
-    wcout << L"\n按任意键继续" << endl;
-    (void)_getwch();
     return 0;
+}
+
+// 自动读取模式
+int RunAutoMode()
+{
+    unique_ptr<InfoAcquirer> acquirer = make_unique<AutoInfoAcquirer>();
+    vector<CrackTask> tasks = acquirer->acquire();
+
+    if (tasks.empty()) {
+        wcerr << L"错误: 无破解任务" << endl;
+        WLog(LogLevel::Error, L"No crack tasks generated");
+        return 1;
+    }
+
+    // 打印任务信息
+    wcout << L"\n==================== 破解任务 ====================\n";
+    for (const auto& task : tasks) {
+        wstring modeStr = (task.mode == MODE_V1) ? L"V1" :
+            (task.mode == MODE_V2) ? L"V2" : L"V3";
+        wstring typeStr = (task.type == TYPE_ADMIN) ? L"管理密码" : L"锁屏密码";
+        wcout << L"模式: " << modeStr
+            << L", 类型: " << typeStr
+            << L", 密文: " << ConvertString<wstring>(task.ciphertext)
+            << L", 设备ID: " << ConvertString<wstring>(task.device_id)
+            << L", 机器ID: " << ConvertString<wstring>(task.machine_id)
+            << endl;
+    }
+    wcout << L"==========================================================\n";
+
+    // 准备解密器
+    V1Decryptor d1;
+    V2Decryptor d2;
+    V3Decryptor d3;
+    vector<Decryptor*> decryptors = { &d1, &d2, &d3 };
+
+    // 执行破解
+    CrackExecutor executor;
+    vector<CrackResult> results = executor.execute(tasks, decryptors);
+
+    // 输出结果
+    ConsoleOutput output;
+    output.output(results);
+
+    return 0;
+}
+
+// 显示帮助信息
+void PrintHelp(const wstring& programName)
+{
+    wcout << L"用法: " << programName << L" [选项]\n"
+        << L"选项:\n"
+        << L"  --manual      手动输入模式\n"
+        << L"  --auto        自动读取模式\n"
+        << L"  --help, -h    显示此帮助\n"
+        << L"无参数则进入交互菜单\n";
+}
+
+int wmain(int argc, wchar_t* argv[])
+{
+    try {
+        Console().setLocale();
+
+        // 日志配置：仅文件
+        LoggerCore::Inst().SetDefaultStrategies(L"HugoPassword.log");
+        LoggerCore::Inst().EnableApartment(DftLogger);
+
+        // 命令行模式
+        if (argc > 1) {
+            wstring cmdLine;
+            for (int i = 1; i < argc; ++i) {
+                cmdLine += (i > 1 ? L" " : L"") + wstring(argv[i]);
+            }
+
+            CmdParser parser(true);
+            if (!parser.parse(cmdLine)) {
+                wcerr << L"命令行解析失败" << endl;
+                return 1;
+            }
+
+            if (parser.hasCommand(L"help") || parser.hasCommand(L"-h")) {
+                PrintHelp(GetCurrentProcessName());
+                return 0;
+            }
+
+            if (parser.hasCommand(L"manual")) {
+                return RunManualMode();
+            }
+            if (parser.hasCommand(L"auto")) {
+                return RunAutoMode();
+            }
+
+            wcerr << L"未知选项，使用 --help 查看帮助" << endl;
+            return 1;
+        }
+
+        // 交互菜单模式
+        int choice = -1;
+        do {
+            ClearScreen();
+            wcout << L"\n=== 希沃密码破解工具 ===\n"
+                << L"1. 手动输入模式\n"
+                << L"2. 自动读取模式\n"
+                << L"0. 退出程序\n"
+                << L"请输入选择: ";
+            wcin >> choice;
+            if (wcin.fail()) {
+                wcin.clear();
+                wcin.ignore(1024, L'\n');
+                wcerr << L"输入无效，请输入数字" << endl;
+                system("pause");
+                continue;
+            }
+
+            int result = 0;
+            switch (choice) {
+            case 1:
+                result = RunManualMode();
+                if (result != 0) {
+                    wcerr << L"手动模式执行失败" << endl;
+                }
+                break;
+            case 2:
+                result = RunAutoMode();
+                if (result != 0) {
+                    wcerr << L"自动模式执行失败" << endl;
+                }
+                break;
+            case 0:
+                wcout << L"退出程序。" << endl;
+                WLog(LogLevel::Info, L"User exited");
+                break;
+            default:
+                wcerr << L"无效选择，请重新输入" << endl;
+                break;
+            }
+            if (choice != 0) {
+                system("pause");
+            }
+        } while (choice != 0);
+
+        return 0;
+    }
+    catch (const exception& e) {
+        wcerr << L"致命错误: " << ConvertString<wstring>(e.what()) << endl;
+        WLog(LogLevel::Error, L"Fatal: " + ConvertString<wstring>(e.what()));
+        return 1;
+    }
 }

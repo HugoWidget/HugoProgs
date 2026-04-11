@@ -69,7 +69,7 @@ void UnlockOnce()
 // Direct模式下的本地窗口隐藏循环
 void DirectUnlockLoop() {
 	while (true) {
-		UnlockOnce();
+		if(!GetInterceptEnabled())SetInterceptEnabled(true) ;
 		Sleep(100);
 	}
 }
@@ -119,7 +119,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	auto injector = std::make_shared<Injector>();
 	std::thread monitorThread([injector, dllPath]() {
-		injector->MonitorAndInject(dllPath, L"SeewoServiceAssistant.exe", 1000);
+		injector->MonitorAndInject(dllPath, L"SeewoServiceAssistant.exe", 500);
 		});
 	monitorThread.detach();
 
