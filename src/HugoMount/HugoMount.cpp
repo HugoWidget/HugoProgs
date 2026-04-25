@@ -17,7 +17,7 @@
  * along with HugoProgs. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "HugoUtils/HugoMount.h"
+#include "HugoUtils/HMount.h"
 #include "WinUtils/Logger.h"
 #include "WinUtils/StrConvert.h"
 #include "WinUtils/WinUtils.h"
@@ -81,7 +81,7 @@ void PrintHelp(const wstring& programName)
 }
 
 // 执行 list 命令
-int ExecuteList(HugoMount& instance)
+int ExecuteList(HMount& instance)
 {
 	instance.PrintAllInfo();
 	WLog(LogLevel::Info, L"Executed list command");
@@ -89,7 +89,7 @@ int ExecuteList(HugoMount& instance)
 }
 
 // 执行 mount 命令
-int ExecuteMount(HugoMount& instance, const vector<wstring>& args)
+int ExecuteMount(HMount& instance, const vector<wstring>& args)
 {
 	if (args.size() < 2) {
 		wcerr << L"错误: 挂载命令缺少参数！用法: --mount <disk> <part> [drive]" << endl;
@@ -117,7 +117,7 @@ int ExecuteMount(HugoMount& instance, const vector<wstring>& args)
 }
 
 // 执行 unmount 命令
-int ExecuteUnmount(HugoMount& instance, const vector<wstring>& args)
+int ExecuteUnmount(HMount& instance, const vector<wstring>& args)
 {
 	if (args.empty()) {
 		wcerr << L"错误: 卸载命令缺少参数！用法: --unmount <drive> 或 --unmount <disk> <part>" << endl;
@@ -150,7 +150,7 @@ int ExecuteUnmount(HugoMount& instance, const vector<wstring>& args)
 }
 
 // 执行 conf/log 命令（挂载配置或日志分区）
-int ExecuteConfOrLog(HugoMount& instance, const wstring& command, const vector<wstring>& args)
+int ExecuteConfOrLog(HMount& instance, const wstring& command, const vector<wstring>& args)
 {
 	wstring targetFile = (command == L"conf") ? kConfTargetFile : kLogTargetFile;
 	optional<char> driveLetter;
@@ -208,7 +208,7 @@ int ExecuteConfOrLog(HugoMount& instance, const wstring& command, const vector<w
 }
 
 // 交互菜单模式
-void InteractiveMode(HugoMount& instance)
+void InteractiveMode(HMount& instance)
 {
 	int choice = -1;
 	do {
@@ -306,7 +306,7 @@ int wmain(int argc, wchar_t* argv[])
 		LoggerCore::Inst().SetDefaultStrategies(L"HugoMount.log");
 		LoggerCore::Inst().EnableApartment(DftLogger);
 
-		HugoMount instance;
+		HMount instance;
 
 		if (argc > 1) {
 			wstring cmdLine;

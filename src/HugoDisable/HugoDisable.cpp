@@ -29,7 +29,7 @@
 #include "WinUtils/Console.h"
 #include "WinUtils/StrConvert.h"
 #include "WinUtils/Logger.h"
-#include "HugoUtils/HugoInfo.h"
+#include "HugoUtils/HInfo.h"
 #include "WinUtils/CmdParser.h"
 #include "WinUtils/WinUtils.h"
 
@@ -111,7 +111,7 @@ void SetSeewoService(bool disable)
 // 阻止/允许希沃更新程序
 void SetUpdateBlock(bool block, FirewallGuard& fw)
 {
-    HugoInfo info;
+    HInfo info;
     wstring exe = kUpdateExe1;
     for (auto& folder : info.getHugoUpdateFolder()) {
         wstring fullPath = folder + exe;
@@ -138,7 +138,7 @@ void SetUpdateBlock(bool block, FirewallGuard& fw)
 // 阻止/允许希沃核心进程网络访问
 void SetNetworkBlock(bool block, FirewallGuard& fw)
 {
-    HugoInfo info;
+    HInfo info;
     auto optFolder = info.getHugoFolder();
     if (!optFolder) {
         wcerr << L"未找到希沃安装目录，网络规则操作跳过" << endl;

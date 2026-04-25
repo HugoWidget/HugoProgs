@@ -34,7 +34,7 @@
 #include "WinUtils/Console.h"
 #include "WinUtils/Logger.h"
 #include "WinUtils/CmdParser.h"
-#include "HugoUtils/HugoInfo.h"
+#include "HugoUtils/HInfo.h"
 #include <WinUtils/StrConvert.h>
 
 using namespace std;
@@ -55,7 +55,7 @@ void ClearScreen()
 // 执行驱动服务操作（install / uninstall）
 bool ExecuteDriverServiceOp(bool enable)
 {
-    HugoInfo info;
+    HInfo info;
     auto driverPath = info.getHugoProtectDriverPath();
 
     if (!driverPath.has_value()) {

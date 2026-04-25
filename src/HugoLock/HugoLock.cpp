@@ -27,7 +27,7 @@
 #include "WinUtils/Console.h"
 #include "WinUtils/Logger.h"
 #include "WinUtils/CmdParser.h"
-#include "HugoUtils/HugoLock.h"
+#include "HugoUtils/HLock.h"
 #include "resource.h"
 #include "HugoLock.h"
 #include "uiaccess.h"

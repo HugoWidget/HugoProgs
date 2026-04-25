@@ -24,18 +24,158 @@
 #include <filesystem>
 #include <conio.h>
 #include <ShlObj.h>
+#include <fstream>
 
 #include "WinUtils/Console.h"
 #include "WinUtils/WinUtils.h" 
-#include "HugoUtils/HugoArt.h"
+#include "HugoUtils/HArt.h"
 #include "WinUtils/ConsoleMenu.h"
 #include "HugoUtils/GPL3.h"
+#include <WinUtils/WinReg.h>
 
 using namespace std;
 using namespace WinUtils;
 namespace fs = filesystem;
-
+void registerObject(ConsoleMenu& menu);
 // 获取外部程序完整路径
+wstring GetExternalProgramPath(const wstring& programName);
+// 读取用户输入
+wstring ReadUserInput(const wstring& prompt)
+{
+	wcout << prompt;
+	wstring input;
+	getline(wcin, input);
+	return input;
+}
+// 在当前控制台执行程序（可选等待）
+bool ExecuteProgramInCurrentConsole(const wstring& programPath, const wstring& args = L"", bool wait = true);
+
+// 检查是否为 .hps 脚本文件
+bool IsScriptFile(const wstring& path)
+{
+	if (path.size() < 4) return false;
+	wstring ext = path.substr(path.size() - 4);
+	transform(ext.begin(), ext.end(), ext.begin(), ::towlower);
+	return ext == L".hps" && fs::exists(path);
+}
+
+// 执行脚本文件
+int ExecuteScriptFile(const wstring& scriptPath, ConsoleMenu* menu)
+{
+	wifstream scriptFile(scriptPath);
+	if (!scriptFile.is_open())
+	{
+		wcerr << L"错误：无法打开脚本文件 " << scriptPath << endl;
+		return 1;
+	}
+	ConsoleMenu* usedMenu = 0;
+	ConsoleMenu dummyMenu;
+	if (!menu) {
+		registerObject(dummyMenu);
+		usedMenu = &dummyMenu;
+	}
+	else usedMenu = &*menu;
+
+	wstring line;
+	int lineNum = 0;
+	while (getline(scriptFile, line))
+	{
+		++lineNum;
+		size_t start = line.find_first_not_of(L" \t\r\n");
+		if (start == wstring::npos) continue;
+		size_t end = line.find_last_not_of(L" \t\r\n");
+		line = line.substr(start, end - start + 1);
+		if (line.empty() || line[0] == L'#') continue;
+
+		wcout << L"[执行] " << line << endl;
+		usedMenu->execute(line, true);
+	}
+	scriptFile.close();
+	return 0;
+}
+
+// 显示帮助信息
+void ShowHelp()
+{
+	wcout << L"HugoProgs - 希沃教学设备工具箱\n"
+		<< L"用法:\n"
+		<< L"  HugoProgs.exe                    进入交互式菜单\n"
+		<< L"  HugoProgs.exe <命令> [参数...]    直接执行指定命令\n"
+		<< L"  HugoProgs.exe --help, -h, /?     显示此帮助信息\n"
+		<< L"  HugoProgs.exe --version, -v      显示版本信息\n"
+		<< L"  HugoProgs.exe <脚本.hps>         执行脚本文件\n\n";
+}
+
+int wmain(int argc, wchar_t* argv[])
+{
+	Console console;
+	console.setLocale();
+
+	wstring rawCmdLine = GetCommandLineW();
+	wstring argsPart = ExtractArguments(rawCmdLine);
+
+	// 没有任何参数 -> 进入交互式菜单
+	if (argsPart.empty() || argsPart.find_first_not_of(L" \t") == wstring::npos)
+	{
+		HArt::PrintArtText(0);
+		if (!IsCurrentProcessAdmin())
+		{
+			wcout << L"当前无管理员权限，部分功能可能无法正常运行\n";
+		}
+		wcout << L"欢迎使用HugoProgs，按任意键进入主界面";
+		(void)_getwch();
+		ConsoleMenu menu;
+		registerObject(menu);
+		menu.run();
+		return 0;
+	}
+
+	// 使用 CmdParser 解析参数字符串
+	CmdParser parser(true);
+	if (!parser.parse(argsPart, CmdParser::ParseMode::NoFlag))
+	{
+		wcerr << L"命令行语法错误" << endl;
+		return 1;
+	}
+
+	const auto& parsed = parser.result();
+
+	// 检测帮助选项
+	auto hasOption = [&parsed](const wstring& name) -> bool {
+		return parsed.find(name) != parsed.end();
+		};
+	if (hasOption(L"help") || hasOption(L"h") || hasOption(L"?"))
+	{
+		ShowHelp();
+		return 0;
+	}
+
+	wstring scriptPath;
+	auto posIt = parsed.find(L"");
+	if (posIt != parsed.end())
+	{
+		for (const auto& arg : posIt->second)
+		{
+			if (IsScriptFile(arg))
+			{
+				scriptPath = arg;
+				break;
+			}
+		}
+	}
+
+	if (!scriptPath.empty())
+	{
+		return ExecuteScriptFile(scriptPath, nullptr);
+	}
+
+	ConsoleMenu directMenu;
+	registerObject(directMenu);
+	wcout << L"[执行] " << argsPart << endl;
+	directMenu.execute(argsPart, true);
+	return 0;
+}
+
 wstring GetExternalProgramPath(const wstring& programName)
 {
 	wstring fullPath = GetCurrentProcessDir() + programName;
@@ -47,17 +187,7 @@ wstring GetExternalProgramPath(const wstring& programName)
 	return fullPath;
 }
 
-// 读取用户输入
-wstring ReadUserInput(const wstring& prompt)
-{
-	wcout << prompt;
-	wstring input;
-	getline(wcin, input);
-	return input;
-}
-
-// 在当前控制台执行程序（可选等待）
-bool ExecuteProgramInCurrentConsole(const wstring& programPath, const wstring& args = L"", bool wait = true)
+bool ExecuteProgramInCurrentConsole(const wstring& programPath, const wstring& args, bool wait)
 {
 	if (!wait) {
 		RunExternalProgram(programPath, L"open", args);
@@ -103,21 +233,8 @@ bool ExecuteProgramInCurrentConsole(const wstring& programPath, const wstring& a
 	}
 }
 
-int main()
-{
-	Console console;
-	console.setLocale();
-	HugoArt::PrintArtText(0);
 
-	if (!IsCurrentProcessAdmin())
-	{
-		wcout << L"当前无管理员权限，部分功能可能无法正常运行\n";
-	}
-
-	wcout << L"欢迎使用HugoProgs，按任意键进入主界面";
-	(void)_getwch();
-
-	ConsoleMenu menu;
+void registerObject(ConsoleMenu& menu) {
 
 	// 通用命令
 	menu.addCommonCommand(L"exit", L"退出", [](ConsoleMenu&, Args) {
@@ -155,6 +272,11 @@ int main()
 		wcout << L"源代码仓库 " << url << L" 输入g以跳转\n";
 		wchar_t ch = _getwch();
 		if (ch == L'G' || ch == L'g') RunExternalProgram(url);
+		});
+	menu.addCommonCommand(L"privilege", L"提升至管理员权限", [](ConsoleMenu&, Args) {
+		if (!IsCurrentProcessAdmin()) {
+			RequireAdminPrivilege(true);
+		}
 		});
 
 	// ==================== 子菜单：希沃虚拟磁盘管理器 ====================
@@ -237,7 +359,7 @@ int main()
 	auto& freezeMenu = menu.addSubmenu(L"freeze", L"希沃冰点配置工具");
 	{
 		// 驱动版本
-		freezeMenu.addCommand(L"drv.query", L"查询驱动冻结状态", [](ConsoleMenu&, Args) {
+		freezeMenu.addCommand(L"drv.get", L"查询驱动冻结状态", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoFreezeDriver.exe");
 			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--query");
 			});
@@ -464,9 +586,140 @@ int main()
 			});
 	}
 
-	// 空命令占位，确保 common 可用
+	// ==================== 子菜单：WinPE 工具 ====================
+	auto& winpeMenu = menu.addSubmenu(L"winpe", L"WinPE工具");
+	{
+		winpeMenu.addCommand(L"launch", L"启动 WinPE 部署工具", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoWinPE.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath, L"--launch");
+			});
+	}
+
 	menu.addCommandAtPath(L"", L"common", L"查看通用命令", [](ConsoleMenu&, Args) {});
 
-	menu.run();
-	return 0;
+	// ==================== 子菜单：.hps 文件绑定 ====================
+	auto& hpsMenu = menu.addSubmenu(L"hps", L".hps 脚本文件绑定");
+	{
+
+		// 命令：关联 .hps 文件
+		hpsMenu.addCommand(L"assoc", L"将 .hps 文件关联到 HugoProgs（需管理员权限）",
+			[](ConsoleMenu&, Args) {
+				// 检查是否以管理员身份运行
+				if (!IsCurrentProcessAdmin()) {
+					wcout << L"错误：关联操作需要管理员权限。请以管理员身份重新运行 HugoProgs 后重试。\n";
+					return;
+				}
+
+				wstring exePath = GetCurrentProcessPath();
+				try {
+					WinUtils::RegKey keyExt;
+					keyExt.Create(HKEY_CLASSES_ROOT, L".hps", KEY_WRITE);
+					keyExt.SetStringValue(L"", L"HugoProgs.Script");
+
+
+					// 2. 创建 HugoProgs.Script 主项
+					WinUtils::RegKey keyMain;
+					keyMain.Create(HKEY_CLASSES_ROOT, L"HugoProgs.Script", KEY_WRITE);
+
+					// 3. 设置默认图标：使用程序自身的第一个图标资源（索引 0）
+					WinUtils::RegKey keyIcon;
+					keyIcon.Create(keyMain.Get(), L"DefaultIcon", KEY_WRITE);
+					wstring iconPath = L"\"" + exePath + L"\",0";
+					keyIcon.SetStringValue(L"", iconPath);
+
+					// 4. 设置 open 命令：双击时用本程序打开脚本文件
+					WinUtils::RegKey keyCommand;
+					keyCommand.Create(keyMain.Get(), L"shell\\open\\command", KEY_WRITE);
+					wstring cmdLine = L"\"" + exePath + L"\" \"%1\"";
+					keyCommand.SetStringValue(L"", cmdLine);
+
+					wcout << L".hps 文件已成功关联到 HugoProgs，图标已刷新。\n";
+				}
+				catch (const WinUtils::RegException& e) {
+					wcout << L"关联失败：注册表操作错误，代码 " << e.code().value()
+						<< L"，消息：" << e.what() << L"\n";
+					wcout << L"请确保以管理员身份运行本程序。\n";
+				}
+			});
+
+		// 命令：取消 .hps 文件关联
+		hpsMenu.addCommand(L"disassoc", L"取消 .hps 文件关联（需管理员权限）",
+			[](ConsoleMenu&, Args) {
+				if (!IsCurrentProcessAdmin()) {
+					wcout << L"错误：取消关联需要管理员权限。请以管理员身份重新运行 HugoProgs 后重试。\n";
+					return;
+				}
+
+				try {
+					WinUtils::RegKey keyExt;
+					if (keyExt.TryOpen(HKEY_CLASSES_ROOT, L".hps", DELETE) ||
+						keyExt.TryOpen(HKEY_CLASSES_ROOT, L".hps", KEY_WRITE)) {
+						// 注意：RegDeleteTree 需要 Windows XP 以上
+						LSTATUS status = RegDeleteTreeW(keyExt.Get(), nullptr);
+						if (status != ERROR_SUCCESS && status != ERROR_FILE_NOT_FOUND)
+							throw WinUtils::RegException(status, "RegDeleteTree failed for .hps");
+					}
+
+					WinUtils::RegKey keyMain;
+					if (keyMain.TryOpen(HKEY_CLASSES_ROOT, L"HugoProgs.Script", DELETE) ||
+						keyMain.TryOpen(HKEY_CLASSES_ROOT, L"HugoProgs.Script", KEY_WRITE)) {
+						LSTATUS status = RegDeleteTreeW(keyMain.Get(), nullptr);
+						if (status != ERROR_SUCCESS && status != ERROR_FILE_NOT_FOUND)
+							throw WinUtils::RegException(status, "RegDeleteTree failed for HugoProgs.Script");
+					}
+
+					wcout << L".hps 文件关联已移除。\n";
+				}
+				catch (const WinUtils::RegException& e) {
+					wcout << L"取消关联失败：注册表操作错误，代码 " << e.code().value()
+						<< L"，消息：" << e.what() << L"\n";
+					wcout << L"请确保以管理员身份运行本程序。\n";
+				}
+			});
+
+		hpsMenu.addCommand(L"run", L"执行脚本文件 <path>", [&menu](ConsoleMenu&, Args args) {
+			if (auto path = args.getParam(L"", 0)) {
+				wstring scriptPath = ResolvePath(*path);
+				if (!IsScriptFile(scriptPath)) {
+					wcout << L"错误：不是有效的 .hps 文件或文件不存在。\n";
+					return;
+				}
+				ExecuteScriptFile(scriptPath, &menu);
+			}
+			});
+	}
+
+	// ==================== 子菜单：执行外部程序 ====================
+	auto& execMenu = menu.addSubmenu(L"execute", L"执行外部程序");
+
+	auto join = [](vector<wstring> params) {
+		wstring cmdLine;
+		for (size_t i = 1; i < params.size(); ++i) {
+			if (i > 1) cmdLine += L' ';
+			cmdLine += params[i];
+		}
+		return cmdLine;
+		};
+	auto exec = [&](const wstring& verb, const Args& args) {
+		auto params = args.getParams(L"");
+		if (params.empty()) {
+			wcout << L"用法: " << verb << L" <路径> [参数...]\n";
+			return;
+		}
+		HINSTANCE ret = WinUtils::RunExternalProgram(ResolvePath(params[0]), verb, join(params));
+		wcout << ((INT_PTR)ret <= 32 ? L"执行失败" : L"程序已启动") << L"\n";
+		};
+
+	execMenu.addCommand(L"open", L"普通权限打开 <路径> [参数...]",
+		[exec](ConsoleMenu&, Args a) { exec(L"open", a); });
+	execMenu.addCommand(L"runas", L"管理员权限运行 <路径> [参数...]",
+		[exec](ConsoleMenu&, Args a) { exec(L"runas", a); });
+	execMenu.addCommand(L"create", L"CreateProcess阻塞打开 <路径> [参数...]",
+		[exec, join](ConsoleMenu&, Args a) {
+			auto params = a.getParams(L"");
+			if (!params.empty()) {
+				ExecuteProgramInCurrentConsole(params[0], join(params));
+			}
+		});
 }

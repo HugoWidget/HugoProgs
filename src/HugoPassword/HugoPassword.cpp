@@ -31,7 +31,7 @@
 #include <cstdlib>
 #include <stdexcept>
 
-#include "HugoUtils/HugoPassword.h"
+#include "HugoUtils/HPassword.h"
 #include "WinUtils/Console.h"
 #include "WinUtils/StrConvert.h"
 #include "WinUtils/Logger.h"

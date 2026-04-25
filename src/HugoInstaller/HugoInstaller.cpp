@@ -34,7 +34,7 @@
 #include <sstream>
 #include <memory>
 
-#include "HugoUtils/HugoInstaller.h"
+#include "HugoUtils/HInstaller.h"
 #include <windows.h>
 #include <shellapi.h>
 #include <WinUtils/Console.h>

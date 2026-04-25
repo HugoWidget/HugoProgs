@@ -23,7 +23,7 @@
 #include <map>
 #include <cstdlib>
 
-#include "HugoUtils/HugoFreezeApi.h"
+#include "HugoUtils/HFreezeApi.h"
 #include "WinUtils/Console.h"
 #include "WinUtils/Logger.h"
 #include "WinUtils/CmdParser.h"
@@ -44,7 +44,7 @@ void ClearScreen()
 void SetFreezeVolume(const wstring& volume, IHugoFreeze& api)
 {
     wstring vol = (volume == L"0") ? L"" : volume;
-    auto res = api.SetFreezeState(vol, DriveFreezeState::Frozen);
+    auto res = api.SetFreezeState(vol);
     if (res.result != FrzOR::Success) {
         wcerr << L"设置冻结状态失败：" << res.errMsg << endl;
         WLog(LogLevel::Error, L"SetFreezeState failed: " + res.errMsg);
@@ -105,7 +105,7 @@ int wmain(int argc, wchar_t* argv[])
         LoggerCore::Inst().SetDefaultStrategies(L"HugoFreezeApi.log");
         LoggerCore::Inst().EnableApartment(DftLogger);
 
-        HugoFreezeApi freezeApi;
+        HFreezeApi freezeApi;
         IHugoFreeze& api = freezeApi;
 
         // 命令行模式

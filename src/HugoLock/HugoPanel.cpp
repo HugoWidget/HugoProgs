@@ -21,7 +21,7 @@
 #include <tchar.h>
 #include <string>
 #include "WinUtils/WinUtils.h"
-#include "HugoUtils/HugoLock.h"
+#include "HugoUtils/HLock.h"
 #include "Resource.h"
 #include "HugoLock.h"
 
