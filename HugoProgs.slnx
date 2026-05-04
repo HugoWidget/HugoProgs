@@ -4,6 +4,9 @@
     <Platform Name="x86" />
   </Configurations>
   <Project Path="deps/HugoUtils/HugoUtils.vcxproj" Id="351bb40b-1e2f-42b9-9145-d4079e5efc93" />
+  <Project Path="src/HugoBreak/HugoBreak.vcxproj" Id="8d223d10-019b-4bdd-8109-f20cdf06e761">
+    <BuildDependency Project="deps/HugoUtils/HugoUtils.vcxproj" />
+  </Project>
   <Project Path="src/HugoDeps/HugoDeps.vcxproj" Id="2009ad88-8b61-4fbb-bb7b-583cf30a0122">
     <BuildDependency Project="deps/HugoUtils/HugoUtils.vcxproj" />
   </Project>

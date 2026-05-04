@@ -12,6 +12,7 @@ Visual Studio 2022
 
 | 程序文件                               | 核心功能                                                     |
 | -------------------------------------- | ------------------------------------------------------------ |
+| **[HugoBreak](docs/HugoBreak.md)** | 修改`bind_zmodule.dll`以解除密码 |
 | **[HugoDisable](docs/HugoDisable.md)** | 禁用 `SeewoServiceAssistant.exe`或阻止其通过防火墙；禁用希沃更新 |
 | **[HugoFakeVerify](docs/HugoFakeVerify.md)** | 一个空程序。                                                 |
 | **[HugoFreezeApi](docs/HugoFreezeApi.md)** | 通过本地服务 API 与希沃冰点服务交互，可设置冻结磁盘、查询冻结状态、尝试保护操作。 |
