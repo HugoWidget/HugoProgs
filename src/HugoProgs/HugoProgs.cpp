@@ -555,8 +555,16 @@ void registerObject(ConsoleMenu& menu) {
 		lockMenu.addCommand(L"lock", L"说明", [=](ConsoleMenu&, Args) {
 			wcout << L"HugoLock在method=lock时被HugoLockAssistant调用\n";
 			});
-		lockMenu.addCommand(L"assistant", L"说明", [=](ConsoleMenu&, Args) {
-			wcout << L"命令：HugoLockAssistant.exe --mode=xxx --method=xxx\n";
+		lockMenu.addCommand(L"assistant", L"启动 <method> <mode>", [=](ConsoleMenu&, Args args) {
+			auto params = args.getParams(L"");
+			if (params.size() < 2) {
+				wcout << L"用法: assistant <method> <mode>\n";
+				return;
+			}
+			wstring progPath = GetExternalProgramPath(L"HugoProtect.exe");
+			if (!progPath.empty()) {
+				ExecuteProgramInCurrentConsole(progPath, L" --method=" + params[0] + L"--mode=" + params[1]);
+			}
 			});
 		lockMenu.addCommand(L"mode", L"HugoLockAssistant参数", [=](ConsoleMenu&, Args) {
 			wcout << L"支持assist或direct，即辅助解锁（需要主动点击解锁）或直接解锁\n";
@@ -589,10 +597,16 @@ void registerObject(ConsoleMenu& menu) {
 	// ==================== 子菜单：WinPE 工具 ====================
 	auto& winpeMenu = menu.addSubmenu(L"winpe", L"WinPE工具");
 	{
-		winpeMenu.addCommand(L"launch", L"启动 WinPE 部署工具", [](ConsoleMenu&, Args) {
-			wstring progPath = GetExternalProgramPath(L"HugoWinPE.exe");
+		winpeMenu.addCommand(L"launch", L"打开 WinPE 部署工具", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoWinPE/HugoWinPE.exe");
 			if (!progPath.empty())
 				ExecuteProgramInCurrentConsole(progPath, L"--launch");
+			});
+
+		winpeMenu.addCommand(L"run", L"启动 WinPE 部署工具", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoWinPE/HugoWinPE.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath);
 			});
 	}
 
@@ -603,11 +617,11 @@ void registerObject(ConsoleMenu& menu) {
 	{
 
 		// 命令：关联 .hps 文件
-		hpsMenu.addCommand(L"assoc", L"将 .hps 文件关联到 HugoProgs（需管理员权限）",
+		hpsMenu.addCommand(L"assoc", L"将 .hps 文件关联到 HugoProgs",
 			[](ConsoleMenu&, Args) {
 				// 检查是否以管理员身份运行
 				if (!IsCurrentProcessAdmin()) {
-					wcout << L"错误：关联操作需要管理员权限。请以管理员身份重新运行 HugoProgs 后重试。\n";
+					wcout << L"错误：关联操作需要管理员权限。\n";
 					return;
 				}
 
@@ -617,37 +631,32 @@ void registerObject(ConsoleMenu& menu) {
 					keyExt.Create(HKEY_CLASSES_ROOT, L".hps", KEY_WRITE);
 					keyExt.SetStringValue(L"", L"HugoProgs.Script");
 
-
-					// 2. 创建 HugoProgs.Script 主项
 					WinUtils::RegKey keyMain;
 					keyMain.Create(HKEY_CLASSES_ROOT, L"HugoProgs.Script", KEY_WRITE);
 
-					// 3. 设置默认图标：使用程序自身的第一个图标资源（索引 0）
 					WinUtils::RegKey keyIcon;
 					keyIcon.Create(keyMain.Get(), L"DefaultIcon", KEY_WRITE);
 					wstring iconPath = L"\"" + exePath + L"\",0";
 					keyIcon.SetStringValue(L"", iconPath);
 
-					// 4. 设置 open 命令：双击时用本程序打开脚本文件
 					WinUtils::RegKey keyCommand;
 					keyCommand.Create(keyMain.Get(), L"shell\\open\\command", KEY_WRITE);
 					wstring cmdLine = L"\"" + exePath + L"\" \"%1\"";
 					keyCommand.SetStringValue(L"", cmdLine);
 
-					wcout << L".hps 文件已成功关联到 HugoProgs，图标已刷新。\n";
+					wcout << L".hps 文件已成功关联到 HugoProgs。\n";
 				}
 				catch (const WinUtils::RegException& e) {
 					wcout << L"关联失败：注册表操作错误，代码 " << e.code().value()
 						<< L"，消息：" << e.what() << L"\n";
-					wcout << L"请确保以管理员身份运行本程序。\n";
 				}
 			});
 
 		// 命令：取消 .hps 文件关联
-		hpsMenu.addCommand(L"disassoc", L"取消 .hps 文件关联（需管理员权限）",
+		hpsMenu.addCommand(L"disassoc", L"取消 .hps 文件关联",
 			[](ConsoleMenu&, Args) {
 				if (!IsCurrentProcessAdmin()) {
-					wcout << L"错误：取消关联需要管理员权限。请以管理员身份重新运行 HugoProgs 后重试。\n";
+					wcout << L"错误：取消关联需要管理员权限。\n";
 					return;
 				}
 
@@ -655,7 +664,6 @@ void registerObject(ConsoleMenu& menu) {
 					WinUtils::RegKey keyExt;
 					if (keyExt.TryOpen(HKEY_CLASSES_ROOT, L".hps", DELETE) ||
 						keyExt.TryOpen(HKEY_CLASSES_ROOT, L".hps", KEY_WRITE)) {
-						// 注意：RegDeleteTree 需要 Windows XP 以上
 						LSTATUS status = RegDeleteTreeW(keyExt.Get(), nullptr);
 						if (status != ERROR_SUCCESS && status != ERROR_FILE_NOT_FOUND)
 							throw WinUtils::RegException(status, "RegDeleteTree failed for .hps");
@@ -674,7 +682,6 @@ void registerObject(ConsoleMenu& menu) {
 				catch (const WinUtils::RegException& e) {
 					wcout << L"取消关联失败：注册表操作错误，代码 " << e.code().value()
 						<< L"，消息：" << e.what() << L"\n";
-					wcout << L"请确保以管理员身份运行本程序。\n";
 				}
 			});
 

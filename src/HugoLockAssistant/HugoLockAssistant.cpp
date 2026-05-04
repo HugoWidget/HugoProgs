@@ -1,47 +1,69 @@
-﻿/*
- * Copyright 2025-2026 howdy213, JYardX
- *
- * This file is part of HugoProgs.
- *
- * HugoProgs is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * HugoProgs is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with HugoProgs. If not, see <https://www.gnu.org/licenses/>.
- */
-#include "WinUtils/WinPch.h"
+﻿#include "WinUtils/WinPch.h"
 
 #include <windows.h>
 #include <string>
+#include <vector>
+#include <map>
+#include <optional>
+#include <string_view>
+#include <filesystem>
+
+#include "WinUtils/CmdParser.h"
 #include "WinUtils/WinUtils.h"
-
 using namespace WinUtils;
+using namespace std;
+namespace fs = std::filesystem;
 
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-	_In_opt_ HINSTANCE hPrevInstance,
+static void FatalError(const std::wstring& msg)
+{
+	MessageBoxW(nullptr, msg.c_str(), L"HugoLockAssistant", MB_ICONERROR);
+	ExitProcess(1);
+}
+
+int APIENTRY wWinMain(
+	_In_ HINSTANCE /*hInstance*/,
+	_In_opt_ HINSTANCE /*hPrevInstance*/,
 	_In_ LPWSTR lpCmdLine,
-	_In_ int nCmdShow) {
-	std::wstring exePath = GetCurrentProcessDir() + L"HugoLock.exe";
-	std::wstring cmdLine = exePath + L" " + (lpCmdLine ? lpCmdLine : L"");
+	_In_ int /*nCmdShow*/)
+{
+	CmdParser parser(true);
+	string_t cmdLineStr(lpCmdLine);
 
-	STARTUPINFOW si = { sizeof(si) };
-	PROCESS_INFORMATION pi = {};
-
-	if (CreateProcessW(exePath.c_str(), cmdLine.data(), nullptr, nullptr,
-		FALSE, 0, nullptr, nullptr, &si, &pi)) {
-		CloseHandle(pi.hProcess);
-		CloseHandle(pi.hThread);
-		return 0;
+	if (!parser.parse(ExtractArguments(GetCommandLine()))) {
+		FatalError(L"Command line syntax error.");
 	}
+
+	auto methodOpt = parser.getParam(L"method", 0);
+	auto modeOpt = parser.getParam(L"mode", 0);
+
+	if (!methodOpt || !modeOpt) {
+		FatalError(L"Usage: HugoLockAssistant --method=<dbg|launchtool|frontend|lock> --mode=<assist|direct>");
+	}
+
+	std::wstring method = *methodOpt;
+	std::wstring mode = *modeOpt;
+
+	std::wstring exeName;
+	if (method == L"dbg")           exeName = L"HugoDbg.exe";
+	else if (method == L"launchtool") exeName = L"HugoLaunchTool.exe";
+	else if (method == L"frontend")   exeName = L"HugoFrontend.exe";
+	else if (method == L"lock")       exeName = L"HugoLock.exe";
 	else {
-		MessageBoxW(nullptr, L"Failed to start HugoLock.exe", L"Error", MB_ICONERROR);
-		return 1;
+		FatalError(L"Invalid method. Must be one of: dbg, launchtool, frontend, lock.");
 	}
+
+	std::wstring dir = GetCurrentProcessDir();
+	std::wstring targetPath = dir + exeName;
+	if (!fs::exists(targetPath)) {
+		FatalError(L"Target program not found: " + targetPath);
+	}
+
+	// 命令行格式："<完整路径>" --mode=<mode>
+	std::wstring cmdLine = L"\"" + targetPath + L"\" --mode=" + mode;
+
+	int ret = (int)RunExternalProgram(targetPath, L"open", L"--mode=" + mode);
+	if (ret <= 32) {
+		FatalError(L"Failed to start " + exeName + L". Error: " + std::to_wstring(GetLastError()));
+	}
+	return 0;
 }
