@@ -58,10 +58,25 @@ int APIENTRY wWinMain(
 		FatalError(L"Target program not found: " + targetPath);
 	}
 
-	// 命令行格式："<完整路径>" --mode=<mode>
-	std::wstring cmdLine = L"\"" + targetPath + L"\" --mode=" + mode;
+	std::wstring args;
+	if (method == L"launchtool") {
+		if (mode == L"assist")
+			args = L"--kill";
+		else // direct
+			args = L"--stop";
+	}
+	else if (method == L"dbg") {
+		if (mode == L"assist")
+			args = L"--lockfile=delete";
+		else // direct
+			args = L"--lockfile=create";
+	}
+	else {
+		args = L"--mode=" + mode;
+	}
 
-	int ret = (int)RunExternalProgram(targetPath, L"open", L"--mode=" + mode);
+	int ret = (int)RunExternalProgram(targetPath, L"open", args);
+
 	if (ret <= 32) {
 		FatalError(L"Failed to start " + exeName + L". Error: " + std::to_wstring(GetLastError()));
 	}

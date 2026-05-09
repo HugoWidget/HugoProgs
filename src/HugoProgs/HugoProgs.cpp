@@ -511,6 +511,12 @@ void registerObject(ConsoleMenu& menu) {
 				ExecuteProgramInCurrentConsole(progPath, L"--stop", false);
 			});
 
+		launchMenu.addCommand(L"kill", L"单次终止希沃进程", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoLaunchTool.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath, L"--kill", false);
+			});
+
 		launchMenu.addCommand(L"inst", L"安装希沃管家", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoInstaller.exe");
 			if (!progPath.empty())
@@ -561,9 +567,9 @@ void registerObject(ConsoleMenu& menu) {
 				wcout << L"用法: assistant <method> <mode>\n";
 				return;
 			}
-			wstring progPath = GetExternalProgramPath(L"HugoProtect.exe");
+			wstring progPath = GetExternalProgramPath(L"HugoLockAssistant.exe");
 			if (!progPath.empty()) {
-				ExecuteProgramInCurrentConsole(progPath, L" --method=" + params[0] + L"--mode=" + params[1]);
+				ExecuteProgramInCurrentConsole(progPath, L" --method=" + params[0] + L" --mode=" + params[1]);
 			}
 			});
 		lockMenu.addCommand(L"mode", L"HugoLockAssistant参数", [=](ConsoleMenu&, Args) {

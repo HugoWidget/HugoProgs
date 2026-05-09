@@ -28,12 +28,12 @@
 #include <vector>
 #include <cstdlib>
 #include <stdexcept>
+#include <conio.h>
 #include <WinUtils/StrConvert.h>
 
 using namespace std;
 using namespace WinUtils;
 
-// 常量定义
 const wstring kServiceName = L"SeewoCoreService";
 const vector<wstring> kProcessesToTerminate = {
     L"SeewoServiceAssistant.exe",
@@ -43,21 +43,16 @@ const vector<wstring> kProcessesToTerminate = {
 };
 const wstring kLaunchToolName = L"HugoLaunchTool.exe";
 
-// 辅助函数：清屏
-void ClearScreen()
-{
+void ClearScreen() {
     system("cls");
 }
 
-// 启动希沃核心服务
-void StartSeewoService()
-{
+void StartSeewoService() {
     TerminateProcessesByName(kLaunchToolName);
     WLog(LogLevel::Info, L"Terminated " + kLaunchToolName);
 
     WinSvcMgr serviceManager(kServiceName);
-    bool success = serviceManager.Start();
-    if (success) {
+    if (serviceManager.Start()) {
         wcout << L"希沃核心服务已启动" << endl;
         WLog(LogLevel::Info, L"Started service: " + kServiceName);
     }
@@ -67,38 +62,41 @@ void StartSeewoService()
     }
 }
 
-// 停止希沃核心服务并终止相关进程
-void StopSeewoService()
-{
+void SingleStopProcesses() {
     EnsureSingleInstance();
-    MonitorAndTerminateProcesses(GetModuleHandle(nullptr), kProcessesToTerminate);
-    wcout << L"希沃相关进程已终止" << endl;
+    int closed = TerminateMultipleProcesses(kProcessesToTerminate);
+    wcout << L"已终止 " << closed << L" 个希沃进程" << endl;
+    WLog(LogLevel::Info, L"Single stop: terminated " + to_wstring(closed) + L" processes");
+}
+
+void StartMonitorAndWaitForStop() {
+    EnsureSingleInstance();
+
+    MonitorHandle handle = StartProcessMonitor(GetModuleHandle(nullptr),
+        kProcessesToTerminate,
+        1000); // 1秒检查一次
+    if (!handle.hStopEvent) {
+        wcerr << L"无法启动进程监控" << endl;
+        return;
+    }
+
+    wcout << L"希沃进程监控已启动，按任意键停止..." << endl;
+    (void)_getch();
+    wcout << L"正在停止监控..." << endl;
+
+    StopProcessMonitor(handle);
+    wcout << L"监控已停止，相关进程处理完毕" << endl;
     WLog(LogLevel::Info, L"Terminated Seewo processes");
 }
 
-// 显示帮助信息
-void PrintHelp()
-{
+void PrintHelp() {
     wcout << L"用法: HugoLaunchTool.exe [选项]\n"
         << L"选项:\n"
         << L"  --start, -start    启动希沃核心服务\n"
-        << L"  --stop, -stop      停止希沃相关进程\n"
+        << L"  --stop, -stop      持续监控并停止希沃进程（按键退出）\n"
+        << L"  --kill, -kill      单次停止希沃进程（立即终止）\n"
         << L"  --help, -h         显示此帮助\n"
         << L"无参数则进入交互菜单\n";
-}
-
-// 执行命令
-void ExecuteCommand(const wstring& command)
-{
-    if (command == L"start" || command == L"-start") {
-        StartSeewoService();
-    }
-    else if (command == L"stop" || command == L"-stop") {
-        StopSeewoService();
-    }
-    else {
-        throw runtime_error("未知命令");
-    }
 }
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance,
@@ -111,7 +109,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
         Console console;
         console.setLocale();
 
-        // 日志配置：仅文件
         LoggerCore::Inst().SetDefaultStrategies(L"HugoLaunchTool.log");
         LoggerCore::Inst().EnableApartment(DftLogger);
 
@@ -125,17 +122,20 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
                 return 1;
             }
 
-            if (parser.hasCommand(L"help") || parser.hasCommand(L"-h")) {
+            if (parser.hasCommand(L"help") || parser.hasCommand(L"h")) {
                 PrintHelp();
                 return 0;
             }
-
-            if (parser.hasCommand(L"start") || parser.hasCommand(L"-start")) {
+            if (parser.hasCommand(L"start")) {
                 StartSeewoService();
                 return 0;
             }
-            if (parser.hasCommand(L"stop") || parser.hasCommand(L"-stop")) {
-                StopSeewoService();
+            if (parser.hasCommand(L"stop")) {
+                StartMonitorAndWaitForStop();
+                return 0;
+            }
+            if (parser.hasCommand(L"kill")) {
+                SingleStopProcesses();
                 return 0;
             }
 
@@ -150,7 +150,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
             ClearScreen();
             wcout << L"\n=== 希沃服务控制工具 ===\n"
                 << L"1. 启动希沃核心服务\n"
-                << L"2. 停止希沃相关进程\n"
+                << L"2. 监控并停止希沃进程\n"
+                << L"3. 单次终止希沃进程\n"
                 << L"0. 退出程序\n"
                 << L"请输入选择: ";
             wcin >> choice;
@@ -162,12 +163,17 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
                 continue;
             }
 
+            wcin.ignore((numeric_limits<streamsize>::max)(), L'\n');
+
             switch (choice) {
             case 1:
                 StartSeewoService();
                 break;
             case 2:
-                StopSeewoService();
+                StartMonitorAndWaitForStop();
+                break;
+            case 3:
+                SingleStopProcesses();
                 break;
             case 0:
                 wcout << L"退出程序。" << endl;
