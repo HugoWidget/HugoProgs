@@ -129,7 +129,7 @@ int ExecuteUnmount(HMount& instance, const vector<wstring>& args)
 	if (args.size() == 1) {
 		auto driveOpt = ParseDriveLetter(args[0]);
 		if (driveOpt) {
-			int result = instance.Unmount(-1, -1, *driveOpt);
+			int result = instance.Unmount(*driveOpt);
 			WLog(LogLevel::Info, L"Unmount by drive letter completed, return code: " + to_wstring(result));
 			return result;
 		}

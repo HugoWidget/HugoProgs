@@ -118,7 +118,7 @@ int main() {
 		std::wcerr << L"这台电脑上似乎没有安装希沃管家";
 		return 1;
 	}
-	std::wstring sample_path = *folder + L"SeewoCore\\module\\bind\\";
+	fs::path sample_path = *folder / L"SeewoCore\\module\\bind\\";
 
 	try {
 		if (!fs::exists(dll_filename)) {

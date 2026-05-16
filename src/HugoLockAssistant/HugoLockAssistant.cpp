@@ -67,14 +67,17 @@ int APIENTRY wWinMain(
 	}
 	else if (method == L"dbg") {
 		if (mode == L"assist")
-			args = L"--lockfile=delete";
+			args = L"--lockfile=delete ";
 		else // direct
-			args = L"--lockfile=create";
+			args = L"--lockfile=create ";
 	}
 	else {
 		args = L"--mode=" + mode;
 	}
-
+	args += L" ";
+	if (auto extra = parser.getParam(L"extracmd", 0)) {
+		if (extra)args += *extra;
+	}
 	int ret = (int)RunExternalProgram(targetPath, L"open", args);
 
 	if (ret <= 32) {
