@@ -604,13 +604,13 @@ void registerObject(ConsoleMenu& menu) {
 	auto& winpeMenu = menu.addSubmenu(L"winpe", L"WinPE工具");
 	{
 		winpeMenu.addCommand(L"launch", L"打开 WinPE 部署工具", [](ConsoleMenu&, Args) {
-			wstring progPath = GetExternalProgramPath(L"HugoWinPE/HugoWinPE.exe");
+			wstring progPath = GetExternalProgramPath(L"HugoWinPE/PEOutside.exe");
 			if (!progPath.empty())
 				ExecuteProgramInCurrentConsole(progPath, L"--launch");
 			});
 
 		winpeMenu.addCommand(L"run", L"启动 WinPE 部署工具", [](ConsoleMenu&, Args) {
-			wstring progPath = GetExternalProgramPath(L"HugoWinPE/HugoWinPE.exe");
+			wstring progPath = GetExternalProgramPath(L"HugoWinPE/PEOutside.exe");
 			if (!progPath.empty())
 				ExecuteProgramInCurrentConsole(progPath);
 			});
