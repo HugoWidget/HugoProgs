@@ -22,6 +22,9 @@
   <Project Path="src/HugoFreezeDriver/HugoFreezeDriver.vcxproj" Id="5bad38e5-7163-4851-9907-b6c7ea003137">
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>
+  <Project Path="src/HugoInfo/HugoInfo.vcxproj" Id="7b9d9d54-6ef3-460a-8d62-f666b1240a6d">
+    <BuildDependency Project="deps/HugoUtils/HugoUtils.vcxproj" />
+  </Project>
   <Project Path="src/HugoInjector/HugoInjector.vcxproj" Id="34734c62-3130-47ea-848e-10e9cf8c2580">
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>
