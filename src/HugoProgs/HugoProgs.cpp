@@ -48,7 +48,7 @@ wstring ReadUserInput(const wstring& prompt)
 	return input;
 }
 // 在当前控制台执行程序（可选等待）
-bool ExecuteProgramInCurrentConsole(const wstring& programPath, const wstring& args = L"", bool wait = true);
+bool ExecuteProgramInCurrentConsole(const wstring& programPath, const wstring& args = L"", bool wait = true, DWORD* exitCode = nullptr);
 
 // 检查是否为 .hps 脚本文件
 bool IsScriptFile(const wstring& path)
@@ -187,7 +187,7 @@ wstring GetExternalProgramPath(const wstring& programName)
 	return fullPath;
 }
 
-bool ExecuteProgramInCurrentConsole(const wstring& programPath, const wstring& args, bool wait)
+bool ExecuteProgramInCurrentConsole(const wstring& programPath, const wstring& args, bool wait, DWORD* exitCode)
 {
 	if (!wait) {
 		RunExternalProgram(programPath, L"open", args);
@@ -220,8 +220,8 @@ bool ExecuteProgramInCurrentConsole(const wstring& programPath, const wstring& a
 	if (ret)
 	{
 		WaitForSingleObject(pi.hProcess, INFINITE);
-		DWORD exitCode = 0;
-		GetExitCodeProcess(pi.hProcess, &exitCode);
+		if (exitCode)
+			GetExitCodeProcess(pi.hProcess, exitCode);
 		CloseHandle(pi.hProcess);
 		CloseHandle(pi.hThread);
 		return true;
@@ -413,40 +413,44 @@ void registerObject(ConsoleMenu& menu) {
 	}
 
 	// ==================== 子菜单：希沃服务与网络控制 ====================
-	auto& disableMenu = menu.addSubmenu(L"basic", L"希沃服务与网络控制");
+	auto& basicMenu = menu.addSubmenu(L"basic", L"希沃服务与网络控制");
 	{
-		disableMenu.addCommand(L"off", L"关闭文件保护", [](ConsoleMenu& menu, Args) {
+		basicMenu.addCommand(L"info", L"查询基本信息", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoInfo.exe");
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath);
+			});
+		basicMenu.addCommand(L"off", L"关闭文件保护", [](ConsoleMenu& menu, Args) {
 			menu.execute(L"fprotect/disable", false);
 			});
-		disableMenu.addCommand(L"disable", L"禁用希沃服务", [](ConsoleMenu&, Args) {
+		basicMenu.addCommand(L"disable", L"禁用希沃服务", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoDisable.exe");
 			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--disable");
 			});
-		disableMenu.addCommand(L"enable", L"启用希沃服务", [](ConsoleMenu&, Args) {
+		basicMenu.addCommand(L"enable", L"启用希沃服务", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoDisable.exe");
 			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--enable");
 			});
-		disableMenu.addCommand(L"update.off", L"禁用希沃更新", [](ConsoleMenu&, Args) {
+		basicMenu.addCommand(L"update.off", L"禁用希沃更新", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoDisable.exe");
 			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--disable-update");
 			});
-		disableMenu.addCommand(L"update.on", L"启用希沃更新", [](ConsoleMenu&, Args) {
+		basicMenu.addCommand(L"update.on", L"启用希沃更新", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoDisable.exe");
 			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--enable-update");
 			});
-		disableMenu.addCommand(L"net.off", L"禁用希沃网络", [](ConsoleMenu&, Args) {
+		basicMenu.addCommand(L"net.off", L"禁用希沃网络", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoDisable.exe");
 			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--disable-net");
 			});
-		disableMenu.addCommand(L"net.on", L"启用希沃网络", [](ConsoleMenu&, Args) {
+		basicMenu.addCommand(L"net.on", L"启用希沃网络", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoDisable.exe");
 			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--enable-net");
 			});
-		disableMenu.addCommand(L"clear", L"清除所有防火墙规则", [](ConsoleMenu&, Args) {
+		basicMenu.addCommand(L"clear", L"清除所有防火墙规则", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoDisable.exe");
 			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--clear-rules");
 			});
-		disableMenu.addCommand(L"hlp", L"帮助", [](ConsoleMenu&, Args) {
+		basicMenu.addCommand(L"hlp", L"帮助", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoDisable.exe");
 			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--help");
 			});
@@ -705,34 +709,66 @@ void registerObject(ConsoleMenu& menu) {
 
 	// ==================== 子菜单：执行外部程序 ====================
 	auto& execMenu = menu.addSubmenu(L"execute", L"执行外部程序");
-
-	auto join = [](vector<wstring> params) {
-		wstring cmdLine;
-		for (size_t i = 1; i < params.size(); ++i) {
-			if (i > 1) cmdLine += L' ';
-			cmdLine += params[i];
-		}
-		return cmdLine;
-		};
-	auto exec = [&](const wstring& verb, const Args& args) {
-		auto params = args.getParams(L"");
-		if (params.empty()) {
-			wcout << L"用法: " << verb << L" <路径> [参数...]\n";
-			return;
-		}
-		HINSTANCE ret = WinUtils::RunExternalProgram(ResolvePath(params[0]), verb, join(params));
-		wcout << ((INT_PTR)ret <= 32 ? L"执行失败" : L"程序已启动") << L"\n";
-		};
-
-	execMenu.addCommand(L"open", L"普通权限打开 <路径> [参数...]",
-		[exec](ConsoleMenu&, Args a) { exec(L"open", a); });
-	execMenu.addCommand(L"runas", L"管理员权限运行 <路径> [参数...]",
-		[exec](ConsoleMenu&, Args a) { exec(L"runas", a); });
-	execMenu.addCommand(L"create", L"CreateProcess阻塞打开 <路径> [参数...]",
-		[exec, join](ConsoleMenu&, Args a) {
-			auto params = a.getParams(L"");
-			if (!params.empty()) {
-				ExecuteProgramInCurrentConsole(params[0], join(params));
+	{
+		auto join = [](vector<wstring> params) {
+			wstring cmdLine;
+			for (size_t i = 1; i < params.size(); ++i) {
+				if (i > 1) cmdLine += L' ';
+				cmdLine += params[i];
 			}
-		});
+			return cmdLine;
+			};
+		auto exec = [&](const wstring& verb, const Args& args) {
+			auto params = args.getParams(L"");
+			if (params.empty()) {
+				wcout << L"用法: " << verb << L" <路径> [参数...]\n";
+				return;
+			}
+			HINSTANCE ret = WinUtils::RunExternalProgram(ResolvePath(params[0]), verb, join(params));
+			wcout << ((INT_PTR)ret <= 32 ? L"执行失败" : L"程序已启动") << L"\n";
+			};
+
+		execMenu.addCommand(L"open", L"普通权限打开 <路径> [参数...]",
+			[exec](ConsoleMenu&, Args a) { exec(L"open", a); });
+		execMenu.addCommand(L"runas", L"管理员权限运行 <路径> [参数...]",
+			[exec](ConsoleMenu&, Args a) { exec(L"runas", a); });
+		execMenu.addCommand(L"create", L"CreateProcess阻塞打开 <路径> [参数...]",
+			[exec, join](ConsoleMenu&, Args a) {
+				auto params = a.getParams(L"");
+				if (!params.empty()) {
+					ExecuteProgramInCurrentConsole(params[0], join(params));
+				}
+			});
+	}
+
+	auto& configMenu = menu.addSubmenu(L"config", L"配置与自启动");
+	{
+		configMenu.addCommand(L"edit", L"编辑配置文件", [](ConsoleMenu&, Args) {
+			RunExternalProgram(GetCurrentProcessDir() + L"Launcher.ini");
+			});
+		configMenu.addCommand(L"task", L"编辑任务配置", [](ConsoleMenu&, Args) {
+			RunExternalProgram(GetCurrentProcessDir() + L"tasks.ini");
+			});
+		auto& serviceMenu = configMenu.addSubmenu(L"service", L"服务管理");
+		{
+			serviceMenu.addCommand(L"install", L"安装自启动服务", [](ConsoleMenu&, Args args) {
+				wstring progPath = GetExternalProgramPath(L"AutoStartService.exe");
+				if (!progPath.empty())
+					ExecuteProgramInCurrentConsole(progPath, L"/install");
+				});
+			serviceMenu.addCommand(L"uninstall", L"卸载自启动服务", [](ConsoleMenu&, Args args) {
+				wstring progPath = GetExternalProgramPath(L"AutoStartService.exe");
+				if (!progPath.empty())
+					ExecuteProgramInCurrentConsole(progPath, L"/uninstall");
+				});
+			serviceMenu.addCommand(L"query", L"查询服务状态", [](ConsoleMenu&, Args args) {
+				wstring progPath = GetExternalProgramPath(L"AutoStartService.exe");
+				if (!progPath.empty()) {
+					DWORD exitCode = 0;
+					ExecuteProgramInCurrentConsole(progPath, L"/query", true, &exitCode);
+					wcout << L"服务状态: " << (exitCode ? L"已注册" : L"未注册") << L"\n";
+				}
+				});
+		}
+	}
 }
