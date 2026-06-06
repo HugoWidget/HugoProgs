@@ -300,7 +300,7 @@ int wmain(int argc, wchar_t* argv[])
 {
 	try {
 		RequireAdminPrivilege(true);
-		EnsureSingleInstance();
+		EnsureSingleInstance(true);
 		Console().setLocale();
 
 		LoggerCore::Inst().SetDefaultStrategies(L"HugoMount.log");

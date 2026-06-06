@@ -89,7 +89,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		WLog(LogLevel::Info, L"UIAccess enabled successfully");
 	}
 
-	EnsureSingleInstance();
+	EnsureSingleInstance(true);
 
 	Console console;
 	console.setLocale();

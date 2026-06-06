@@ -63,14 +63,14 @@ void StartSeewoService() {
 }
 
 void SingleStopProcesses() {
-    EnsureSingleInstance();
+    EnsureSingleInstance(true);
     int closed = TerminateMultipleProcesses(kProcessesToTerminate);
     wcout << L"已终止 " << closed << L" 个希沃进程" << endl;
     WLog(LogLevel::Info, L"Single stop: terminated " + to_wstring(closed) + L" processes");
 }
 
 void StartMonitorAndWaitForStop() {
-    EnsureSingleInstance();
+    EnsureSingleInstance(true);
 
     MonitorHandle handle = StartProcessMonitor(GetModuleHandle(nullptr),
         kProcessesToTerminate,

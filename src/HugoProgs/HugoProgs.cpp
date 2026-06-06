@@ -602,6 +602,11 @@ void registerObject(ConsoleMenu& menu) {
 			if (!progPath.empty())
 				ExecuteProgramInCurrentConsole(progPath, L"--help");
 			});
+		pswMenu.addCommand(L"break", L"修改dll以去除密码", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoBreak.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath);
+			});
 	}
 
 	// ==================== 子菜单：WinPE 工具 ====================
