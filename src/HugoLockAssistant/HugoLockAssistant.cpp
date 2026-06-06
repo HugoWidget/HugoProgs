@@ -1,4 +1,22 @@
-﻿#include "WinUtils/WinPch.h"
+﻿/*
+ * Copyright 2025-2026 howdy213, JYardX
+ *
+ * This file is part of HugoProgs.
+ *
+ * HugoProgs is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * HugoProgs is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with HugoProgs. If not, see <https://www.gnu.org/licenses/>.
+ */
+#include "WinUtils/WinPch.h"
 
 #include <windows.h>
 #include <string>
@@ -69,11 +87,11 @@ int APIENTRY wWinMain(
 	}
 	else if (method == L"dbg") {
 		if (mode == L"assist")
-			args = L"--lockfile=delete ";
+			args = L"--lockfile=fso_assist ";
 		else if (mode == L"direct")
-			args = L"--lockfile=create ";
+			args = L"--lockfile=fso_direct ";
 		else if (mode == L"disable")
-			args = L"--lockfile=write ";
+			args = L"--lockfile=fso_disable ";
 	}
 	else {
 		args = L"--mode=" + mode;

@@ -22,15 +22,13 @@ Visual Studio 2022
 | **[HugoLaunchTool](docs/HugoLaunchTool.md)** | 控制希沃核心进程的启动与终止。                               |
 | **[HugoLock](docs/HugoLock.md)** | 实时隐藏“希沃管家”锁屏窗口，强制解除锁屏，也可以使用其解除屏保（HugoDbg也支持） |
 | **[HugoLockAssistant](docs/HugoLockAssistant.md)** | 调用不同方式实现锁屏/屏保解除。                                |
-| **[HugoMount](docs/HugoMount.md)** | 虚拟磁盘挂载工具，可列出、挂载、卸载希沃的日志盘、配置盘等。 |
-| **[HugoPanel](docs/HugoPanel.md)** | 带 `UIAccess` 权限的悬浮面板，当检测到希沃管家窗口时自动出现，提供一键终止进程等功能。 |
-| **[HugoProgs](docs/HugoProgs.md)** | 主菜单程序，集成所有工具，提供交互界面。                     |
+| **[HugoMount](docs/HugoMount.md)** | 虚拟磁盘挂载工具，可列出、挂载、卸载希沃的日志盘、配置盘等。 |                                                      
+| **[HugoProgs](docs/HugoProgs.md)** | 主菜单程序，集成所有工具，提供交互界面，支持脚本执行。           |
 | **[HugoProtect](docs/HugoProtect.md)** | 开关希沃的文件保护功能。                                     |
 | **[HugoPassword](docs/HugoPassword.md)** | 枚举以找回希沃管家/锁屏密码。                                |
 ## 编译运行
 
 1. 执行`git clone https://github.com/HugoWidget/HugoProgs --recursive`
-
 2. 打开HugoProgs.slnx
 3. 如果使用lib（放在生成目录下）链接而不重新生成，请将HugoDeps中的附加依赖项HugoUtils去掉
 4. 生成
@@ -38,6 +36,46 @@ Visual Studio 2022
 ## 说明
 
 Release中HugoProgs.zip为该项目完整编译产物，前往[HugoSetup](https://github.com/HugoWidget/HugoSetup)获取已配置版本
+
+## 快速入门
+
+- 前往HugoSetup获取`HugoProgs-vx.x.x-bundle.zip`
+
+- 双击`Start.exe`或管理员运行`HugoProgs.exe`
+
+- 管理员权限下前往 config/service/install 注册自启动服务（实质是启动`Launcher.exe`而非`HugoProgs.exe`）
+
+- 在 config/auto 修改启动配置（也就是`Launcher.ini`），格式为：
+
+```ini
+[节名，任意的英文字符串]
+Program=.\HugoLockAssistant.exe
+Params=--method=lock --mode=assist
+RunAsAdmin=true
+ShowWnd=0
+
+[不与上面重复的节名]
+Program=.\HotspotHelper.exe
+Params=-start
+RunAsAdmin=true
+
+...
+
+```
+
+结合使用介绍修改Params来达到不同的功能，如果想要界面化的方式，见HugoWidgets，但可惜的是由于开发者时间精力有限，其没有自启动与锁屏相关功能，如果想做出贡献，欢迎加入。
+
+你可能注意到task配置选项，且默认Launcher.ini配置中有.\TaskManager，其[配置方法](https://github.com/howdy213/WinTools)类似于Launcher，若不需要可以去掉
+
+- 之后每次开机，将自动启动`Launcher.exe`并按照配置逐个打开目标程序
+
+## 脚本执行
+
+在 hps菜单 中有 `.hps` 脚本的相关功能，需要先使用`assoc`注册
+
+语法如下：
+
+[.hps文件语法](docs/hps.md)
 
 ## 项目依赖
 

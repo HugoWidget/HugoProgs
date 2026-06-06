@@ -22,7 +22,7 @@ HugoLockAssistant.exe --method=<method> --mode=<mode> [--extracmd=<额外参数>
 
 | `--method` 值 | 启动的目标程序       | `--mode=assist` 时传递的实际参数 | `--mode=direct` 时传递的实际参数 | `--mode=disable` 时传递的实际参数 |
 | ------------- | -------------------- | -------------------------------- | -------------------------------- | --------------------------------- |
-| `dbg`         | `HugoDbg.exe`        | `--lockfile=delete`              | `--lockfile=create`              | `--lockfile=write`                |
+| `dbg`         | `HugoDbg.exe`        | `--lockfile=fso_assist`          | `--lockfile=fso_direct`          | `--lockfile=fso_disable`          |
 | `launchtool`  | `HugoLaunchTool.exe` | `--kill`                         | `--stop`                         | `--stop`                          |
 | `frontend`    | `HugoFrontend.exe`   | `--mode=assist`                  | `--mode=direct`                  | `--mode=disable`                  |
 | `lock`        | `HugoLock.exe`       | `--mode=assist`                  | `--mode=direct`                  | `--mode=disable`                  |
@@ -66,7 +66,6 @@ HugoLockAssistant.exe --method=lock --mode=direct --hide
 - 程序不显示任何窗口，仅在出错时弹出消息框。
 - 启动目标程序后，本程序立即退出，不会等待子进程结束。
 - 目标程序必须与 `HugoLockAssistant.exe` 位于同一目录，否则会失败。
-- 命令行解析器（`CmdParser`）使用宽字符，支持 `/` 或 `--` 前缀，参数名不区分大小写。
 
 ## 许可
 

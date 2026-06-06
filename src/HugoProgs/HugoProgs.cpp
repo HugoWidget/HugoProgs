@@ -709,6 +709,7 @@ void registerObject(ConsoleMenu& menu) {
 				}
 				ExecuteScriptFile(scriptPath, &menu);
 			}
+			else wcout << L"用法: run <脚本文件路径>\n";
 			});
 	}
 
@@ -748,7 +749,7 @@ void registerObject(ConsoleMenu& menu) {
 
 	auto& configMenu = menu.addSubmenu(L"config", L"配置与自启动");
 	{
-		configMenu.addCommand(L"edit", L"编辑配置文件", [](ConsoleMenu&, Args) {
+		configMenu.addCommand(L"auto", L"编辑配置文件", [](ConsoleMenu&, Args) {
 			RunExternalProgram(GetCurrentProcessDir() + L"Launcher.ini");
 			});
 		configMenu.addCommand(L"task", L"编辑任务配置", [](ConsoleMenu&, Args) {
