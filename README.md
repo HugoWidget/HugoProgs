@@ -99,6 +99,14 @@ mINI: [MIT 许可证](licenses/LICENSE-mINI)
 
 WinReg: [MIT 许可证](licenses/LICENSE-WinReg)
 
+## 致谢
+
+[seewo_jailbreak](https://github.com/CatMe0w/seewo_jailbreak)：HugoBreak 方案来源
+
+[swhelper](https://sw.s3.fan/swhelper/introduce.html)：部分项目（HugoMount，HugoFreezeDriver等）方案来源
+
+[bruteforce_passwordv3](https://github.com/CatMe0w/bruteforce_passwordv3)：Password V3 算法
+
 ## 免责声明
 
 本项目仅用于研究或教育目的，请勿将本项目用于可能违反当地法律、侵犯著作权或其他软件 EULA 的用途。若将本项目用于非法用途，一切后果由使用者承担，开发者不承担此类行为带来的任何后果或责任。
