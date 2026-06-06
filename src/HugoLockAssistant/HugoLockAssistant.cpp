@@ -37,7 +37,7 @@ int APIENTRY wWinMain(
 	auto modeOpt = parser.getParam(L"mode", 0);
 
 	if (!methodOpt || !modeOpt) {
-		FatalError(L"Usage: HugoLockAssistant --method=<dbg|launchtool|frontend|lock> --mode=<assist|direct>");
+		FatalError(L"Usage: HugoLockAssistant --method=<dbg|launchtool|frontend|lock> --mode=<assist|direct|disable> [--extracmd=<optional>] [--hide]");
 	}
 
 	std::wstring method = *methodOpt;
@@ -62,14 +62,18 @@ int APIENTRY wWinMain(
 	if (method == L"launchtool") {
 		if (mode == L"assist")
 			args = L"--kill";
-		else // direct
+		else if (mode == L"direct")
+			args = L"--stop";
+		else if (mode == L"disable")
 			args = L"--stop";
 	}
 	else if (method == L"dbg") {
 		if (mode == L"assist")
 			args = L"--lockfile=delete ";
-		else // direct
+		else if (mode == L"direct")
 			args = L"--lockfile=create ";
+		else if (mode == L"disable")
+			args = L"--lockfile=write ";
 	}
 	else {
 		args = L"--mode=" + mode;
@@ -78,7 +82,8 @@ int APIENTRY wWinMain(
 	if (auto extra = parser.getParam(L"extracmd", 0)) {
 		if (extra)args += *extra;
 	}
-	int ret = (int)RunExternalProgram(targetPath, L"open", args);
+	bool hide = parser.hasCommand(L"hide");
+	int ret = (int)RunExternalProgram(targetPath, L"open", args, L"", hide ? SW_HIDE : SW_SHOWNORMAL);
 
 	if (ret <= 32) {
 		FatalError(L"Failed to start " + exeName + L". Error: " + std::to_wstring(GetLastError()));

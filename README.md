@@ -20,8 +20,8 @@ Visual Studio 2022
 | **[HugoInjector](docs/HugoInjector.md)** | 通用 DLL 注入器，结合 `HugoHSSA.dll` 解除锁屏与热键限制。 |
 | **[HugoInstaller](docs/HugoInstaller.md)** | 希沃安装/卸载管理器：可下载指定版本或最新版。                |
 | **[HugoLaunchTool](docs/HugoLaunchTool.md)** | 控制希沃核心进程的启动与终止。                               |
-| **[HugoLock](docs/HugoLock.md)** | 实时隐藏“希沃管家”锁屏窗口，强制解除锁屏。                   |
-| **[HugoLockAssistant](docs/HugoLockAssistant.md)** | 调用不同方式实现锁屏解除。                                   |
+| **[HugoLock](docs/HugoLock.md)** | 实时隐藏“希沃管家”锁屏窗口，强制解除锁屏，也可以使用其解除屏保（HugoDbg也支持） |
+| **[HugoLockAssistant](docs/HugoLockAssistant.md)** | 调用不同方式实现锁屏/屏保解除。                                |
 | **[HugoMount](docs/HugoMount.md)** | 虚拟磁盘挂载工具，可列出、挂载、卸载希沃的日志盘、配置盘等。 |
 | **[HugoPanel](docs/HugoPanel.md)** | 带 `UIAccess` 权限的悬浮面板，当检测到希沃管家窗口时自动出现，提供一键终止进程等功能。 |
 | **[HugoProgs](docs/HugoProgs.md)** | 主菜单程序，集成所有工具，提供交互界面。                     |

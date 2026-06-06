@@ -35,15 +35,16 @@
 #include <WinUtils/INI.h>
 
 using namespace WinUtils;
+using namespace std;
 
-static std::unique_ptr<SharedFlag> g_flag = nullptr;
-static std::atomic<bool> g_monitorRunning{ true };  // 控制监控线程退出
+static unique_ptr<SharedFlag> g_flag = nullptr;
+static atomic<bool> g_monitorRunning{ true };  // 控制监控线程退出
 
 // 设置拦截标志
 void SetInterceptEnabled(bool enable) {
 	if (g_flag && g_flag->Valid()) {
 		g_flag->Set(enable ? TRUE : FALSE);
-		WLog(LogLevel::Info, std::format(L"Intercept flag set to {}", enable));
+		WLog(LogLevel::Info, format(L"Intercept flag set to {}", enable));
 	}
 }
 
@@ -60,8 +61,22 @@ void UnlockOnce()
 	EnumWindows([](HWND hwnd, LPARAM) -> BOOL {
 		WCHAR title[256] = {};
 		GetWindowTextW(hwnd, title, 256);
-		if (std::wstring(title) == L"希沃管家" && IsWindowTopMost(hwnd)) {
+		if (wstring(title) == L"希沃管家" && IsWindowTopMost(hwnd)) {
 			ForceHideWindow(hwnd);
+		}
+		return TRUE;
+		}, 0);
+}
+
+void UnlockWithRecord()//对未记录的窗口进行解锁，否则可能出现焦点异常
+{
+	static vector<HWND> UnlockedWindows;
+	EnumWindows([](HWND hwnd, LPARAM) -> BOOL {
+		WCHAR title[256] = {};
+		GetWindowTextW(hwnd, title, 256);
+		if (wstring(title) == L"希沃管家" && IsWindowTopMost(hwnd) && find(UnlockedWindows.begin(), UnlockedWindows.end(), hwnd) == UnlockedWindows.end()) {
+			ForceHideWindow(hwnd);
+			UnlockedWindows.push_back(hwnd);
 		}
 		return TRUE;
 		}, 0);
@@ -70,7 +85,17 @@ void UnlockOnce()
 // Direct模式下的本地窗口隐藏循环
 void DirectUnlockLoop() {
 	while (true) {
-		if(!GetInterceptEnabled())SetInterceptEnabled(true) ;
+		if (!GetInterceptEnabled())SetInterceptEnabled(true);
+		Sleep(100);
+	}
+}
+
+void DisableUnlockLoop() {
+	while (true) {
+		if (!GetInterceptEnabled()) {
+			SetInterceptEnabled(true);
+		}
+		UnlockWithRecord();
 		Sleep(100);
 	}
 }
@@ -82,7 +107,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	RequireAdminPrivilege(true);
 	DWORD dwUIAccessErr = PrepareForUIAccess();
 	if (dwUIAccessErr != ERROR_SUCCESS) {
-		WLog(LogLevel::Warn, std::format(L"PrepareForUIAccess failed with error: {}", dwUIAccessErr));
+		WLog(LogLevel::Warn, format(L"PrepareForUIAccess failed with error: {}", dwUIAccessErr));
 		WLog(LogLevel::Info, L"Continuing without UIAccess (some features may be limited)");
 	}
 	else {
@@ -103,31 +128,31 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		return 1;
 	}
 
-	std::wstring mode = L"direct";
+	wstring mode = L"direct";
 	if (auto param = parser.getParam(L"mode", 0)) {
 		mode = *param;
 	}
-	WLog(LogLevel::Info, std::format(L"Running in mode: {}", mode));
+	WLog(LogLevel::Info, format(L"Running in mode: {}", mode));
 
-	std::wstring dllPath = GetCurrentProcessDir() + L"HugoHSSA.dll";
+	wstring dllPath = GetCurrentProcessDir() + L"HugoHSSA.dll";
 	EnableDebugPrivilege();
 
-	g_flag = std::make_unique<SharedFlag>(L"HugoLockFlag");
+	g_flag = make_unique<SharedFlag>(L"HugoLockFlag");
 	if (!g_flag->Valid()) {
 		WLog(LogLevel::Error, L"Failed to create shared flag");
 		return 1;
 	}
 
-	auto injector = std::make_shared<Injector>();
-	std::thread monitorThread([injector, dllPath]() {
+	auto injector = make_shared<Injector>();
+	thread monitorThread([injector, dllPath]() {
 		injector->MonitorAndInject(dllPath, L"SeewoServiceAssistant.exe", 500);
 		});
 	monitorThread.detach();
 
 	if (mode == L"assist") {
-		std::wstring iniPath = GetCurrentProcessDir() + L"HugoLock.ini";
-		if (!std::filesystem::exists(iniPath)) {
-			std::ofstream iniFile(iniPath);
+		wstring iniPath = GetCurrentProcessDir() + L"HugoLock.ini";
+		if (!filesystem::exists(iniPath)) {
+			ofstream iniFile(iniPath);
 			if (iniFile.is_open()) {
 				iniFile << "[Config]\n";
 				iniFile << "UI=dialog\n";
@@ -142,13 +167,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		// 读取配置
 		WinUtils::INIStructure iniData;
 		WinUtils::INIFile iniFile(iniPath);
-		std::wstring uiMode = L"dialog";
+		wstring uiMode = L"dialog";
 
 		if (iniFile.read(iniData)) {
 			auto& config = iniData[L"Config"];
 			if (config.has(L"UI")) {
 				uiMode = config.get(L"UI");
-				WLog(LogLevel::Info, std::format(L"UI mode from config: {}", uiMode));
+				WLog(LogLevel::Info, format(L"UI mode from config: {}", uiMode));
 			}
 		}
 		else {
@@ -166,10 +191,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 		WLog(LogLevel::Info, L"Panel closed, exiting.");
 	}
-	else {
+	else if (mode == L"assist") {
 		g_flag->Set(TRUE);
 		WLog(LogLevel::Info, L"Direct mode: flag=1, monitoring started");
 		DirectUnlockLoop();
+	}
+	else if (mode == L"disable") {// 与assist大致相同
+		g_flag->Set(TRUE);
+		WLog(LogLevel::Info, L"Disable mode: monitoring started");
+		DisableUnlockLoop();
 	}
 
 	g_monitorRunning = false;
