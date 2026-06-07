@@ -26,7 +26,7 @@ Visual Studio 2022
 | **[HugoProgs](docs/HugoProgs.md)** | 主菜单程序，集成所有工具，提供交互界面，支持脚本执行。           |
 | **[HugoProtect](docs/HugoProtect.md)** | 开关希沃的文件保护功能。                                     |
 | **[HugoPassword](docs/HugoPassword.md)** | 枚举以找回希沃管家/锁屏密码。                                |
-| [**HugoScreenSaver**](docs/HugoScreenSaver.md) | 管理希沃锁屏 |
+| [**HugoScreenSaver**](docs/HugoScreenSaver.md) | 管理希沃屏幕保护 |
 ## 编译运行
 
 1. 执行`git clone https://github.com/HugoWidget/HugoProgs --recursive`
