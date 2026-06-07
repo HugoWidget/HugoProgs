@@ -22,10 +22,11 @@ Visual Studio 2022
 | **[HugoLaunchTool](docs/HugoLaunchTool.md)** | 控制希沃核心进程的启动与终止。                               |
 | **[HugoLock](docs/HugoLock.md)** | 实时隐藏“希沃管家”锁屏窗口，强制解除锁屏，也可以使用其解除屏保（HugoDbg也支持） |
 | **[HugoLockAssistant](docs/HugoLockAssistant.md)** | 调用不同方式实现锁屏/屏保解除。                                |
-| **[HugoMount](docs/HugoMount.md)** | 虚拟磁盘挂载工具，可列出、挂载、卸载希沃的日志盘、配置盘等。 |                                                      
+| **[HugoMount](docs/HugoMount.md)** | 虚拟磁盘挂载工具，可列出、挂载、卸载希沃的日志盘、配置盘等。 |
 | **[HugoProgs](docs/HugoProgs.md)** | 主菜单程序，集成所有工具，提供交互界面，支持脚本执行。           |
 | **[HugoProtect](docs/HugoProtect.md)** | 开关希沃的文件保护功能。                                     |
 | **[HugoPassword](docs/HugoPassword.md)** | 枚举以找回希沃管家/锁屏密码。                                |
+| [**HugoScreenSaver**](docs/HugoScreenSaver.md) | 管理希沃锁屏 |
 ## 编译运行
 
 1. 执行`git clone https://github.com/HugoWidget/HugoProgs --recursive`

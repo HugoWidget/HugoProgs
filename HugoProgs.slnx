@@ -53,4 +53,7 @@
   <Project Path="src/HugoProtect/HugoProtect.vcxproj" Id="3f39f9b3-5755-45a9-9a6d-bba8ac177f8b">
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>
+  <Project Path="src/HugoScreenSaver/HugoScreenSaver.vcxproj" Id="31377715-12e6-495e-9a50-876ec3b32499">
+    <BuildDependency Project="deps/HugoUtils/HugoUtils.vcxproj" />
+  </Project>
 </Solution>
