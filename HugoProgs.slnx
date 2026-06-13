@@ -5,7 +5,7 @@
   </Configurations>
   <Project Path="deps/HugoUtils/HugoUtils.vcxproj" Id="351bb40b-1e2f-42b9-9145-d4079e5efc93" />
   <Project Path="src/HugoBreak/HugoBreak.vcxproj" Id="8d223d10-019b-4bdd-8109-f20cdf06e761">
-    <BuildDependency Project="deps/HugoUtils/HugoUtils.vcxproj" />
+    <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>
   <Project Path="src/HugoDeps/HugoDeps.vcxproj" Id="2009ad88-8b61-4fbb-bb7b-583cf30a0122">
     <BuildDependency Project="deps/HugoUtils/HugoUtils.vcxproj" />
@@ -23,7 +23,7 @@
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>
   <Project Path="src/HugoInfo/HugoInfo.vcxproj" Id="7b9d9d54-6ef3-460a-8d62-f666b1240a6d">
-    <BuildDependency Project="deps/HugoUtils/HugoUtils.vcxproj" />
+    <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>
   <Project Path="src/HugoInjector/HugoInjector.vcxproj" Id="34734c62-3130-47ea-848e-10e9cf8c2580">
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
@@ -54,6 +54,6 @@
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>
   <Project Path="src/HugoScreenSaver/HugoScreenSaver.vcxproj" Id="31377715-12e6-495e-9a50-876ec3b32499">
-    <BuildDependency Project="deps/HugoUtils/HugoUtils.vcxproj" />
+    <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>
 </Solution>
