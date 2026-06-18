@@ -87,11 +87,11 @@ int APIENTRY wWinMain(
 	}
 	else if (method == L"dbg") {
 		if (mode == L"assist")
-			args = L"--lockfile=fso_assist ";
+			args = L"--fso=assist ";
 		else if (mode == L"direct")
-			args = L"--lockfile=fso_direct ";
+			args = L"--fso=direct ";
 		else if (mode == L"disable")
-			args = L"--lockfile=fso_disable ";
+			args = L"--fso=disable ";
 	}
 	else {
 		args = L"--mode=" + mode;
