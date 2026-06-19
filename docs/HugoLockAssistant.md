@@ -12,17 +12,18 @@ HugoLockAssistant.exe --method=<method> --mode=<mode> [--extracmd=<额外参数>
 
 ### 参数说明
 
-| 参数         | 必填 | 可选值                                              | 说明                                                         |
-| ------------ | ---- | --------------------------------------------------- | ------------------------------------------------------------ |
-| `--method`   | 是   | `dbg`, `launchtool`, `frontend`, `lock`             | 指定要启动的目标程序                                         |
-| `--mode`     | 是   | `assist`, `direct`, `disable`                       | 指定运行模式，根据 `method` 的不同会转换成不同的实际参数     |
-| `--extracmd` | 否   | 任意字符串                                          | 附加的命令行参数，会原样追加到最终命令行末尾（会先自动添加一个空格） |
-| `--hide` | 否 | 无                                                                | 决定是否显示对应工具窗口 |
+| 参数         | 必填 | 可选值                                  | 说明                                                         |
+| ------------ | ---- | --------------------------------------- | ------------------------------------------------------------ |
+| `--method`   | 是   | `dbg`, `launchtool`, `frontend`, `lock` | 指定要启动的目标程序                                         |
+| `--mode`     | 是   | `assist`, `direct`, `disable`           | 指定运行模式，根据 `method` 的不同会转换成不同的实际参数     |
+| `--extracmd` | 否   | 任意字符串                              | 附加的命令行参数，会原样追加到最终命令行末尾（会先自动添加一个空格） |
+| `--hide`     | 否   | 无                                      | 决定是否隐藏目标程序的窗口（存在该参数则隐藏）               |
+
 ## 启动映射与参数传递规则
 
 | `--method` 值 | 启动的目标程序       | `--mode=assist` 时传递的实际参数 | `--mode=direct` 时传递的实际参数 | `--mode=disable` 时传递的实际参数 |
 | ------------- | -------------------- | -------------------------------- | -------------------------------- | --------------------------------- |
-| `dbg`         | `HugoDbg.exe`        | `--lockfile=fso_assist`          | `--lockfile=fso_direct`          | `--lockfile=fso_disable`          |
+| `dbg`         | `HugoDbg.exe`        | `--fso=assist`                   | `--fso=direct`                   | `--fso=disable`                   |
 | `launchtool`  | `HugoLaunchTool.exe` | `--kill`                         | `--stop`                         | `--stop`                          |
 | `frontend`    | `HugoFrontend.exe`   | `--mode=assist`                  | `--mode=direct`                  | `--mode=disable`                  |
 | `lock`        | `HugoLock.exe`       | `--mode=assist`                  | `--mode=direct`                  | `--mode=disable`                  |
