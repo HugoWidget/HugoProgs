@@ -577,7 +577,7 @@ void registerObject(ConsoleMenu& menu) {
 			}
 			});
 		lockMenu.addCommand(L"mode", L"HugoLockAssistant参数", [=](ConsoleMenu&, Args) {
-			wcout << L"支持assist，direct，disable，即辅助解锁（需要主动点击解锁）,直接解锁，完全禁用\n";
+			wcout << L"支持assist，direct，disable，即辅助解锁（需要主动点击解锁），直接解锁，完全禁用\n";
 			});
 		lockMenu.addCommand(L"method", L"HugoLockAssistant参数", [=](ConsoleMenu&, Args) {
 			wcout << L"支持lock、dbg、frontend、launchtool\n";
@@ -780,12 +780,28 @@ void registerObject(ConsoleMenu& menu) {
 
 	auto& screensaverMenu= menu.addSubmenu(L"screensaver", L"屏幕保护程序");
 	{
-		screensaverMenu.addCommand(L"set", L"打开屏幕保护程序", [](ConsoleMenu&, Args args) {
+		screensaverMenu.addCommand(L"on", L"打开屏幕保护程序", [](ConsoleMenu&, Args args) {
 			wcout << L"功能未完成";
 			});
-		screensaverMenu.addCommand(L"clear", L"关闭屏幕保护程序", [](ConsoleMenu&, Args args) {
+		screensaverMenu.addCommand(L"off", L"关闭屏幕保护程序", [](ConsoleMenu&, Args args) {
 			wstring progPath = GetExternalProgramPath(L"HugoScreenSaver.exe");
 			ExecuteProgramInCurrentConsole(progPath);
+			});
+	}
+
+	auto& logsMenu = menu.addSubmenu(L"logs", L"日志");
+	{
+		logsMenu.addCommand(L"clr", L"清除所有日志", [](ConsoleMenu&, Args args) {
+			wstring progPath = GetExternalProgramPath(L"HugoLogs.exe");
+			ExecuteProgramInCurrentConsole(progPath,L"--delete");
+			});
+		logsMenu.addCommand(L"ls", L"列出所有日志", [](ConsoleMenu&, Args args) {
+			wstring progPath = GetExternalProgramPath(L"HugoLogs.exe");
+			ExecuteProgramInCurrentConsole(progPath, L"--list");
+			});
+		logsMenu.addCommand(L"h", L"帮助", [](ConsoleMenu&, Args args) {
+			wstring progPath = GetExternalProgramPath(L"HugoLogs.exe");
+			ExecuteProgramInCurrentConsole(progPath, L"--help");
 			});
 	}
 }

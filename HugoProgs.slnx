@@ -41,6 +41,9 @@
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
     <BuildDependency Project="src/HugoLock/HugoLock.vcxproj" />
   </Project>
+  <Project Path="src/HugoLogs/HugoLogs.vcxproj" Id="b58dd3b1-a654-4a04-81aa-dad73c9fd873">
+    <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
+  </Project>
   <Project Path="src/HugoMount/HugoMount.vcxproj" Id="7bd4dfd9-690b-4d01-9a86-612ffcd9ccb0">
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>

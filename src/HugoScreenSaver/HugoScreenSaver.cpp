@@ -72,17 +72,13 @@ void ScreenSaverMonitorLoop(bool enableBlacklist)
 			// 如果启用了黑名单且该窗口已被记录，则跳过
 			if (enableBlacklist && ignoredWindows.count(hwnd))
 			{
-				WLog(LogLevel::Info, L"Ignoring blacklisted window (HWND: " +
-					std::to_wstring((uintptr_t)hwnd) + L").");
 				Sleep(500);
 				continue;
 			}
 
-			WLog(LogLevel::Info, L"Detected fullscreen topmost window: 希沃管家. Waiting 800 milliseconds...");
 			Sleep(800);
 			if (IsWindow(hwnd) && IsWindowTopMost(hwnd))
 			{
-				WLog(LogLevel::Info, L"Clicking screen center to dismiss screensaver.");
 				ClickAtScreenCenter();
 				lastClickedHwnd = hwnd;
 
@@ -90,8 +86,6 @@ void ScreenSaverMonitorLoop(bool enableBlacklist)
 				if (IsWindow(hwnd) && IsWindowTopMost(hwnd))
 				{
 					consecutiveClicks++;
-					WLog(LogLevel::Info, L"Window still present after click. Consecutive clicks: " +
-						std::to_wstring(consecutiveClicks));
 
 					if (enableBlacklist && consecutiveClicks >= 5)
 					{
