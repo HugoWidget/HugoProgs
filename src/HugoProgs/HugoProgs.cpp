@@ -353,6 +353,14 @@ void registerObject(ConsoleMenu& menu) {
 			}
 			ExecuteProgramInCurrentConsole(progPath, cmdLine);
 			});
+		mountMenu.addCommand(L"browse.cli", L"在命令行中浏览", [](ConsoleMenu&, Args args) {
+			wstring progPath = GetExternalProgramPath(L"CExplorer.exe");
+			ExecuteProgramInCurrentConsole(progPath);
+			});
+		mountMenu.addCommand(L"browse.gui", L"在PyExplorer中浏览", [](ConsoleMenu&, Args args) {
+			wstring progPath = GetExternalProgramPath(L"PyExplorer.exe");
+			ExecuteProgramInCurrentConsole(progPath);
+			});
 	}
 
 	// ==================== 子菜单：希沃冰点配置工具 ====================
@@ -798,6 +806,10 @@ void registerObject(ConsoleMenu& menu) {
 		logsMenu.addCommand(L"ls", L"列出所有日志", [](ConsoleMenu&, Args args) {
 			wstring progPath = GetExternalProgramPath(L"HugoLogs.exe");
 			ExecuteProgramInCurrentConsole(progPath, L"--list");
+			});
+		logsMenu.addCommand(L"run", L"打开 HugoLogs", [](ConsoleMenu&, Args args) {
+			wstring progPath = GetExternalProgramPath(L"HugoLogs.exe");
+			ExecuteProgramInCurrentConsole(progPath);
 			});
 		logsMenu.addCommand(L"h", L"帮助", [](ConsoleMenu&, Args args) {
 			wstring progPath = GetExternalProgramPath(L"HugoLogs.exe");
