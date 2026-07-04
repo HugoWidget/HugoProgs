@@ -72,7 +72,7 @@ void QueryAndPrint(HFreezeDriver& driver)
 		result.runtimeStatus.querySuccess ? result.runtimeStatus.logStr : L""
 	);
 
-	WLog(LogLevel::Info, L"Queried driver status");
+	WuLog::Info( L"Queried driver status");
 }
 
 // 应用冻结设置（盘符列表）
@@ -83,7 +83,7 @@ void ApplyFreezeSettings(HFreezeDriver& driver, const wstring& disks)
 	int mask = CalculateVolumeMask(input);
 	if (mask == -1) {
 		wcerr << L"无效盘符输入，操作取消。" << endl;
-		WLog(LogLevel::Warn, L"Invalid volume input: " + input);
+		WuLog::Log(LogLevel::Warn, L"Invalid volume input: " + input);
 		return;
 	}
 
@@ -92,10 +92,10 @@ void ApplyFreezeSettings(HFreezeDriver& driver, const wstring& disks)
 	wcout << L"\n冻结盘符 [" << input << L"]：" << (success ? L"成功" : L"失败") << endl;
 	if (success) {
 		wcout << L"请重启计算机以应用更改。" << endl;
-		WLog(LogLevel::Info, L"Set freeze state for volumes: " + input);
+		WuLog::Info( L"Set freeze state for volumes: " + input);
 	}
 	else {
-		WLog(LogLevel::Error, L"Failed to set freeze state for volumes: " + input);
+		WuLog::Log(LogLevel::Error, L"Failed to set freeze state for volumes: " + input);
 	}
 }
 
@@ -123,7 +123,7 @@ int wmain(int argc, wchar_t* argv[])
 		HFreezeDriver& driver = HFreezeDriver::Instance();
 		if (static_cast<int>(driver.Init().result) != 0) {
 			wcerr << L"打开驱动失败，请检查驱动是否安装或权限是否足够。" << endl;
-			WLog(LogLevel::Error, L"Failed to open driver");
+			WuLog::Log(LogLevel::Error, L"Failed to open driver");
 			return 1;
 		}
 
@@ -202,7 +202,7 @@ int wmain(int argc, wchar_t* argv[])
 			}
 			case 0:
 				wcout << L"退出程序。" << endl;
-				WLog(LogLevel::Info, L"User exited");
+				WuLog::Info( L"User exited");
 				break;
 			default:
 				wcerr << L"无效选择，请重新输入" << endl;
@@ -217,7 +217,7 @@ int wmain(int argc, wchar_t* argv[])
 	}
 	catch (const exception& e) {
 		wcerr << L"致命错误：" << e.what() << endl;
-		WLog(LogLevel::Error, L"Fatal: " + ConvertString<wstring>(e.what()));
+		WuLog::Log(LogLevel::Error, L"Fatal: " + ConvertString<wstring>(e.what()));
 		return 1;
 	}
 }

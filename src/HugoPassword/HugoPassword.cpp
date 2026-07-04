@@ -168,7 +168,7 @@ int RunManualMode()
 
 	if (tasks.empty()) {
 		wcerr << L"错误: 无破解任务" << endl;
-		WLog(LogLevel::Error, L"No crack tasks generated");
+		WuLog::Log(LogLevel::Error, L"No crack tasks generated");
 		return 1;
 	}
 
@@ -213,7 +213,7 @@ int RunAutoMode()
 
 	if (tasks.empty()) {
 		wcerr << L"错误: 无破解任务" << endl;
-		WLog(LogLevel::Error, L"No crack tasks generated");
+		WuLog::Log(LogLevel::Error, L"No crack tasks generated");
 		return 1;
 	}
 
@@ -333,7 +333,7 @@ int wmain(int argc, wchar_t* argv[])
 				break;
 			case 0:
 				wcout << L"退出程序。" << endl;
-				WLog(LogLevel::Info, L"User exited");
+				WuLog::Log(LogLevel::Info, L"User exited");
 				break;
 			default:
 				wcerr << L"无效选择，请重新输入" << endl;
@@ -348,7 +348,7 @@ int wmain(int argc, wchar_t* argv[])
 	}
 	catch (const exception& e) {
 		wcerr << L"致命错误: " << ConvertString<wstring>(e.what()) << endl;
-		WLog(LogLevel::Error, L"Fatal: " + ConvertString<wstring>(e.what()));
+		WuLog::Log(LogLevel::Error, L"Fatal: " + ConvertString<wstring>(e.what()));
 		return 1;
 	}
 }

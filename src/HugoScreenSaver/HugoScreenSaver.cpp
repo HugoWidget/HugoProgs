@@ -62,7 +62,7 @@ void ScreenSaverMonitorLoop(bool enableBlacklist)
 	int consecutiveClicks = 0;
 	HWND lastClickedHwnd = nullptr;
 
-	WLog(LogLevel::Info, L"ScreenSaver monitor started. Watching for '希沃管家' topmost window...");
+	WuLog::Info(L"ScreenSaver monitor started. Watching for '希沃管家' topmost window...");
 
 	while (true)
 	{
@@ -91,7 +91,7 @@ void ScreenSaverMonitorLoop(bool enableBlacklist)
 					{
 						// 加入黑名单，不再处理该窗口
 						ignoredWindows.insert(hwnd);
-						WLog(LogLevel::Info, L"Window (HWND: " +
+						WuLog::Info(L"Window (HWND: " +
 							std::to_wstring((uintptr_t)hwnd) +
 							L") has been blacklisted after 5 failed attempts.");
 						consecutiveClicks = 0;
@@ -102,12 +102,12 @@ void ScreenSaverMonitorLoop(bool enableBlacklist)
 				{
 					consecutiveClicks = 0;
 					lastClickedHwnd = nullptr;
-					WLog(LogLevel::Info, L"Window dismissed or changed. Resetting consecutive click counter.");
+					WuLog::Info(L"Window dismissed or changed. Resetting consecutive click counter.");
 				}
 			}
 			else
 			{
-				WLog(LogLevel::Info, L"Window disappeared or changed state before click.");
+				WuLog::Info(L"Window disappeared or changed state before click.");
 				consecutiveClicks = 0;
 				lastClickedHwnd = nullptr;
 			}
@@ -130,6 +130,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 	RequireAdminPrivilege(true);
+	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 	EnsureSingleInstance(true);
 
 	Console console;
@@ -140,7 +141,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	CmdParser parser;
 	(void)parser.parse(ExtractArguments(GetCommandLineW()));
-	WLog(LogLevel::Info, L"HugoScreenSaver - Automatic Seewo screensaver dismisser");
+	WuLog::Info(L"HugoScreenSaver - Automatic Seewo screensaver dismisser");
 	ScreenSaverMonitorLoop(!parser.hasCommand(L"keep"));
 
 	return 0;

@@ -86,7 +86,7 @@ vector<PackageInfo> ScanPackages(const wstring& dir)
     }
     catch (const fs::filesystem_error& e) {
         wcerr << L"扫描失败: " << ConvertString<wstring>(e.what()) << endl;
-        WLog(LogLevel::Warn, L"ScanPackages failed: " + ConvertString<wstring>(e.what()));
+        WuLog::Log(LogLevel::Warn, L"ScanPackages failed: " + ConvertString<wstring>(e.what()));
     }
     return packages;
 }
@@ -108,12 +108,12 @@ bool RunPackage(const wstring& path)
     HINSTANCE result = ShellExecuteW(nullptr, L"open", path.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
     if (reinterpret_cast<INT_PTR>(result) > 32) {
         wcout << L"启动成功" << endl;
-        WLog(LogLevel::Info, L"Started installer: " + path);
+        WuLog::Info( L"Started installer: " + path);
         return true;
     }
     DWORD err = GetLastError();
     wcerr << L"启动失败，错误码: " << err << endl;
-    WLog(LogLevel::Error, L"Failed to start installer: " + path + L", error=" + to_wstring(err));
+    WuLog::Log(LogLevel::Error, L"Failed to start installer: " + path + L", error=" + to_wstring(err));
     return false;
 }
 
@@ -191,7 +191,7 @@ int Install()
         if (!result.success) {
             wcerr << L"下载失败\n错误: " << ConvertString<wstring>(result.errorMsg)
                 << L"\nHTTP " << result.statusCode << endl;
-            WLog(LogLevel::Error, L"Download failed: " + ConvertString<wstring>(result.errorMsg));
+            WuLog::Log(LogLevel::Error, L"Download failed: " + ConvertString<wstring>(result.errorMsg));
             if (result.errorMsg.find('7') != string::npos) {
                 wcerr << L"可能已经下载过了" << endl;
             }
@@ -208,7 +208,7 @@ int Install()
         if (result.downloaded < 1000000) {
             fs::remove(tempPath);
             wcerr << L"文件太小，版本可能错误" << endl;
-            WLog(LogLevel::Error, L"Downloaded file too small: " + to_wstring(result.downloaded));
+            WuLog::Log(LogLevel::Error, L"Downloaded file too small: " + to_wstring(result.downloaded));
             return 1;
         }
 
@@ -234,20 +234,20 @@ int Install()
         fs::rename(tempPath, finalPath, ec);
         if (ec) {
             wcerr << L"重命名失败: " << ConvertString<wstring>(ec.message()) << endl;
-            WLog(LogLevel::Error, L"Rename failed: " + ConvertString<wstring>(ec.message()));
+            WuLog::Log(LogLevel::Error, L"Rename failed: " + ConvertString<wstring>(ec.message()));
             return 1;
         }
 
         wcout << L"下载完成\n大小: " << result.downloaded << L" 字节 ("
             << (result.downloaded / 1024.0 / 1024.0) << L" MB)\n";
         wcout << L"保存为: " << finalFilename << endl;
-        WLog(LogLevel::Info, L"Downloaded installer: " + finalPath.wstring() + L", size=" + to_wstring(result.downloaded));
+        WuLog::Info( L"Downloaded installer: " + finalPath.wstring() + L", size=" + to_wstring(result.downloaded));
 
         return RunPackage(finalPath.wstring()) ? 0 : 1;
     }
     catch (const exception& e) {
         wcerr << L"异常: " << ConvertString<wstring>(e.what()) << endl;
-        WLog(LogLevel::Error, L"Install exception: " + ConvertString<wstring>(e.what()));
+        WuLog::Log(LogLevel::Error, L"Install exception: " + ConvertString<wstring>(e.what()));
         return 1;
     }
 }
@@ -283,12 +283,12 @@ int Uninstall()
     wstring fakeVerifyPath = GetCurrentProcessDir() + kFakeVerifyFilename;
     if (!fs::exists(fakeVerifyPath)) {
         wcerr << L"模板缺失: " << fakeVerifyPath << endl;
-        WLog(LogLevel::Error, L"Fake verify template not found: " + fakeVerifyPath);
+        WuLog::Log(LogLevel::Error, L"Fake verify template not found: " + fakeVerifyPath);
         return 1;
     }
     if (!fs::exists(kUninstallExe)) {
         wcerr << L"可能未安装希沃" << endl;
-        WLog(LogLevel::Warn, L"Uninstaller not found, Seewo may not be installed");
+        WuLog::Log(LogLevel::Warn, L"Uninstaller not found, Seewo may not be installed");
         return 1;
     }
 
@@ -297,14 +297,14 @@ int Uninstall()
     if (!hFake.IsValid()) {
         DWORD err = GetLastError();
         wcerr << L"无法读取模板, 错误 " << err << endl;
-        WLog(LogLevel::Error, L"Cannot read fake template, error=" + to_wstring(err));
+        WuLog::Log(LogLevel::Error, L"Cannot read fake template, error=" + to_wstring(err));
         return 1;
     }
 
     DWORD fileSize = GetFileSize(hFake.Get(), nullptr);
     if (fileSize == INVALID_FILE_SIZE) {
         wcerr << L"获取模板大小失败" << endl;
-        WLog(LogLevel::Error, L"GetFileSize failed on fake template");
+        WuLog::Log(LogLevel::Error, L"GetFileSize failed on fake template");
         return 1;
     }
 
@@ -312,7 +312,7 @@ int Uninstall()
     DWORD bytesRead = 0;
     if (!ReadFile(hFake.Get(), buffer.data(), fileSize, &bytesRead, nullptr) || bytesRead != fileSize) {
         wcerr << L"读取模板失败" << endl;
-        WLog(LogLevel::Error, L"ReadFile failed on fake template");
+        WuLog::Log(LogLevel::Error, L"ReadFile failed on fake template");
         return 1;
     }
 
@@ -326,10 +326,10 @@ int Uninstall()
         if (!MoveFileW(kTargetVerifyExe.c_str(), backupPath.c_str()) && GetLastError() != ERROR_FILE_NOT_FOUND) {
             DWORD err = GetLastError();
             wcerr << L"无法备份目标文件, 错误 " << err << endl;
-            WLog(LogLevel::Error, L"Backup failed, error=" + to_wstring(err));
+            WuLog::Log(LogLevel::Error, L"Backup failed, error=" + to_wstring(err));
             return 1;
         }
-        WLog(LogLevel::Info, L"Backed up original verify exe to " + backupPath);
+        WuLog::Info( L"Backed up original verify exe to " + backupPath);
     }
 
     // 写入新的验证文件（替换为假模板）
@@ -337,7 +337,7 @@ int Uninstall()
     if (!hTarget.IsValid()) {
         DWORD err = GetLastError();
         wcerr << L"无法写入目标, 错误 " << err << endl;
-        WLog(LogLevel::Error, L"Cannot write target, error=" + to_wstring(err));
+        WuLog::Log(LogLevel::Error, L"Cannot write target, error=" + to_wstring(err));
         // 还原备份
         if (fs::exists(backupPath)) {
             MoveFileW(backupPath.c_str(), kTargetVerifyExe.c_str());
@@ -348,7 +348,7 @@ int Uninstall()
     DWORD bytesWritten = 0;
     if (!WriteFile(hTarget.Get(), buffer.data(), fileSize, &bytesWritten, nullptr) || bytesWritten != fileSize) {
         wcerr << L"写入失败" << endl;
-        WLog(LogLevel::Error, L"WriteFile failed");
+        WuLog::Log(LogLevel::Error, L"WriteFile failed");
         // 还原备份
         if (fs::exists(backupPath)) {
             MoveFileW(backupPath.c_str(), kTargetVerifyExe.c_str());
@@ -357,18 +357,18 @@ int Uninstall()
     }
 
     wcout << L"验证文件替换成功" << endl;
-    WLog(LogLevel::Info, L"Replaced uninstall_verify.exe with fake");
+    WuLog::Info( L"Replaced uninstall_verify.exe with fake");
 
     // 启动卸载程序
     HINSTANCE result = ShellExecuteW(nullptr, L"open", kUninstallExe.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
     if (reinterpret_cast<INT_PTR>(result) > 32) {
         wcout << L"卸载程序已启动" << endl;
-        WLog(LogLevel::Info, L"Started uninstaller");
+        WuLog::Info( L"Started uninstaller");
         return 0;
     }
     DWORD err = GetLastError();
     wcerr << L"启动卸载失败, 错误 " << err << endl;
-    WLog(LogLevel::Error, L"Failed to start uninstaller, error=" + to_wstring(err));
+    WuLog::Log(LogLevel::Error, L"Failed to start uninstaller, error=" + to_wstring(err));
     return 1;
 }
 
@@ -455,7 +455,7 @@ int wmain(int argc, wchar_t* argv[])
                 break;
             case 0:
                 wcout << L"退出程序。" << endl;
-                WLog(LogLevel::Info, L"User exited");
+                WuLog::Info( L"User exited");
                 break;
             default:
                 wcerr << L"无效选择，请重新输入" << endl;
@@ -470,7 +470,7 @@ int wmain(int argc, wchar_t* argv[])
     }
     catch (const exception& e) {
         wcerr << L"致命错误: " << ConvertString<wstring>(e.what()) << endl;
-        WLog(LogLevel::Error, L"Fatal: " + ConvertString<wstring>(e.what()));
+        WuLog::Log(LogLevel::Error, L"Fatal: " + ConvertString<wstring>(e.what()));
         return 1;
     }
 }

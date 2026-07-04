@@ -44,7 +44,7 @@ static atomic<bool> g_monitorRunning{ true };  // 控制监控线程退出
 void SetInterceptEnabled(bool enable) {
 	if (g_flag && g_flag->Valid()) {
 		g_flag->Set(enable ? TRUE : FALSE);
-		WLog(LogLevel::Info, format(L"Intercept flag set to {}", enable));
+		WuLog::Info(L"Intercept flag set to {}", enable);
 	}
 }
 
@@ -107,24 +107,24 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	RequireAdminPrivilege(true);
 	DWORD dwUIAccessErr = PrepareForUIAccess();
 	if (dwUIAccessErr != ERROR_SUCCESS) {
-		WLog(LogLevel::Warn, format(L"PrepareForUIAccess failed with error: {}", dwUIAccessErr));
-		WLog(LogLevel::Info, L"Continuing without UIAccess (some features may be limited)");
+		WuLog::Warn(L"PrepareForUIAccess failed with error: {}", dwUIAccessErr);
+		WuLog::Info(L"Continuing without UIAccess (some features may be limited)");
 	}
 	else {
-		WLog(LogLevel::Info, L"UIAccess enabled successfully");
+		WuLog::Info(L"UIAccess enabled successfully");
 	}
 
+	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 	EnsureSingleInstance(true);
-
 	Console console;
 	console.setLocale();
-	LoggerCore::Inst().AddStrategy<ConsoleLogStrategy>();
+	LoggerCore::Inst().AddStrategy<FileLogStrategy>(L"HugoLock.log");
 	LoggerCore::Inst().AddStrategy<DebugLogStrategy>();
 	LoggerCore::Inst().EnableApartment(DftLogger);
 
 	CmdParser parser(true);
 	if (!parser.parse(lpCmdLine, CmdParser::ParseMode::Normal)) {
-		WLog(LogLevel::Error, L"Failed to parse command line");
+		WuLog::Error(L"Failed to parse command line");
 		return 1;
 	}
 
@@ -132,14 +132,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	if (auto param = parser.getParam(L"mode", 0)) {
 		mode = *param;
 	}
-	WLog(LogLevel::Info, format(L"Running in mode: {}", mode));
+	WuLog::Info(L"Running in mode: {}", mode);
 
 	wstring dllPath = GetCurrentProcessDir() + L"HugoHSSA.dll";
 	EnableDebugPrivilege();
 
 	g_flag = make_unique<SharedFlag>(L"HugoLockFlag");
 	if (!g_flag->Valid()) {
-		WLog(LogLevel::Error, L"Failed to create shared flag");
+		WuLog::Error(L"Failed to create shared flag");
 		return 1;
 	}
 
@@ -157,10 +157,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 				iniFile << "[Config]\n";
 				iniFile << "UI=dialog\n";
 				iniFile.close();
-				WLog(LogLevel::Info, L"Created default HugoLock.ini with UI=Dialog");
+				WuLog::Info(L"Created default HugoLock.ini with UI=Dialog");
 			}
 			else {
-				WLog(LogLevel::Error, L"Failed to create HugoLock.ini");
+				WuLog::Error(L"Failed to create HugoLock.ini");
 			}
 		}
 
@@ -173,32 +173,32 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			auto& config = iniData[L"Config"];
 			if (config.has(L"UI")) {
 				uiMode = config.get(L"UI");
-				WLog(LogLevel::Info, format(L"UI mode from config: {}", uiMode));
+				WuLog::Info(L"UI mode from config: {}", uiMode);
 			}
 		}
 		else {
-			WLog(LogLevel::Warn, L"Failed to read HugoLock.ini, using default UI mode (Dialog)");
+			WuLog::Warn(L"Failed to read HugoLock.ini, using default UI mode (Dialog)");
 		}
 
 		bool useSimpleUI = (uiMode == L"button");
 
 		g_flag->Set(FALSE);
-		WLog(LogLevel::Info, L"Assist mode: flag=0, monitoring started");
+		WuLog::Info(L"Assist mode: flag=0, monitoring started");
 
 		INT_PTR result = 0;
 		if (useSimpleUI)result = DialogBoxW(hInstance, MAKEINTRESOURCE(IDD_CLOSE), nullptr, SimpleDialogProc);
 		else result = DialogBoxW(hInstance, MAKEINTRESOURCE(IDD_MAIN), nullptr, MainDialogProc);
 
-		WLog(LogLevel::Info, L"Panel closed, exiting.");
+		WuLog::Info(L"Panel closed, exiting.");
 	}
-	else if (mode == L"assist") {
+	else if (mode == L"direct") {
 		g_flag->Set(TRUE);
-		WLog(LogLevel::Info, L"Direct mode: flag=1, monitoring started");
+		WuLog::Info(L"Direct mode: flag=1, monitoring started");
 		DirectUnlockLoop();
 	}
 	else if (mode == L"disable") {// 与assist大致相同
 		g_flag->Set(TRUE);
-		WLog(LogLevel::Info, L"Disable mode: monitoring started");
+		WuLog::Info(L"Disable mode: monitoring started");
 		DisableUnlockLoop();
 	}
 

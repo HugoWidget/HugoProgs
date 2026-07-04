@@ -98,7 +98,7 @@ void SetSeewoService(bool disable)
 			throw runtime_error("注册表写入验证失败");
 		}
 		wcout << L"希沃服务已禁用" << endl;
-		WLog(LogLevel::Info, L"Disabled Seewo service via IFEO");
+		WuLog::Info( L"Disabled Seewo service via IFEO");
 	}
 	else {
 		auto res = key.TryOpen(kRegRoot, kRegPath, KEY_WRITE | KEY_WOW64_64KEY);
@@ -106,7 +106,7 @@ void SetSeewoService(bool disable)
 			key.TryDeleteValue(kRegValue);
 		}
 		wcout << L"希沃服务已启用" << endl;
-		WLog(LogLevel::Info, L"Enabled Seewo service (removed IFEO)");
+		WuLog::Info( L"Enabled Seewo service (removed IFEO)");
 	}
 }
 
@@ -128,12 +128,12 @@ void SetUpdateBlock(bool block, FirewallGuard& fw)
 	if (block) {
 		fw->BlockAllAccess(kUpdateExe2);
 		wcout << L"希沃更新已禁用" << endl;
-		WLog(LogLevel::Info, L"Blocked Seewo update executables");
+		WuLog::Info( L"Blocked Seewo update executables");
 	}
 	else {
 		fw->DeleteRulesForProgram(kUpdateExe2);
 		wcout << L"希沃更新已启用" << endl;
-		WLog(LogLevel::Info, L"Unblocked Seewo update executables");
+		WuLog::Info( L"Unblocked Seewo update executables");
 	}
 }
 
@@ -144,7 +144,7 @@ void SetNetworkBlock(bool block, FirewallGuard& fw)
 	auto optFolder = info.getHugoFolder();
 	if (!optFolder) {
 		wcerr << L"未找到希沃安装目录，网络规则操作跳过" << endl;
-		WLog(LogLevel::Warn, L"Hugo installation folder not found, network rules skipped");
+		WuLog::Log(LogLevel::Warn, L"Hugo installation folder not found, network rules skipped");
 		return;
 	}
 
@@ -161,11 +161,11 @@ void SetNetworkBlock(bool block, FirewallGuard& fw)
 
 	if (block) {
 		wcout << L"希沃核心进程网络已禁用" << endl;
-		WLog(LogLevel::Info, L"Blocked network for Seewo core processes");
+		WuLog::Info( L"Blocked network for Seewo core processes");
 	}
 	else {
 		wcout << L"希沃核心进程网络已启用" << endl;
-		WLog(LogLevel::Info, L"Unblocked network for Seewo core processes");
+		WuLog::Info( L"Unblocked network for Seewo core processes");
 	}
 }
 
@@ -174,11 +174,11 @@ void ClearAllRules(FirewallGuard& fw)
 {
 	if (fw->CleanupResidualRules()) {
 		wcout << L"已清除所有希沃网络规则" << endl;
-		WLog(LogLevel::Info, L"Cleared all Seewo firewall rules");
+		WuLog::Info( L"Cleared all Seewo firewall rules");
 	}
 	else {
 		wcerr << L"清除规则失败" << endl;
-		WLog(LogLevel::Error, L"Failed to clear firewall rules");
+		WuLog::Log(LogLevel::Error, L"Failed to clear firewall rules");
 	}
 }
 
@@ -231,6 +231,7 @@ int wmain(int argc, wchar_t* argv[])
 {
 	try {
 		RequireAdminPrivilege(true);
+		SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 		EnsureSingleInstance(true);
 		Console().setLocale();
 
@@ -324,7 +325,7 @@ int wmain(int argc, wchar_t* argv[])
 				break;
 			case 0:
 				wcout << L"退出程序。" << endl;
-				WLog(LogLevel::Info, L"User exited");
+				WuLog::Info( L"User exited");
 				break;
 			default:
 				wcerr << L"无效选择，请重新输入" << endl;
@@ -339,7 +340,7 @@ int wmain(int argc, wchar_t* argv[])
 	}
 	catch (const exception& e) {
 		wcerr << L"致命错误：" << ConvertString<wstring>(e.what()) << endl;
-		WLog(LogLevel::Error, L"Fatal: " + ConvertString<wstring>(e.what()));
+		WuLog::Log(LogLevel::Error, L"Fatal: " + ConvertString<wstring>(e.what()));
 		return 1;
 	}
 }

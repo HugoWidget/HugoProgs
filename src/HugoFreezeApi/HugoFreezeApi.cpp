@@ -47,11 +47,11 @@ void SetFreezeVolume(const wstring& volume, IHugoFreeze& api)
     auto res = api.SetFreezeState(vol);
     if (res.result != FrzOR::Success) {
         wcerr << L"设置冻结状态失败：" << res.errMsg << endl;
-        WLog(LogLevel::Error, L"SetFreezeState failed: " + res.errMsg);
+        WuLog::Error( L"SetFreezeState failed: " + res.errMsg);
     }
     else {
         wcout << L"设置冻结状态成功：" << res.msg << endl;
-        WLog(LogLevel::Info, L"Set freeze state: " + res.msg);
+        WuLog::Info( L"Set freeze state: " + res.msg);
     }
 }
 
@@ -61,11 +61,11 @@ void GetFreezeStatus(IHugoFreeze& api)
     auto res = api.GetFreezeState();
     if (res.result != FrzOR::Success) {
         wcerr << L"获取冻结状态失败：" << res.errMsg << endl;
-        WLog(LogLevel::Error, L"GetFreezeState failed: " + res.errMsg);
+        WuLog::Error( L"GetFreezeState failed: " + res.errMsg);
     }
     else {
         wcout << L"当前冻结状态：" << res.msg << endl;
-        WLog(LogLevel::Info, L"Freeze state: " + res.msg);
+        WuLog::Info( L"Freeze state: " + res.msg);
     }
 }
 
@@ -76,11 +76,11 @@ void TryProtectDisk(const wstring& disk, IHugoFreeze& api)
     auto res = api.TryProtect(d);
     if (res.result != FrzOR::Success) {
         wcerr << L"尝试冻结失败：" << res.errMsg << endl;
-        WLog(LogLevel::Error, L"TryProtect failed: " + res.errMsg);
+        WuLog::Error( L"TryProtect failed: " + res.errMsg);
     }
     else {
         wcout << L"尝试冻结成功：" << res.msg << endl;
-        WLog(LogLevel::Info, L"TryProtect success: " + res.msg);
+        WuLog::Info( L"TryProtect success: " + res.msg);
     }
 }
 
@@ -198,7 +198,7 @@ int wmain(int argc, wchar_t* argv[])
             }
             case 0:
                 wcout << L"退出程序。" << endl;
-                WLog(LogLevel::Info, L"User exited");
+                WuLog::Info( L"User exited");
                 break;
             default:
                 wcerr << L"无效选择，请重新输入" << endl;
@@ -213,7 +213,7 @@ int wmain(int argc, wchar_t* argv[])
     }
     catch (const exception& e) {
         wcerr << L"致命错误：" << e.what() << endl;
-        WLog(LogLevel::Error, L"Fatal: " + ConvertString<wstring>(e.what()));
+        WuLog::Error( L"Fatal: " + ConvertString<wstring>(e.what()));
         return 1;
     }
 }

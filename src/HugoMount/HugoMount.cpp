@@ -84,7 +84,7 @@ void PrintHelp(const wstring& programName)
 int ExecuteList(HMount& instance)
 {
 	instance.PrintAllInfo();
-	WLog(LogLevel::Info, L"Executed list command");
+	WuLog::Log(LogLevel::Info, L"Executed list command");
 	return 0;
 }
 
@@ -93,7 +93,7 @@ int ExecuteMount(HMount& instance, const vector<wstring>& args)
 {
 	if (args.size() < 2) {
 		wcerr << L"错误: 挂载命令缺少参数！用法: --mount <disk> <part> [drive]" << endl;
-		WLog(LogLevel::Error, L"Mount command missing arguments");
+		WuLog::Error( L"Mount command missing arguments");
 		return 1;
 	}
 
@@ -105,14 +105,14 @@ int ExecuteMount(HMount& instance, const vector<wstring>& args)
 		auto letterOpt = ParseDriveLetter(args[2]);
 		if (!letterOpt) {
 			wcerr << L"错误: 盘符参数必须是单个字母！" << endl;
-			WLog(LogLevel::Error, L"Invalid drive letter for mount command");
+			WuLog::Error( L"Invalid drive letter for mount command");
 			return 1;
 		}
 		driveLetter = *letterOpt;
 	}
 
 	int result = instance.Mount(diskId, partId, driveLetter);
-	WLog(LogLevel::Info, L"Mount command completed, return code: " + to_wstring(result));
+	WuLog::Log(LogLevel::Info, L"Mount command completed, return code: " + to_wstring(result));
 	return result;
 }
 
@@ -121,7 +121,7 @@ int ExecuteUnmount(HMount& instance, const vector<wstring>& args)
 {
 	if (args.empty()) {
 		wcerr << L"错误: 卸载命令缺少参数！用法: --unmount <drive> 或 --unmount <disk> <part>" << endl;
-		WLog(LogLevel::Error, L"Unmount command missing arguments");
+		WuLog::Error( L"Unmount command missing arguments");
 		return 1;
 	}
 
@@ -130,7 +130,7 @@ int ExecuteUnmount(HMount& instance, const vector<wstring>& args)
 		auto driveOpt = ParseDriveLetter(args[0]);
 		if (driveOpt) {
 			int result = instance.Unmount(*driveOpt);
-			WLog(LogLevel::Info, L"Unmount by drive letter completed, return code: " + to_wstring(result));
+			WuLog::Log(LogLevel::Info, L"Unmount by drive letter completed, return code: " + to_wstring(result));
 			return result;
 		}
 	}
@@ -140,12 +140,12 @@ int ExecuteUnmount(HMount& instance, const vector<wstring>& args)
 		int diskId = _wtoi(args[0].c_str());
 		int partId = _wtoi(args[1].c_str());
 		int result = instance.Unmount(diskId, partId);
-		WLog(LogLevel::Info, L"Unmount by disk/partition completed, return code: " + to_wstring(result));
+		WuLog::Log(LogLevel::Info, L"Unmount by disk/partition completed, return code: " + to_wstring(result));
 		return result;
 	}
 
 	wcerr << L"错误: 无效的卸载参数！" << endl;
-	WLog(LogLevel::Error, L"Invalid unmount arguments");
+	WuLog::Error( L"Invalid unmount arguments");
 	return 1;
 }
 
@@ -159,7 +159,7 @@ int ExecuteConfOrLog(HMount& instance, const wstring& command, const vector<wstr
 		driveLetter = ParseDriveLetter(args[0]);
 		if (!driveLetter) {
 			wcerr << L"错误: 盘符参数必须是单个字母！" << endl;
-			WLog(LogLevel::Error, L"Invalid drive letter for " + command + L" command");
+			WuLog::Error( L"Invalid drive letter for " + command + L" command");
 			return 1;
 		}
 	}
@@ -192,18 +192,18 @@ int ExecuteConfOrLog(HMount& instance, const wstring& command, const vector<wstr
 
 	if (foundDiskIndex == -1) {
 		wcerr << L"错误: 未找到包含 " << targetFile << L" 的磁盘！" << endl;
-		WLog(LogLevel::Error, L"Disk containing " + targetFile + L" not found");
+		WuLog::Error( L"Disk containing " + targetFile + L" not found");
 		return 1;
 	}
 
 	if (foundPartIndex == -1) {
 		wcerr << L"错误: 磁盘 " << foundDiskIndex << L" 没有有效分区可挂载！" << endl;
-		WLog(LogLevel::Error, L"Disk " + to_wstring(foundDiskIndex) + L" has no valid partition");
+		WuLog::Error( L"Disk " + to_wstring(foundDiskIndex) + L" has no valid partition");
 		return 1;
 	}
 
 	int result = instance.Mount(foundDiskIndex, foundPartIndex, driveLetter.value_or(0));
-	WLog(LogLevel::Info, targetFile + L" mount completed, return code: " + to_wstring(result));
+	WuLog::Log(LogLevel::Info, targetFile + L" mount completed, return code: " + to_wstring(result));
 	return result;
 }
 
@@ -284,7 +284,7 @@ void InteractiveMode(HMount& instance)
 			break;
 		case 0:
 			wcout << L"退出程序。" << endl;
-			WLog(LogLevel::Info, L"User exited");
+			WuLog::Log(LogLevel::Info, L"User exited");
 			break;
 		default:
 			wcerr << L"无效选择，请重新输入" << endl;
@@ -300,6 +300,7 @@ int wmain(int argc, wchar_t* argv[])
 {
 	try {
 		RequireAdminPrivilege(true);
+		SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 		EnsureSingleInstance(true);
 		Console().setLocale();
 
@@ -355,7 +356,7 @@ int wmain(int argc, wchar_t* argv[])
 	}
 	catch (const exception& e) {
 		wcerr << L"致命错误: " << ConvertString<wstring>(e.what()) << endl;
-		WLog(LogLevel::Error, L"Fatal: " + ConvertString<wstring>(e.what()));
+		WuLog::Error( L"Fatal: " + ConvertString<wstring>(e.what()));
 		return 1;
 	}
 }

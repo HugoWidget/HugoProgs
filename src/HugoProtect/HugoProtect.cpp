@@ -60,7 +60,7 @@ bool ExecuteDriverServiceOp(bool enable)
 
 	if (!driverPath.has_value()) {
 		wcerr << L"未找到 DriverService.exe 路径" << endl;
-		WLog(LogLevel::Error, L"DriverService.exe path not found");
+		WuLog::Log(LogLevel::Error, L"DriverService.exe path not found");
 		return false;
 	}
 
@@ -68,16 +68,16 @@ bool ExecuteDriverServiceOp(bool enable)
 	const wstring opCmd = enable ? kDriverInstallCmd : kDriverUninstallCmd;
 
 	wcout << L"正在" << opDesc << L"文件保护驱动..." << endl;
-	WLog(LogLevel::Info, L"Executing " + opDesc + L" DriverService: " + driverPath->c_str());
+	WuLog::Log(LogLevel::Info, L"Executing " + opDesc + L" DriverService: " + driverPath->c_str());
 
 	bool success = RunExternalProgram(*driverPath, kRunAsVerb, opCmd, *driverPath);
 	if (success) {
 		wcout << L"文件保护驱动" << opDesc << L"成功" << endl;
-		WLog(LogLevel::Info, L"DriverService " + opCmd + L" succeeded");
+		WuLog::Log(LogLevel::Info, L"DriverService " + opCmd + L" succeeded");
 	}
 	else {
 		wcerr << L"文件保护驱动" << opDesc << L"失败" << endl;
-		WLog(LogLevel::Error, L"DriverService " + opCmd + L" failed");
+		WuLog::Log(LogLevel::Error, L"DriverService " + opCmd + L" failed");
 	}
 	return success;
 }
@@ -168,7 +168,7 @@ int wmain(int argc, wchar_t* argv[])
 				break;
 			case 0:
 				wcout << L"退出程序。" << endl;
-				WLog(LogLevel::Info, L"User exited");
+				WuLog::Log(LogLevel::Info, L"User exited");
 				break;
 			default:
 				wcerr << L"无效选择，请重新输入" << endl;
@@ -184,7 +184,7 @@ int wmain(int argc, wchar_t* argv[])
 	}
 	catch (const exception& e) {
 		wcerr << L"致命错误: " << ConvertString<wstring>(e.what()) << endl;
-		WLog(LogLevel::Error, L"Fatal: " + ConvertString<wstring>(e.what()));
+		WuLog::Log(LogLevel::Error, L"Fatal: " + ConvertString<wstring>(e.what()));
 		return 1;
 	}
 }

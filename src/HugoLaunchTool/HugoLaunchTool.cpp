@@ -46,12 +46,12 @@ const wstring kLaunchToolName = L"HugoLaunchTool.exe";
 
 void StartSeewoService() {
 	TerminateProcessesByName(kLaunchToolName);
-	WLog(LogLevel::Info, L"Terminated " + kLaunchToolName);
+	WuLog::Info( L"Terminated " + kLaunchToolName);
 
 	WinSvcMgr serviceManager(kServiceName);
 	if (serviceManager.Start()) {
 		wcout << L"希沃核心服务已启动" << endl;
-		WLog(LogLevel::Info, L"Started service: " + kServiceName);
+		WuLog::Info( L"Started service: " + kServiceName);
 	}
 	else {
 		wcerr << L"启动服务失败" << endl;
@@ -61,7 +61,7 @@ void StartSeewoService() {
 void SingleStopProcesses() {
 	int closed = TerminateMultipleProcesses(kProcessesToTerminate);
 	wcout << L"已终止 " << closed << L" 个希沃进程" << endl;
-	WLog(LogLevel::Info, L"Single stop: terminated " + to_wstring(closed) + L" processes");
+	WuLog::Info( L"Single stop: terminated " + to_wstring(closed) + L" processes");
 }
 
 void StartMonitorAndWaitForStop() {
@@ -80,7 +80,7 @@ void StartMonitorAndWaitForStop() {
 
 	StopProcessMonitor(handle);
 	wcout << L"监控已停止，相关进程处理完毕" << endl;
-	WLog(LogLevel::Info, L"Terminated Seewo processes");
+	WuLog::Info( L"Terminated Seewo processes");
 }
 
 void PrintHelp() {
@@ -101,6 +101,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 	try {
 		RequireAdminPrivilege(true);
 		console.setLocale();
+		SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
 		LoggerCore::Inst().SetDefaultStrategies(L"HugoLaunchTool.log");
 		LoggerCore::Inst().EnableApartment(DftLogger);
@@ -171,7 +172,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 				break;
 			case 0:
 				wcout << L"退出程序。" << endl;
-				WLog(LogLevel::Info, L"User exited");
+				WuLog::Info( L"User exited");
 				break;
 			default:
 				wcerr << L"无效选择，请重新输入" << endl;
@@ -186,7 +187,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 	}
 	catch (const exception& e) {
 		wcerr << L"致命错误: " << ConvertString<wstring>(e.what()) << endl;
-		WLog(LogLevel::Error, L"Fatal: " + ConvertString<wstring>(e.what()));
+		WuLog::Error( L"Fatal: " + ConvertString<wstring>(e.what()));
 		return 1;
 	}
 }
