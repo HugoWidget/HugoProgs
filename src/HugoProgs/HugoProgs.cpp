@@ -411,6 +411,11 @@ void registerObject(ConsoleMenu& menu) {
 			wstring progPath = GetExternalProgramPath(L"HugoFreezeApi.exe");
 			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--help");
 			});
+		// 文件版本
+		freezeMenu.addCommand(L"file", L"启动HugoFreezeFile.exe", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoFreezeFile.exe");
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"");
+			});
 		freezeMenu.addCommand(L"off", L"希沃官方工具（可能需要先关闭SeewoCore）", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"SeewoFreeze\\SeewoFreezeUI.exe");
 			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"", false);
@@ -570,25 +575,9 @@ void registerObject(ConsoleMenu& menu) {
 	// ==================== 子菜单：希沃锁屏工具 ====================
 	auto& lockMenu = menu.addSubmenu(L"lock", L"希沃锁屏工具");
 	{
-		lockMenu.addCommand(L"lock", L"说明", [=](ConsoleMenu&, Args) {
-			wcout << L"HugoLock在method=lock时被HugoLockAssistant调用\n";
-			});
-		lockMenu.addCommand(L"assistant", L"启动 <method> <mode>", [=](ConsoleMenu&, Args args) {
-			auto params = args.getParams(L"");
-			if (params.size() < 2) {
-				wcout << L"用法: assistant <method> <mode>\n";
-				return;
-			}
-			wstring progPath = GetExternalProgramPath(L"HugoLockAssistant.exe");
-			if (!progPath.empty()) {
-				ExecuteProgramInCurrentConsole(progPath, L" --method=" + params[0] + L" --mode=" + params[1]);
-			}
-			});
-		lockMenu.addCommand(L"mode", L"HugoLockAssistant参数", [=](ConsoleMenu&, Args) {
-			wcout << L"支持assist，direct，disable，即辅助解锁（需要主动点击解锁），直接解锁，完全禁用\n";
-			});
-		lockMenu.addCommand(L"method", L"HugoLockAssistant参数", [=](ConsoleMenu&, Args) {
-			wcout << L"支持lock、dbg、frontend、launchtool\n";
+		lockMenu.addCommand(L"info", L"说明", [=](ConsoleMenu&, Args) {
+			wcout << L"这些工具不适合在此调用，可使用execute命令来执行，\n"
+				<< L"使用方式详见帮助文档。";
 			});
 	}
 
@@ -786,7 +775,7 @@ void registerObject(ConsoleMenu& menu) {
 		}
 	}
 
-	auto& screensaverMenu= menu.addSubmenu(L"screensaver", L"屏幕保护程序");
+	auto& screensaverMenu = menu.addSubmenu(L"screensaver", L"屏幕保护程序");
 	{
 		screensaverMenu.addCommand(L"on", L"打开屏幕保护程序", [](ConsoleMenu&, Args args) {
 			wcout << L"功能未完成";
@@ -801,7 +790,7 @@ void registerObject(ConsoleMenu& menu) {
 	{
 		logsMenu.addCommand(L"clr", L"清除所有日志", [](ConsoleMenu&, Args args) {
 			wstring progPath = GetExternalProgramPath(L"HugoLogs.exe");
-			ExecuteProgramInCurrentConsole(progPath,L"--delete");
+			ExecuteProgramInCurrentConsole(progPath, L"--delete");
 			});
 		logsMenu.addCommand(L"ls", L"列出所有日志", [](ConsoleMenu&, Args args) {
 			wstring progPath = GetExternalProgramPath(L"HugoLogs.exe");
