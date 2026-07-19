@@ -16,7 +16,11 @@ Visual Studio 2022
 | **[HugoDisable](docs/HugoDisable.md)** | 禁用 `SeewoServiceAssistant.exe`或阻止其通过防火墙；禁用希沃更新 |
 | **[HugoFakeVerify](docs/HugoFakeVerify.md)** | 一个空程序。                                                 |
 | **[HugoFreezeApi](docs/HugoFreezeApi.md)** | 通过本地服务 API 与希沃冰点服务交互，可设置冻结磁盘、查询冻结状态、尝试保护操作。 |
+| [**HugoFreezeDisk**](docs/HugoFreezeDisk.md) | 通过驱动写入磁盘绕过冰点还原，仅为启动器。 |
 | **[HugoFreezeDriver](docs/HugoFreezeDriver.md)** | 驱动级冰点控制工具，可查询驱动状态、运行时配置，并冻结/解冻指定盘符。 |
+| [**HugoFreezeFile**](docs/HugoFreezeFile.md) | ProtectInfo 编辑器，可编辑`VolumeInfo.config`文件。 |
+| [**HugoFrzDrvHook**](docs/HugoFrzDrvHook.md) | 通过Hook驱动分发例程来实现动态解除冰点，PoC源于网络，暂未实现。 |
+| [**HugoInfo**](docs/HugoInfo.md) | 基本信息展示。 |
 | **[HugoInjector](docs/HugoInjector.md)** | 通用 DLL 注入器，结合 `HugoHSSA.dll` 解除锁屏与热键限制。 |
 | **[HugoInstaller](docs/HugoInstaller.md)** | 希沃安装/卸载管理器：可下载指定版本或最新版。                |
 | **[HugoLaunchTool](docs/HugoLaunchTool.md)** | 控制希沃核心进程的启动与终止。                               |

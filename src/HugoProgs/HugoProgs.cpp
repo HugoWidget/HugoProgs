@@ -768,6 +768,7 @@ void registerObject(ConsoleMenu& menu) {
 				wstring progPath = GetExternalProgramPath(L"AutoStartService.exe");
 				if (!progPath.empty()) {
 					DWORD exitCode = 0;
+					wcout << L"服务路径: ";
 					ExecuteProgramInCurrentConsole(progPath, L"/query", true, &exitCode);
 					wcout << L"服务状态: " << (exitCode ? L"已注册" : L"未注册") << L"\n";
 				}
