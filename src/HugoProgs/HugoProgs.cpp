@@ -411,6 +411,43 @@ void registerObject(ConsoleMenu& menu) {
 			wstring progPath = GetExternalProgramPath(L"HugoFreezeApi.exe");
 			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--help");
 			});
+		freezeMenu.addCommand(L"disk", L"运行HugoFreezeDisk.exe", [](ConsoleMenu& menu, Args) {
+			if (!IsCurrentProcessAdmin()) {
+				wcout << L"注意：HugoFreezeDisk.exe 需要管理员权限才能正常运行\n";
+			}
+			wcout << L"警告：本程序仅为概念验证（PoC）用途，\n"
+				"开发者未对其可用性、稳定性和安全性做出任何明示或暗示的保证。\n"
+				"使用者继续使用本程序即表示同意自行承担所有风险，\n"
+				"因使用本程序所引发的任何安全问题、数据丢失、系统损害或其他法律责任，\n"
+				"开发者均不承担任何责任。" << endl;
+			wcout << L"继续使用？[Y/N]\n";
+			if (towupper(_getwch()) != L'Y') {
+				wcout << L"\n已取消操作\n";
+				return;
+			}
+			wstring progPath = GetExternalProgramPath(L"HugoFreezeDisk/HugoFreezeDisk.exe");
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"");
+			wcout << L"如果程序正常运行，冰点还原将会在重启后解除。\n";
+			});
+		freezeMenu.addCommand(L"hook", L"运行HugoFrzDrvHook.exe", [](ConsoleMenu& menu, Args) {
+			if (!IsCurrentProcessAdmin()) {
+				wcout << L"注意：HugoFrzDrvHook.exe 需要管理员权限才能正常运行\n";
+			}
+			wcout << L"警告：本程序来源网络，暂无相关文档，使用前请自行评估风险。\n"
+				"开发者未对其可用性、稳定性和安全性做出任何明示或暗示的保证。\n"
+				"使用者继续使用本程序即表示同意自行承担所有风险，\n"
+				"因使用本程序所引发的任何安全问题、数据丢失、系统损害或其他法律责任，\n"
+				"开发者均不承担任何责任。" << endl;
+			wcout << L"继续使用？[Y/N]\n";
+			if (towupper(_getwch()) != L'Y') {
+				wcout << L"\n已取消操作\n";
+				return;
+			}
+			wstring progPath = GetExternalProgramPath(L"HugoFrzDrvHook.exe");
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"");
+			wcout << L"如果程序正常运行，应该已经动态解除冰点。\n";
+			wcout << L"现在可以使用HugoFreezeFile来修改冰点配置" << endl;
+			});
 		// 文件版本
 		freezeMenu.addCommand(L"file", L"启动HugoFreezeFile.exe", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoFreezeFile.exe");
