@@ -429,25 +429,138 @@ void registerObject(ConsoleMenu& menu) {
 			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"");
 			wcout << L"如果程序正常运行，冰点还原将会在重启后解除。\n";
 			});
-		freezeMenu.addCommand(L"hook", L"运行HugoFrzDrvHook.exe", [](ConsoleMenu& menu, Args) {
-			if (!IsCurrentProcessAdmin()) {
-				wcout << L"注意：HugoFrzDrvHook.exe 需要管理员权限才能正常运行\n";
+		auto& hookMenu = freezeMenu.addSubmenu(L"hook", L"运行HugoFrzDrvHook.exe");
+		{
+			hookMenu.addCommand(L"about-hook", L"关于HugoFrzDrvHook.exe", [](ConsoleMenu& menu, Args) {
+				if (!IsCurrentProcessAdmin()) {
+					wcout << L"注意：HugoFrzDrvHook.exe 需要管理员权限才能正常运行\n";
+				}
+				wcout << L"警告：本程序将对希沃驱动进行修改。\n"
+					"开发者未对其可用性、稳定性和安全性做出任何明示或暗示的保证。\n"
+					"使用者继续使用本程序即表示同意自行承担所有风险，\n"
+					"因使用本程序所引发的任何安全问题、数据丢失、系统损害或其他法律责任，\n"
+					"开发者均不承担任何责任。" << endl;
+				wcout << L"项目开源于 https://github.com/HugoWidget/HugoFrzDrvHook\n";
+				});
+
+			// 封装检查管理员权限并执行外部程序
+			auto execHook = [](const wstring& args) {
+				if (!IsCurrentProcessAdmin()) {
+					wcout << L"此功能需要管理员权限。请以管理员身份运行本程序。\n";
+					return;
+				}
+				wstring progPath = GetExternalProgramPath(L"HugoFrzDrvHook.exe");
+				if (!progPath.empty())
+					ExecuteProgramInCurrentConsole(progPath, args);
+				};
+
+			// cfg – 修改冰点还原配置
+			hookMenu.addCommand(L"cfg", L"修改冰点还原配置 (保护卷)", [execHook](ConsoleMenu&, Args) {
+				wstring drives = ReadUserInput(L"请输入要保护的盘符（如 C D，留空则取消所有保护）：");
+				wstring args = L"cfg";
+				if (!drives.empty()) args += L" " + drives;
+				execHook(args);
+				});
+
+			// mjfunc – 设置磁盘驱动分发例程
+			hookMenu.addCommand(L"mjfunc", L"设置磁盘驱动分发例程 (0/1)", [execHook](ConsoleMenu&, Args) {
+				wstring val = ReadUserInput(L"输入 0(使用SWFreeze挂钩) 或 1(恢复原生disk.sys)：");
+				if (val != L"0" && val != L"1") {
+					wcout << L"无效输入。\n";
+					return;
+				}
+				execHook(L"mjfunc " + val);
+				});
+
+			// volume – 临时修改卷保护状态
+			hookMenu.addCommand(L"volume", L"临时修改卷保护状态", [execHook](ConsoleMenu&, Args) {
+				wstring drives = ReadUserInput(L"请输入盘符（空格分隔，如 C D）：");
+				if (drives.empty()) {
+					wcout << L"盘符不能为空。\n";
+					return;
+				}
+				wstring status = ReadUserInput(L"保护状态 (0-禁用保护, 1-开启保护)：");
+				if (status != L"0" && status != L"1") {
+					wcout << L"无效状态。\n";
+					return;
+				}
+				execHook(L"volume " + drives + L" " + status);
+				});
+
+			// 子菜单：whitelist 白扇区位图控制
+			auto& whitelistMenu = hookMenu.addSubmenu(L"whitelist", L"白扇区位图控制");
+			{
+				whitelistMenu.addCommand(L"file", L"按文件设置白扇区位图", [execHook](ConsoleMenu&, Args) {
+					wstring filepath = ReadUserInput(L"请输入文件完整路径：");
+					if (filepath.empty()) {
+						wcout << L"路径无效。\n";
+						return;
+					}
+					wstring val = ReadUserInput(L"设置状态 (0-扇区重定向, 1-直接读写)：");
+					if (val != L"0" && val != L"1") {
+						wcout << L"无效输入。\n";
+						return;
+					}
+					execHook(L"whitelist file \"" + filepath + L"\" " + val);
+					});
+
+				whitelistMenu.addCommand(L"sec", L"按扇区位图设值", [execHook](ConsoleMenu&, Args) {
+					wstring drive = ReadUserInput(L"请输入盘符（如 C）：");
+					wstring start = ReadUserInput(L"起始扇区（8的倍数）：");
+					wstring length = ReadUserInput(L"长度（8的倍数）：");
+					wstring val = ReadUserInput(L"值 (0或1)：");
+					if (val != L"0" && val != L"1" || drive.empty() || start.empty() || length.empty()) {
+						wcout << L"无效值。\n";
+						return;
+					}
+					execHook(L"whitelist sec " + drive + L" " + start + L" " + length + L" " + val);
+					});
+
+				whitelistMenu.addCommand(L"in", L"导入白扇区位图", [execHook](ConsoleMenu&, Args) {
+					wstring drive = ReadUserInput(L"盘符：");
+					wstring start = ReadUserInput(L"起始扇区（8的倍数）：");
+					wstring length = ReadUserInput(L"长度（8的倍数）：");
+					wstring filepath = ReadUserInput(L"导入文件路径：");
+					if (filepath.empty() || drive.empty() || start.empty() || length.empty()) {
+						wcout << L"无效输入。\n";
+						return;
+					}
+					execHook(L"whitelist in " + drive + L" " + start + L" " + length + L" \"" + filepath + L"\"");
+					});
+
+				whitelistMenu.addCommand(L"out", L"导出白扇区位图", [execHook](ConsoleMenu&, Args) {
+					wstring drive = ReadUserInput(L"盘符：");
+					wstring start = ReadUserInput(L"起始扇区（8的倍数）：");
+					wstring length = ReadUserInput(L"长度（8的倍数）：");
+					wstring filepath = ReadUserInput(L"导出文件路径：");
+					if (filepath.empty() || drive.empty() || start.empty() || length.empty()) {
+						wcout << L"无效输入。\n";
+						return;
+					}
+					execHook(L"whitelist out " + drive + L" " + start + L" " + length + L" \"" + filepath + L"\"");
+					});
 			}
-			wcout << L"警告：本程序来源网络，暂无相关文档，使用前请自行评估风险。\n"
-				"开发者未对其可用性、稳定性和安全性做出任何明示或暗示的保证。\n"
-				"使用者继续使用本程序即表示同意自行承担所有风险，\n"
-				"因使用本程序所引发的任何安全问题、数据丢失、系统损害或其他法律责任，\n"
-				"开发者均不承担任何责任。" << endl;
-			wcout << L"继续使用？[Y/N]\n";
-			if (towupper(_getwch()) != L'Y') {
-				wcout << L"\n已取消操作\n";
-				return;
-			}
-			wstring progPath = GetExternalProgramPath(L"HugoFrzDrvHook.exe");
-			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"");
-			wcout << L"如果程序正常运行，应该已经动态解除冰点。\n";
-			wcout << L"现在可以使用HugoFreezeFile来修改冰点配置" << endl;
-			});
+
+			// flt – 模拟冰点还原状态
+			hookMenu.addCommand(L"flt", L"模拟冰点还原状态", [execHook](ConsoleMenu&, Args) {
+				wstring input = ReadUserInput(L"输入盘符（如 C D）或输入 off 禁用此功能：");
+				if (input.empty()) {
+					wcout << L"输入无效。\n";
+					return;
+				}
+				execHook(L"flt " + input);
+				});
+
+			// info – 获取冰点还原相关信息
+			hookMenu.addCommand(L"info", L"获取冰点还原相关信息", [execHook](ConsoleMenu&, Args) {
+				execHook(L"info");
+				});
+
+			// help – 显示帮助
+			hookMenu.addCommand(L"h", L"显示 HugoFrzDrvHook 帮助", [execHook](ConsoleMenu&, Args) {
+				execHook(L"help");
+				});
+		}
 		// 文件版本
 		freezeMenu.addCommand(L"file", L"启动HugoFreezeFile.exe", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoFreezeFile.exe");

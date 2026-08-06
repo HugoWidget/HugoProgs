@@ -19,7 +19,7 @@ Visual Studio 2022
 | [**HugoFreezeDisk**](docs/HugoFreezeDisk.md) | 通过驱动写入磁盘绕过冰点还原，仅为启动器。 |
 | **[HugoFreezeDriver](docs/HugoFreezeDriver.md)** | 驱动级冰点控制工具，可查询驱动状态、运行时配置，并冻结/解冻指定盘符。 |
 | [**HugoFreezeFile**](docs/HugoFreezeFile.md) | ProtectInfo 编辑器，可编辑`VolumeInfo.config`文件。 |
-| [**HugoFrzDrvHook**](docs/HugoFrzDrvHook.md) | 通过Hook驱动分发例程来实现动态解除冰点，PoC源于网络，暂未实现。 |
+| [**HugoFrzDrvHook**](docs/HugoFrzDrvHook.md) | 通过Hook驱动分发例程来实现动态解除冰点，详见[项目](https://github.com/HugoWidget/HugoFrzDrvHook)。 |
 | [**HugoInfo**](docs/HugoInfo.md) | 基本信息展示。 |
 | **[HugoInjector](docs/HugoInjector.md)** | 通用 DLL 注入器，结合 `HugoHSSA.dll` 解除锁屏与热键限制。 |
 | **[HugoInstaller](docs/HugoInstaller.md)** | 希沃安装/卸载管理器：可下载指定版本或最新版。                |
@@ -29,9 +29,9 @@ Visual Studio 2022
 | [**HugoLogs**](docs/HugoLogs.md) | 管理所有程序的log。 |
 | [**HugoMonitor**](docs/HugoMonitor.md) | 实时检测希沃软件调用本地摄像头的行为并提醒。 |
 | **[HugoMount](docs/HugoMount.md)** | 虚拟磁盘挂载工具，可列出、挂载、卸载希沃的日志盘、配置盘等。 |
+| **[HugoPassword](docs/HugoPassword.md)** | 枚举以找回希沃管家/锁屏密码。                                |
 | **[HugoProgs](docs/HugoProgs.md)** | 主菜单程序，集成所有工具，提供交互界面，支持脚本执行。           |
 | **[HugoProtect](docs/HugoProtect.md)** | 开关希沃的文件保护功能。                                     |
-| **[HugoPassword](docs/HugoPassword.md)** | 枚举以找回希沃管家/锁屏密码。                                |
 | [**HugoScreenSaver**](docs/HugoScreenSaver.md) | 管理希沃屏幕保护 |
 ## 编译运行
 
@@ -55,9 +55,9 @@ Release中HugoProgs.zip为该项目完整编译产物，前往[HugoSetup](https:
 - 在 config/auto 修改启动配置（也就是`Launcher.ini`），格式为：
 
 ```ini
-[节名，任意的英文字符串]
-Program=.\HugoLockAssistant.exe
-Params=--method=lock --mode=assist
+[节名，任意的英文字符串，如Pro1]
+Program=.\HugoLock.exe
+Params=--mode=assist
 RunAsAdmin=true
 ShowWnd=0
 
@@ -66,15 +66,45 @@ Program=.\HotspotHelper.exe
 Params=-start
 RunAsAdmin=true
 
-...
+[Pro3]
+Program=.\TaskManager.exe
 
+...
 ```
 
-结合使用介绍修改Params来达到不同的功能，如果想要界面化的方式，见HugoWidgets，但可惜的是由于开发者时间精力有限，其没有自启动与锁屏相关功能，如果想做出贡献，欢迎加入。
+结合使用介绍修改该文件来达到不同的功能，如果想要界面化的方式，见HugoWidgets，但可惜的是由于开发者时间精力有限，其没有自启动与锁屏相关功能，如果想做出贡献，欢迎加入。
 
-你可能注意到task配置选项，且默认Launcher.ini配置中有.\TaskManager，其[配置方法](https://github.com/howdy213/WinTools)类似于Launcher，若不需要可以去掉
+你可能注意到`task`配置选项，以及`tasks.ini`文件，且默认Launcher.ini配置中有`.\TaskManager`，其[配置方法](https://github.com/howdy213/WinTools)类似于`Launcher.exe`，若不需要可以去掉
 
 - 之后每次开机，将自动启动`Launcher.exe`并按照配置逐个打开目标程序
+- [详细介绍见此](docs/HugoProgs.md)
+
+## 运行方式
+
+1. 自启动
+
+```
+AutoStartService服务启动
+└--> Launcher启动 -----> 依次调用各种程序
+      |
+      | 若有TaskManager
+      |
+      └-----> 则按配置在指定时刻调用程序
+```
+
+2. 手动打开
+
+```
+Start.exe或直接打开
+└--> 显示主菜单 -----> 输入并执行
+```
+
+3. 脚本
+
+```
+打开.hps文件
+└--> 逐行执行命令
+```
 
 ## 脚本执行
 
@@ -105,6 +135,8 @@ cpp-httplib: [MIT 许可证](licenses/LICENSE-cpp-httplib)
 mINI: [MIT 许可证](licenses/LICENSE-mINI)
 
 WinReg: [MIT 许可证](licenses/LICENSE-WinReg)
+
+libsharedmemory：[MIT 许可证](licenses/LICENSE-libsharedmemory)
 
 ## 致谢
 
