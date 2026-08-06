@@ -27,6 +27,7 @@ Visual Studio 2022
 | **[HugoLock](docs/HugoLock.md)** | 实时隐藏“希沃管家”锁屏窗口，强制解除锁屏，也可以使用其解除屏保（HugoDbg也支持） |
 | **[HugoLockAssistant](docs/HugoLockAssistant.md)** | 调用不同方式实现锁屏/屏保解除。                                |
 | [**HugoLogs**](docs/HugoLogs.md) | 管理所有程序的log。 |
+| [**HugoMonitor**](docs/HugoMonitor.md) | 实时检测希沃软件调用本地摄像头的行为并提醒。 |
 | **[HugoMount](docs/HugoMount.md)** | 虚拟磁盘挂载工具，可列出、挂载、卸载希沃的日志盘、配置盘等。 |
 | **[HugoProgs](docs/HugoProgs.md)** | 主菜单程序，集成所有工具，提供交互界面，支持脚本执行。           |
 | **[HugoProtect](docs/HugoProtect.md)** | 开关希沃的文件保护功能。                                     |
@@ -112,6 +113,8 @@ WinReg: [MIT 许可证](licenses/LICENSE-WinReg)
 [swhelper](https://sw.s3.fan/swhelper/introduce.html)：部分项目（HugoMount，HugoFreezeDriver等）方案来源
 
 [bruteforce_passwordv3](https://github.com/CatMe0w/bruteforce_passwordv3)：Password V3 算法
+
+[NoMoreMonitor](https://github.com/lilith-is-all-you-need/NoMoreMonitor)：HugoMonitor 方案来源
 
 ## 免责声明
 

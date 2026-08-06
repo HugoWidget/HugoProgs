@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with HugoProgs. If not, see <https://www.gnu.org/licenses/>.
  */
+#include "WinUtils/WinPch.h"
 
 #include <iostream>
 #include <string>

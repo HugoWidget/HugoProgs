@@ -20,6 +20,7 @@
 #include "WinUtils/WinPch.h"
 #include "HugoUtils/HugoUtilsDef.h"
 
+#ifndef HU_DISABLE_INSTALLER
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -474,3 +475,4 @@ int wmain(int argc, wchar_t* argv[])
         return 1;
     }
 }
+#endif // !HU_DISABLE_INSTALLER

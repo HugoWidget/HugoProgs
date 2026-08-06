@@ -19,14 +19,18 @@
   <Project Path="src/HugoFreezeApi/HugoFreezeApi.vcxproj" Id="63f11bd7-1abf-43e8-b1dc-e4122315e973">
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>
-  <Project Path="src/HugoFreezeDisk/HugoFreezeDisk.vcxproj" Id="d2eb41e5-3694-4940-816f-da29a40b25c7" />
+  <Project Path="src/HugoFreezeDisk/HugoFreezeDisk.vcxproj" Id="d2eb41e5-3694-4940-816f-da29a40b25c7">
+    <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
+  </Project>
   <Project Path="src/HugoFreezeDriver/HugoFreezeDriver.vcxproj" Id="5bad38e5-7163-4851-9907-b6c7ea003137">
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>
   <Project Path="src/HugoFreezeFile/HugoFreezeFile.vcxproj" Id="4b32f4fe-ad87-4d0c-aa4d-e247300891e8">
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>
-  <Project Path="src/HugoFrzDrvHook/HugoFrzDrvHook.vcxproj" Id="c40f847f-e628-495a-9e4c-18256e14d73e" />
+  <Project Path="src/HugoFrzDrvHook/HugoFrzDrvHook.vcxproj" Id="c40f847f-e628-495a-9e4c-18256e14d73e">
+    <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
+  </Project>
   <Project Path="src/HugoInfo/HugoInfo.vcxproj" Id="7b9d9d54-6ef3-460a-8d62-f666b1240a6d">
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>
@@ -47,6 +51,9 @@
     <BuildDependency Project="src/HugoLock/HugoLock.vcxproj" />
   </Project>
   <Project Path="src/HugoLogs/HugoLogs.vcxproj" Id="b58dd3b1-a654-4a04-81aa-dad73c9fd873">
+    <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
+  </Project>
+  <Project Path="src/HugoMonitor/HugoMonitor.vcxproj" Id="92ad1f41-771e-4ed0-966e-cdef8ca2077e">
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>
   <Project Path="src/HugoMount/HugoMount.vcxproj" Id="7bd4dfd9-690b-4d01-9a86-612ffcd9ccb0">
