@@ -162,7 +162,7 @@ int wmain(int argc, wchar_t* argv[])
             uint16_t port = 0;
             wstring ip;
             freezeApi.GetConfig(ip, port);
-            wcout << L"\n=== 希沃远程冻结工具 ===\n"
+            wcout << L"\n=== 希沃冰点Api通信工具 ===\n"
                 << L"目标 IP: " << ip << L":" << to_wstring(port) << L"\n\n"
                 << L"1. 设置冻结磁盘\n"
                 << L"2. 查询冻结状态\n"

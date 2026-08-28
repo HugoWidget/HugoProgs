@@ -1,5 +1,9 @@
 # HugoProgs
 
+> [!NOTE]
+>
+> 建议阅读 [HugoWidget 简介](https://github.com/HugoWidget/HugoWidget) 以了解开发情况
+
 ## 项目介绍
 
 帮助广大电教委对希沃功能进行增强与补充
