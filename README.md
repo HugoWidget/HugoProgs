@@ -142,6 +142,8 @@ WinReg: [MIT 许可证](licenses/LICENSE-WinReg)
 
 libsharedmemory：[MIT 许可证](licenses/LICENSE-libsharedmemory)
 
+OpenSSL: [Apache-2.0 license](licenses/LICENSE-OpenSSL)
+
 ## 致谢
 
 [seewo_jailbreak](https://github.com/CatMe0w/seewo_jailbreak)：HugoBreak 方案来源
