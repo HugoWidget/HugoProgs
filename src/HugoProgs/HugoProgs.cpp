@@ -31,6 +31,7 @@
 #include "HugoUtils/HArt.h"
 #include "WinUtils/ConsoleMenu.h"
 #include "HugoUtils/GPL3.h"
+#include "ConsoleTable.h"
 #include <WinUtils/WinReg.h>
 
 using namespace std;
@@ -366,6 +367,23 @@ void registerObject(ConsoleMenu& menu) {
 	// ==================== 子菜单：希沃冰点配置工具 ====================
 	auto& freezeMenu = menu.addSubmenu(L"freeze", L"希沃冰点配置工具");
 	{
+		freezeMenu.addCommand(L"info", L"功能介绍", [](ConsoleMenu&, Args) {
+			wcout << L"HugoWidget 提供多种方法管理还原，可按需取用\n";
+			ConsoleTable table;
+			table.addColumn(L"工具");
+			table.addColumn(L"介绍");
+			table.addColumn(L"特点");
+			table.addRow(L"Api", L"与希沃冰点服务交互", L"安全性最高");
+			table.addRow(L"Driver", L"与希沃冰点驱动交互", L"速度最快");
+			table.addRow(L"File", L"修改本地冰点文件", L"高度自定义");
+			table.addRow(L"", L" ", L"但只能在无冰点时编辑");
+			table.addRow(L"Hook", L"驱动运行时内存篡改", L"支持动态修改");
+			table.addRow(L"", L" + 内核执行流劫持", L"");
+			table.addRow(L"Disk", L"驱动级删除配置", L"通用性强");
+			table.addRow(L"Offcial", L"官方配置修改工具", L"原生体验");
+			table.addRow(L"WinPE", L"在WinPE中删除配置文件", L"通用性强");
+			table.print();
+			});
 		// 驱动版本
 		freezeMenu.addCommand(L"drv.get", L"查询驱动冻结状态", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoFreezeDriver.exe");
@@ -557,7 +575,7 @@ void registerObject(ConsoleMenu& menu) {
 				});
 
 			// help – 显示帮助
-			hookMenu.addCommand(L"h", L"显示 HugoFrzDrvHook 帮助", [execHook](ConsoleMenu&, Args) {
+			hookMenu.addCommand(L"hlp", L"显示 HugoFrzDrvHook 帮助", [execHook](ConsoleMenu&, Args) {
 				execHook(L"help");
 				});
 		}
@@ -951,7 +969,7 @@ void registerObject(ConsoleMenu& menu) {
 			wstring progPath = GetExternalProgramPath(L"HugoLogs.exe");
 			ExecuteProgramInCurrentConsole(progPath);
 			});
-		logsMenu.addCommand(L"h", L"帮助", [](ConsoleMenu&, Args args) {
+		logsMenu.addCommand(L"hlp", L"帮助", [](ConsoleMenu&, Args args) {
 			wstring progPath = GetExternalProgramPath(L"HugoLogs.exe");
 			ExecuteProgramInCurrentConsole(progPath, L"--help");
 			});

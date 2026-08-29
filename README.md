@@ -23,7 +23,7 @@ Visual Studio 2022
 | [**HugoFreezeDisk**](docs/HugoFreezeDisk.md) | 通过驱动写入磁盘绕过冰点还原，仅为启动器。 |
 | **[HugoFreezeDriver](docs/HugoFreezeDriver.md)** | 驱动级冰点控制工具，可查询驱动状态、运行时配置，并冻结/解冻指定盘符。 |
 | [**HugoFreezeFile**](docs/HugoFreezeFile.md) | ProtectInfo 编辑器，可编辑`VolumeInfo.config`文件。 |
-| [**HugoFrzDrvHook**](docs/HugoFrzDrvHook.md) | 通过Hook驱动分发例程来实现动态解除冰点，详见[项目](https://github.com/HugoWidget/HugoFrzDrvHook)。 |
+| [**HugoFrzDrvHook**](docs/HugoFrzDrvHook.md) | 运行时内存篡改 + 内核执行流劫持，详见[项目](https://github.com/HugoWidget/HugoFrzDrvHook)。 |
 | [**HugoInfo**](docs/HugoInfo.md) | 基本信息展示。 |
 | **[HugoInjector](docs/HugoInjector.md)** | 通用 DLL 注入器，结合 `HugoHSSA.dll` 解除锁屏与热键限制。 |
 | **[HugoInstaller](docs/HugoInstaller.md)** | 希沃安装/卸载管理器：可下载指定版本或最新版。                |
