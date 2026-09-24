@@ -71,4 +71,7 @@
   <Project Path="src/HugoScreenSaver/HugoScreenSaver.vcxproj" Id="31377715-12e6-495e-9a50-876ec3b32499">
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>
+  <Project Path="src/HugoWndRec/HugoWndRec.vcxproj" Id="f7fd099c-a364-44d7-a0d9-7efaa6271d83">
+    <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
+  </Project>
 </Solution>

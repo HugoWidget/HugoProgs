@@ -28,10 +28,10 @@
 #include "WinUtils/Console.h"
 #include "WinUtils/Logger.h"
 #include "WinUtils/CmdParser.h"
+#include "WinUtils/UIAccess.h"
 #include "HugoUtils/HLock.h"
 #include "resource.h"
 #include "HugoLock.h"
-#include "uiaccess.h"
 #include <WinUtils/INI.h>
 
 using namespace WinUtils;
@@ -105,7 +105,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_ LPWSTR lpCmdLine,
 	_In_ int nCmdShow) {
 	RequireAdminPrivilege(true);
-	DWORD dwUIAccessErr = PrepareForUIAccess();
+	DWORD dwUIAccessErr = UIAccess::PrepareForUIAccess();
 	if (dwUIAccessErr != ERROR_SUCCESS) {
 		WuLog::Warn(L"PrepareForUIAccess failed with error: {}", dwUIAccessErr);
 		WuLog::Info(L"Continuing without UIAccess (some features may be limited)");

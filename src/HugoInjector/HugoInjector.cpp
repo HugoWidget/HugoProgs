@@ -57,7 +57,7 @@ int wmain(int argc, wchar_t* argv[])
 				dllPath = ResolvePath(argv[1]);
 				targetProcess = argv[2];
 			}
-			EnsureSingleInstance(L"", L"", L"", dllPath + targetProcess);
+			EnsureSingleInstance(true, L"", L"", L"", dllPath + targetProcess);
 			injector.MonitorAndInject(dllPath, targetProcess, 100);
 		}
 	}
