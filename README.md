@@ -4,6 +4,8 @@
 >
 > 建议阅读 [HugoWidget 简介](https://github.com/HugoWidget/HugoWidget) 以了解开发情况
 
+若想进一步了解本项目，可阅读 [HugoProgs 用户文档](docs/User.md) 与 [HugoProgs 开发者文档](docs/Developer.md)
+
 ## 项目介绍
 
 帮助广大电教委对希沃功能进行增强与补充
@@ -37,13 +39,7 @@ Visual Studio 2022
 | **[HugoProgs](docs/HugoProgs.md)** | 主菜单程序，集成所有工具，提供交互界面，支持脚本执行。           |
 | **[HugoProtect](docs/HugoProtect.md)** | 开关希沃的文件保护功能。                                     |
 | [**HugoScreenSaver**](docs/HugoScreenSaver.md) | 管理希沃屏幕保护 |
-## 编译运行
-
-1. 执行`git clone https://github.com/HugoWidget/HugoProgs --recursive`
-2. 打开HugoProgs.slnx
-3. 如果使用lib（放在生成目录下）链接而不重新生成，请将HugoDeps中的附加依赖项HugoUtils去掉
-4. 生成
-
+| [**HugoWndRec**](docs/HugoWndRec.md) | 管理希沃窗口 |
 ## 说明
 
 Release中HugoProgs.zip为该项目完整编译产物，前往[HugoSetup](https://github.com/HugoWidget/HugoSetup)获取已配置版本
@@ -56,32 +52,12 @@ Release中HugoProgs.zip为该项目完整编译产物，前往[HugoSetup](https:
 
 - 管理员权限下前往 config/service/install 注册自启动服务（实质是启动`Launcher.exe`而非`HugoProgs.exe`）
 
-- 在 config/auto 修改启动配置（也就是`Launcher.ini`），格式为：
+- 在 config/auto 修改启动配置（也就是`Launcher.ini`）
 
-```ini
-[节名，任意的英文字符串，如Pro1]
-Program=.\HugoLock.exe
-Params=--mode=assist
-RunAsAdmin=true
-ShowWnd=0
-
-[不与上面重复的节名]
-Program=.\HotspotHelper.exe
-Params=-start
-RunAsAdmin=true
-
-[Pro3]
-Program=.\TaskManager.exe
-
-...
-```
-
-结合使用介绍修改该文件来达到不同的功能，如果想要界面化的方式，见HugoWidgets，但可惜的是由于开发者时间精力有限，其没有自启动与锁屏相关功能，如果想做出贡献，欢迎加入。
-
-你可能注意到`task`配置选项，以及`tasks.ini`文件，且默认Launcher.ini配置中有`.\TaskManager`，其[配置方法](https://github.com/howdy213/WinTools)类似于`Launcher.exe`，若不需要可以去掉
+  结合使用介绍修改该文件来达到不同的功能，如果想要界面化的方式，见HugoWidgets，但可惜的是由于开发者时间精力有限，其没有自启动与锁屏相关功能，如果想做出贡献，欢迎加入。
 
 - 之后每次开机，将自动启动`Launcher.exe`并按照配置逐个打开目标程序
-- [详细介绍见此](docs/HugoProgs.md)
+- 子项目 HugoProgs 详细介绍[见此](docs/HugoProgs.md)
 
 ## 运行方式
 

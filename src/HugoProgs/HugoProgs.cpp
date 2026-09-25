@@ -955,6 +955,14 @@ void registerObject(ConsoleMenu& menu) {
 			});
 	}
 
+	auto& wndrecMenu = menu.addSubmenu(L"wndrec", L"窗口记录与拦截");
+	{
+		wndrecMenu.addCommand(L"run", L"运行", [](ConsoleMenu&, Args args) {
+			wstring progPath = GetExternalProgramPath(L"HugoWndRec.exe");
+			ExecuteProgramInCurrentConsole(progPath, L"", false);
+			});
+	}
+
 	auto& logsMenu = menu.addSubmenu(L"logs", L"日志");
 	{
 		logsMenu.addCommand(L"clr", L"清除所有日志", [](ConsoleMenu&, Args args) {
