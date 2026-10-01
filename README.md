@@ -23,7 +23,7 @@ Visual Studio 2022
 | **[HugoFakeVerify](docs/HugoFakeVerify.md)** | 一个空程序。                                                 |
 | **[HugoFreezeApi](docs/HugoFreezeApi.md)** | 通过本地服务 API 与希沃冰点服务交互，可设置冻结磁盘、查询冻结状态、尝试保护操作。 |
 | [**HugoFreezeDisk**](docs/HugoFreezeDisk.md) | 通过驱动写入磁盘绕过冰点还原，仅为启动器。 |
-| **[HugoFreezeDriver](docs/HugoFreezeDriver.md)** | 驱动级冰点控制工具，可查询驱动状态、运行时配置，并冻结/解冻指定盘符。 |
+| **[HugoFreezeDriver](docs/HugoFreezeDriver.md)** | 冰点驱动交互工具。 |
 | [**HugoFreezeFile**](docs/HugoFreezeFile.md) | ProtectInfo 编辑器，可编辑`VolumeInfo.config`文件。 |
 | [**HugoFrzDrvHook**](docs/HugoFrzDrvHook.md) | 运行时内存篡改 + 内核执行流劫持，详见[项目](https://github.com/HugoWidget/HugoFrzDrvHook)。 |
 | [**HugoInfo**](docs/HugoInfo.md) | 基本信息展示。 |
@@ -31,7 +31,7 @@ Visual Studio 2022
 | **[HugoInstaller](docs/HugoInstaller.md)** | 希沃安装/卸载管理器：可下载指定版本或最新版。                |
 | **[HugoLaunchTool](docs/HugoLaunchTool.md)** | 控制希沃核心进程的启动与终止。                               |
 | **[HugoLock](docs/HugoLock.md)** | 实时隐藏“希沃管家”锁屏窗口，强制解除锁屏，也可以使用其解除屏保（HugoDbg也支持） |
-| **[HugoLockAssistant](docs/HugoLockAssistant.md)** | 调用不同方式实现锁屏/屏保解除。                                |
+| **[HugoLockAssistant](docs/HugoLockAssistant.md)** | 调用不同方式实现锁屏/屏保解除，不再使用。                           |
 | [**HugoLogs**](docs/HugoLogs.md) | 管理所有程序的log。 |
 | [**HugoMonitor**](docs/HugoMonitor.md) | 实时检测希沃软件调用本地摄像头的行为并提醒。 |
 | **[HugoMount](docs/HugoMount.md)** | 虚拟磁盘挂载工具，可列出、挂载、卸载希沃的日志盘、配置盘等。 |
