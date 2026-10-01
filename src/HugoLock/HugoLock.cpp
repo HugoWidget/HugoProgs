@@ -105,7 +105,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_ LPWSTR lpCmdLine,
 	_In_ int nCmdShow) {
 	RequireAdminPrivilege(true);
-	DWORD dwUIAccessErr = UIAccess::PrepareForUIAccess();
+	DWORD dwUIAccessErr = UIAccess::RequireUIAccess();
 	if (dwUIAccessErr != ERROR_SUCCESS) {
 		WuLog::Warn(L"PrepareForUIAccess failed with error: {}", dwUIAccessErr);
 		WuLog::Info(L"Continuing without UIAccess (some features may be limited)");

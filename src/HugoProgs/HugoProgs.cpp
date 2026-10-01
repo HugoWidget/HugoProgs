@@ -213,7 +213,7 @@ bool ExecuteProgramInCurrentConsole(const wstring& programPath, const wstring& a
 		TRUE,
 		0,
 		nullptr,
-		GetCurrentProcessDir().c_str(),
+		GetDirFromPath(programPath).c_str(),
 		&si,
 		&pi
 	);

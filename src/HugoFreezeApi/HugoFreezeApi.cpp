@@ -23,7 +23,7 @@
 #include <map>
 #include <cstdlib>
 
-#include "HugoUtils/HFreezeApi.h"
+#include "HugoUtils/HugoFreeze/HFreezeApi.h"
 #include "WinUtils/Console.h"
 #include "WinUtils/Logger.h"
 #include "WinUtils/CmdParser.h"

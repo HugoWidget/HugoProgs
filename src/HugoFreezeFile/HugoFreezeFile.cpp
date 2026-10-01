@@ -17,26 +17,29 @@
  * along with HugoProgs. If not, see <https://www.gnu.org/licenses/>.
  *
  * HugoFreezeFile – Interactive VolumeInfo.config editor.
+ * Uses the HugoUtils freeze backends (HFreezeFileBackend / HConfigFile).
  */
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <limits>
-#include <cstring>
-#include <optional>
 #include <algorithm>
 #include <cstdio>
-#include "WinUtils/WinUtils.h"
-#include "WinUtils/StrConvert.h"
-#include "HugoUtils/HFreezeFile_p.h"
+#include <cstring>
+#include <iomanip>
+#include <iostream>
+#include <limits>
+#include <string>
+
 #include "WinUtils/Console.h"
+#include "WinUtils/StrConvert.h"
+#include "WinUtils/WinUtils.h"
+#include "HugoUtils/HugoFreeze/HFreezeConfig.h"
+#include "HugoUtils/HugoFreeze/HFreezeDef.h"
+#include "HugoUtils/HugoFreeze/HFreezeFileBackend.h"
 #include "hashlib/md5.h"
 
 using namespace std;
 using namespace WinUtils;
 
 // 将字节数组转为大写十六进制字符串
-static string bytesToHex(const uint8_t* data, size_t len) {
+static string bytesToHex(const unsigned char* data, size_t len) {
 	string hex;
 	for (size_t i = 0; i < len; ++i) {
 		char buf[3];
@@ -46,27 +49,93 @@ static string bytesToHex(const uint8_t* data, size_t len) {
 	return hex;
 }
 
-// 计算 1024 字节缓冲区的 MD5
-static string computeConfigMD5(const ProtectInfo& info) {
-	constexpr size_t BUF_SIZE = HFreezeFilePrivate::CONFIG_SIZE;
-	uint8_t raw[BUF_SIZE] = {};
-	info.ToBuffer(raw, BUF_SIZE);
-
-	MD5 md5;
-	const uint8_t* start = raw + 0x10;
-	size_t length = BUF_SIZE - 0x10;
-	md5.add(start, length);
-
-	unsigned char digest[16];
-	md5.getHash(digest);
-	return bytesToHex(digest, 16);
+// 读取定长字符串字段（按字段长度截断，避免越界）
+static string fixedString(const char* field, size_t size) {
+	size_t len = 0;
+	while (len < size && field[len] != '\0') {
+		++len;
+	}
+	return string(field, len);
 }
 
-static void printProtectInfo(const ProtectInfo& info) {
+// 计算配置应有的 MD5：覆盖 MD5 字段之后的全部字节
+static void computeConfigMD5(const HConfigFile& cfg, unsigned char out[FRZ_CONFIG_MD5_SIZE]) {
+	unsigned char buffer[FRZ_CONFIG_SIZE] = {};
+	cfg.toBuffer(buffer);
+
+	MD5 md5;
+	md5.add(buffer + FRZ_CONFIG_MD5_SIZE, FRZ_CONFIG_SIZE - FRZ_CONFIG_MD5_SIZE);
+	md5.getHash(out);
+}
+
+// HConfigFile 只能由文件/驱动缓冲区构造，新建配置时用已废弃的 fromBuffer 桥接
+#pragma warning(push)
+#pragma warning(disable : 4996)
+static HConfigFile makeConfigFile(const unsigned char* data) {
+	return HConfigFile::fromBuffer(data);
+}
+#pragma warning(pop)
+
+// 构造一个全零的新配置（HConfigFile 默认构造为私有，必须经 fromBuffer 桥接）
+// 新建时立即写入正确的 MD5，保证内存中的配置自洽（保存时仍会重算一次）
+static HConfigFile makeEmptyConfig() {
+	unsigned char empty[FRZ_CONFIG_SIZE] = {};
+	HConfigFile cfg = makeConfigFile(empty);
+
+	unsigned char digest[FRZ_CONFIG_MD5_SIZE] = {};
+	computeConfigMD5(cfg, digest);
+	memcpy(cfg.md5, digest, FRZ_CONFIG_MD5_SIZE);
+	return cfg;
+}
+
+// 以十六进制转储展示完整配置（带偏移行标与列标），ProtectInfo 区域用 [ ] 括起
+static void printBinaryDump(const HConfigFile& cfg) {
+	unsigned char buffer[FRZ_CONFIG_SIZE] = {};
+	cfg.toBuffer(buffer);
+
+	static const char hexDigits[] = "0123456789ABCDEF";
+
+	wcout << L"\n========== Binary dump (" << FRZ_CONFIG_SIZE
+		<< L" bytes, [ ] = ProtectInfo) ==========\n";
+	wcout << L"    Offset | 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F\n";
+	wcout << L"    -------+------------------------------------------------\n";
+
+	for (size_t i = 0; i < FRZ_CONFIG_SIZE; ++i) {
+		if (i % 16 == 0) {
+			// 行首：4 位十六进制偏移
+			wcout << L"    0x"
+				<< wchar_t(hexDigits[(i >> 12) & 0x0F])
+				<< wchar_t(hexDigits[(i >> 8) & 0x0F])
+				<< wchar_t(hexDigits[(i >> 4) & 0x0F])
+				<< wchar_t(hexDigits[i & 0x0F])
+				<< L" | ";
+		}
+		else {
+			wcout << L" ";
+		}
+
+		// 括号直接贴住首/末字节，不额外占位
+		if (i == FRZ_CONFIG_MD5_SIZE) {
+			wcout << L"[";
+		}
+		wcout << wchar_t(hexDigits[buffer[i] >> 4]) << wchar_t(hexDigits[buffer[i] & 0x0F]);
+		if (i + 1 == FRZ_CONFIG_INFO_END) {
+			wcout << L"]";
+		}
+
+		if (i % 16 == 15) {
+			wcout << L"\n";
+		}
+	}
+}
+
+static void printConfig(const HConfigFile& cfg) {
+	const ProtectInfo& info = cfg.info;
+
 	wcout << L"\n========== ProtectInfo (VolumeInfo.config) ==========\n";
 	wcout << left;
 
-	wcout << setw(30) << L"MD5 (stored): " << ConvertString(bytesToHex(info.md5, 16)) << L"\n";
+	wcout << setw(30) << L"MD5 (stored): " << ConvertString(bytesToHex(cfg.md5, FRZ_CONFIG_MD5_SIZE)) << L"\n";
 
 	wcout << setw(30) << L"readytoProtectVolume: " << hex << L"0x" << info.readytoProtectVolume << dec << L"\n";
 	wcout << setw(30) << L"alreadyProtectVolume: " << hex << L"0x" << info.alreadyProtectVolume << dec << L"\n";
@@ -85,12 +154,15 @@ static void printProtectInfo(const ProtectInfo& info) {
 	wcout << setw(30) << L"coreDumpZipReport: " << info.coreDumpZipReport << L"\n";
 	wcout << setw(30) << L"isLastPagefileInFreezeVol: " << info.isLastPagefileInFreezeVol << L"\n";
 	wcout << setw(30) << L"isLastVolumeCorrupt: " << info.isLastVolumeCorrupt << L"\n";
-	wcout << setw(30) << L"iotDeviceID: " << ConvertString((char*)info.iotDeviceID) << L"\n";
-	wcout << setw(30) << L"iotSchoolID: " << ConvertString((char*)info.iotSchoolID) << L"\n";
+	wcout << setw(30) << L"iotDeviceID: "
+		<< ConvertString(fixedString(reinterpret_cast<const char*>(info.iotDeviceID), FRZ_IOT_DEVICE_ID_LEN)) << L"\n";
+	wcout << setw(30) << L"iotSchoolID: "
+		<< ConvertString(fixedString(reinterpret_cast<const char*>(info.iotSchoolID), FRZ_IOT_SCHOOL_ID_LEN)) << L"\n";
 	wcout << setw(30) << L"bNeedFreeze: " << info.bNeedFreeze << L"\n";
 	wcout << setw(30) << L"bNeedUnFreeze: " << info.bNeedUnFreeze << L"\n";
 	wcout << setw(30) << L"updateRebootCount: " << info.updateRebootCount << L"\n";
-	wcout << setw(30) << L"startupTime: " << info.startupTime << L"\n";
+	wcout << setw(30) << L"startupTime: "
+		<< ConvertString(fixedString(info.startupTime, FRZ_STARTUP_TIME_LEN)) << L"\n";
 	wcout << setw(30) << L"configVersion: " << (int)info.configVersion << L"\n";
 	wcout << setw(30) << L"volMaskCopy: " << hex << L"0x" << info.volMaskCopy << dec << L"\n";
 	wcout << setw(30) << L"updatingTimeSet: " << info.updatingTimeSet << L"\n";
@@ -98,15 +170,11 @@ static void printProtectInfo(const ProtectInfo& info) {
 	wcout << L"========================================================\n";
 
 	// MD5 校验
-	string computed = computeConfigMD5(info);
-	//wcout << L"Current computed MD5 (1024‑byte): ";
-	cout << (computed);
-	if (computed == bytesToHex(info.md5, 16))
-		wcout << L" (VALID)\n";
-	else
-		wcout << L" (MISMATCH!)\n";
+	unsigned char digest[FRZ_CONFIG_MD5_SIZE] = {};
+	computeConfigMD5(cfg, digest);
+	wcout << setw(30) << L"MD5 (computed): " << ConvertString(bytesToHex(digest, FRZ_CONFIG_MD5_SIZE));
+	wcout << (memcmp(digest, cfg.md5, FRZ_CONFIG_MD5_SIZE) == 0 ? L" (VALID)\n" : L" (MISMATCH!)\n");
 }
-
 
 static void clearInputBuffer() {
 	wcin.clear();
@@ -147,19 +215,47 @@ static uint32_t inputHex(const wstring& prompt) {
 	return val;
 }
 
-static void modifyFreezeMask(ProtectInfo& info) {
-	wcout << L"\n--- Modify Freeze Volume Mask ---\n";
-	wcout << L"Current readytoProtectVolume: 0x" << hex << info.readytoProtectVolume << dec << L"\n";
-	uint32_t newMask = inputHex(L"New mask: ");
-	info.readytoProtectVolume = newMask;
-	info.volMaskCopy = newMask;
-	info.bNeedFreeze = newMask ? 1 : 0;
-	info.bNeedUnFreeze = newMask ? 0 : 1;
-	wcout << L"Mask updated. bNeedFreeze=" << info.bNeedFreeze
-		<< L", bNeedUnFreeze=" << info.bNeedUnFreeze << L" (auto-set).\n";
+// 读取按行的字符串输入（回车返回空串）
+static wstring inputLine(const wstring& prompt) {
+	wcout << prompt;
+	wstring line;
+	getline(wcin, line);
+	if (wcin.fail()) {
+		wcin.clear();
+		return wstring();
+	}
+	while (!line.empty() && (line.back() == L'\r' || line.back() == L'\n')) {
+		line.pop_back();
+	}
+	return line;
 }
 
-static void modifyField(ProtectInfo& info) {
+// 将宽字符串写入定长 ASCII 字段（超出部分截断）
+static void writeFixedString(unsigned char* field, size_t fieldSize, const wstring& value) {
+	string narrow = ConvertString<string>(value);
+	size_t length = (min)(narrow.size(), fieldSize - 1);
+	memset(field, 0, fieldSize);
+	memcpy(field, narrow.data(), length);
+}
+
+// 修改冻结卷掩码，返回 true 表示配置已改动
+static bool modifyFreezeMask(HConfigFile& cfg) {
+	wcout << L"\n--- Modify Freeze Volume Mask ---\n";
+	wcout << L"Current readytoProtectVolume: 0x" << hex << cfg.info.readytoProtectVolume << dec << L"\n";
+	uint32_t newMask = inputHex(L"New mask: ");
+
+	// 统一走库里的构建逻辑：写入目标掩码、状态字与写标记，并重算 MD5
+	bool enable = newMask != 0;
+	cfg = HFreezeConfig::BuildFreezeConfig(cfg, newMask, enable);
+	wcout << L"Mask updated (" << (enable ? L"frozen" : L"unfrozen")
+		<< L"), MD5 recalculated.\n";
+	return true;
+}
+
+// 修改单个字段，返回 true 表示配置已改动
+static bool modifyField(HConfigFile& cfg) {
+	ProtectInfo& info = cfg.info;
+
 	wcout << L"\n--- Modify Individual Field ---\n";
 	wcout << L" 1. readytoProtectVolume\n";
 	wcout << L" 2. alreadyProtectVolume\n";
@@ -190,14 +286,14 @@ static void modifyField(ProtectInfo& info) {
 	wcout << L" 0. Cancel\n";
 
 	int choice = inputInt(L"Select field: ", 0, 26);
-	if (choice == 0) return;
+	if (choice == 0) return false;
 
 	switch (choice) {
 	case 1: info.readytoProtectVolume = inputHex(L"New readytoProtectVolume: "); break;
 	case 2: info.alreadyProtectVolume = inputHex(L"New alreadyProtectVolume: "); break;
-	case 3: info.diskNum = (uint8_t)inputInt(L"diskNum (0-255): ", 0, 255); break;
-	case 4: info.stopProtect = inputInt(L"stopProtect (0/1): ", 0, 1); break;
-	case 5: info.needUpdate = inputInt(L"needUpdate (0/1): ", 0, 1); break;
+	case 3: info.diskNum = (uint8_t)inputInt<int>(L"diskNum (0-255): ", 0, 255); break;
+	case 4: info.stopProtect = inputInt<int>(L"stopProtect (0/1): ", 0, 1); break;
+	case 5: info.needUpdate = inputInt<int>(L"needUpdate (0/1): ", 0, 1); break;
 	case 6: {
 		wcout << L"Enter storageFileSize (hex like 0x40000000 or decimal): ";
 		uint64_t val;
@@ -205,10 +301,10 @@ static void modifyField(ProtectInfo& info) {
 		else { clearInputBuffer(); wcout << L"Invalid input.\n"; }
 		break;
 	}
-	case 7: info.bRunSlowly = inputInt(L"bRunSlowly (0/1): ", 0, 1); break;
+	case 7: info.bRunSlowly = inputInt<int>(L"bRunSlowly (0/1): ", 0, 1); break;
 	case 8: info.bsodNum = inputInt<uint32_t>(L"bsodNum: ", 0, UINT32_MAX); break;
 	case 9: info.bsodMaxUptime = inputInt<uint32_t>(L"bsodMaxUptime: ", 0, UINT32_MAX); break;
-	case 10: info.blueHistoryReport = inputInt(L"blueHistoryReport (0/1): ", 0, 1); break;
+	case 10: info.blueHistoryReport = inputInt<int>(L"blueHistoryReport (0/1): ", 0, 1); break;
 	case 11: info.lastFreezeState = inputHex(L"lastFreezeState: "); break;
 	case 12: info.lastbsodRuntime = inputInt<uint32_t>(L"lastbsodRuntime: ", 0, UINT32_MAX); break;
 	case 13: {
@@ -218,139 +314,173 @@ static void modifyField(ProtectInfo& info) {
 		else { clearInputBuffer(); wcout << L"Invalid input.\n"; }
 		break;
 	}
-	case 14: info.coreDumpZipReport = inputInt(L"coreDumpZipReport (0/1): ", 0, 1); break;
-	case 15: info.isLastPagefileInFreezeVol = inputInt(L"isLastPagefileInFreezeVol (0/1): ", 0, 1); break;
-	case 16: info.isLastVolumeCorrupt = inputInt(L"isLastVolumeCorrupt (0/1): ", 0, 1); break;
+	case 14: info.coreDumpZipReport = inputInt<int>(L"coreDumpZipReport (0/1): ", 0, 1); break;
+	case 15: info.isLastPagefileInFreezeVol = inputInt<int>(L"isLastPagefileInFreezeVol (0/1): ", 0, 1); break;
+	case 16: info.isLastVolumeCorrupt = inputInt<int>(L"isLastVolumeCorrupt (0/1): ", 0, 1); break;
 	case 17: {
-		wcout << L"Enter iotDeviceID (max 19 chars): ";
-		wstring s; getline(wcin, s);
-		memset(info.iotDeviceID, 0, 19);
-		memcpy(info.iotDeviceID, s.c_str(), (min)(s.size(), (size_t)19));
+		wstring s = inputLine(L"Enter iotDeviceID (max 19 chars): ");
+		writeFixedString(info.iotDeviceID, FRZ_IOT_DEVICE_ID_LEN, s);
 		break;
 	}
 	case 18: {
-		wcout << L"Enter iotSchoolID (max 5 chars): ";
-		wstring s; getline(wcin, s);
-		memset(info.iotSchoolID, 0, 5);
-		memcpy(info.iotSchoolID, s.c_str(), (min)(s.size(), (size_t)5));
+		wstring s = inputLine(L"Enter iotSchoolID (max 5 chars): ");
+		writeFixedString(info.iotSchoolID, FRZ_IOT_SCHOOL_ID_LEN, s);
 		break;
 	}
-	case 19: info.bNeedFreeze = inputInt(L"bNeedFreeze (0/1): ", 0, 1); break;
-	case 20: info.bNeedUnFreeze = inputInt(L"bNeedUnFreeze (0/1): ", 0, 1); break;
-	case 21: info.updateRebootCount = (uint16_t)inputInt(L"updateRebootCount (0-65535): ", 0, 65535); break;
+	case 19: info.bNeedFreeze = inputInt<int>(L"bNeedFreeze (0/1): ", 0, 1); break;
+	case 20: info.bNeedUnFreeze = inputInt<int>(L"bNeedUnFreeze (0/1): ", 0, 1); break;
+	case 21: info.updateRebootCount = (uint16_t)inputInt<int>(L"updateRebootCount (0-65535): ", 0, 65535); break;
 	case 22: {
-		wcout << L"Enter startupTime (max 20 chars): ";
-		wstring s; getline(wcin, s);
-		memset(info.startupTime, 0, 20);
-		memcpy(info.startupTime, s.c_str(), (min)(s.size(), (size_t)20));
+		wstring s = inputLine(L"Enter startupTime (max 20 chars): ");
+		writeFixedString(reinterpret_cast<unsigned char*>(info.startupTime), FRZ_STARTUP_TIME_LEN, s);
 		break;
 	}
-	case 23: info.configVersion = (uint8_t)inputInt(L"configVersion (0-255): ", 0, 255); break;
+	case 23: info.configVersion = (uint8_t)inputInt<int>(L"configVersion (0-255): ", 0, 255); break;
 	case 24: info.volMaskCopy = inputHex(L"volMaskCopy: "); break;
-	case 25: info.updatingTimeSet = inputInt(L"updatingTimeSet (0/1): ", 0, 1); break;
+	case 25: info.updatingTimeSet = inputInt<int>(L"updatingTimeSet (0/1): ", 0, 1); break;
 	case 26: info.updatingTimeNotAfter = inputInt<uint32_t>(L"updatingTimeNotAfter (unix timestamp): ", 0, UINT32_MAX); break;
 	default: break;
 	}
-	wcout << L"Field updated.\n";
+
+	// 立即重算工作副本的 MD5，保证内存中的配置始终自洽
+	unsigned char digest[FRZ_CONFIG_MD5_SIZE] = {};
+	computeConfigMD5(cfg, digest);
+	memcpy(cfg.md5, digest, FRZ_CONFIG_MD5_SIZE);
+	wcout << L"Field updated. (MD5 recalculated.)\n";
+	return true;
 }
 
-static optional<ProtectInfo> loadConfig() {
-	auto cfg = HFreezeFilePrivate::ReadConfig();
-	if (!cfg) {
-		wcout << L"Config file not found or invalid. Create new? (y/n): ";
-		wchar_t c; wcin >> c; clearInputBuffer();
-		if (c == L'y' || c == L'Y')
-			return ProtectInfo{};
-		return nullopt;
-	}
-	wcout << L"Config loaded.\n";
-	return cfg;
+// 从指定文件读取配置，返回是否成功
+static bool readConfigFile(const wstring& path, HConfigFile& out) {
+	HFreezeFileBackend file;
+	file.setConfigPath(path);
+	return file.getConfig(out);
 }
 
-static void saveConfig(const ProtectInfo& info) {
-	if (HFreezeFilePrivate::WriteConfig(info)) {
-		wcout << L"Config saved successfully to "
-			<< HFreezeFilePrivate::GetConfigPath() << L"\n";
-	}
-	else {
-		wcout << L"ERROR: Failed to write config file.\n";
-	}
+// 重算 MD5 后写入指定文件（文件不存在时会被创建）
+static bool writeConfigFile(const wstring& path, HConfigFile& cfg) {
+	// 写回前重算 MD5，保证管家/驱动读取时校验通过
+	unsigned char digest[FRZ_CONFIG_MD5_SIZE] = {};
+	computeConfigMD5(cfg, digest);
+	memcpy(cfg.md5, digest, FRZ_CONFIG_MD5_SIZE);
+
+	unsigned char buffer[FRZ_CONFIG_SIZE] = {};
+	cfg.toBuffer(buffer);
+
+	HFreezeFileBackend file;
+	file.setConfigPath(path);
+	return file.writeBlob(buffer, FRZ_CONFIG_SIZE);
+}
+
+// 未保存更改的丢弃确认，返回 true 表示可以继续
+static bool confirmDiscard() {
+	wcout << L"There are unsaved changes, they will be lost. Continue? (y/n): ";
+	wchar_t c = 0;
+	wcin >> c;
+	clearInputBuffer();
+	return c == L'y' || c == L'Y';
+}
+
+static void printTitle(const wstring& path, bool dirty) {
+	wcout << L"\n--- " << (path.empty() ? L"<untitled>" : path)
+		<< (dirty ? L" *" : L"") << L" ---\n";
 }
 
 static void interactiveLoop() {
-	// Allow custom path from the outside via HFreezeFilePrivate::SetConfigPath
-	wcout << L"Current config path: " << HFreezeFilePrivate::GetConfigPath() << L"\n";
-
-	optional<ProtectInfo> current = loadConfig();
-	if (!current) {
-		wcout << L"Exiting.\n";
-		return;
+	// 启动时尝试打开系统默认配置，失败则进入未命名空配置
+	wstring currentPath = FRZ_CONFIG_PATH;
+	HConfigFile working = makeEmptyConfig();
+	if (readConfigFile(currentPath, working)) {
+		wcout << L"Loaded: " << currentPath << L"\n";
 	}
-	ProtectInfo working = *current;
+	else {
+		wcout << L"Cannot read " << currentPath << L", starting with an empty config.\n";
+		currentPath.clear();
+		working = makeEmptyConfig();
+	}
+	bool dirty = false;
 
 	while (true) {
-		wcout << L"\n========== HugoFreezeFile Menu ==========\n";
+		printTitle(currentPath, dirty);
 		wcout << L"1. View current configuration\n";
-		wcout << L"2. Modify freeze volume mask (simplified)\n";
-		wcout << L"3. Modify individual field (advanced)\n";
-		wcout << L"4. Save configuration to file\n";
-		wcout << L"5. Reload from file (discard changes)\n";
-		wcout << L"6. Select custom config path (optional)\n";
-		wcout << L"7. Exit\n";
-		int choice = inputInt(L"Enter your choice: ", 1, 7);
+		wcout << L"2. View binary dump\n";
+		wcout << L"3. Modify freeze volume mask (simplified)\n";
+		wcout << L"4. Modify individual field (advanced)\n";
+		wcout << L"5. Save\n";
+		wcout << L"6. Save as\n";
+		wcout << L"7. Open\n";
+		wcout << L"8. New\n";
+		wcout << L"9. Exit\n";
+		int choice = inputInt<int>(L"Enter your choice: ", 1, 9);
 
 		switch (choice) {
 		case 1:
-			printProtectInfo(working);
+			printConfig(working);
 			break;
 		case 2:
-			modifyFreezeMask(working);
+			printBinaryDump(working);
 			break;
 		case 3:
-			modifyField(working);
+			if (modifyFreezeMask(working)) dirty = true;
 			break;
 		case 4:
-			saveConfig(working);
-			// After saving, automatically reload to reflect the written MD5
-			{
-				auto reloaded = HFreezeFilePrivate::ReadConfig();
-				if (reloaded) {
-					working = *reloaded;
-					wcout << L"Reloaded automatically to show the stored MD5.\n";
-				}
-			}
+			if (modifyField(working)) dirty = true;
 			break;
-		case 5: {
-			auto reloaded = loadConfig();
-			if (reloaded) { working = *reloaded; wcout << L"Reloaded.\n"; }
-			break;
-		}
-		case 6:
-		{
-			wcout << L"Enter new config path: \n"
-				"leave 'default' for default,\n"
-				"'current' for <current dir>/VolumeInfo.config),\n"
-				"empty for current path\n";
-			wstring newPath;
-			getline(wcin, newPath);
-			if (newPath == L"default") {
-				newPath = HFreezeFilePrivate::DEFAULT_CONFIG_PATH;
+		case 5: { // Save
+			if (currentPath.empty()) {
+				wstring path = inputLine(L"File name to save as (empty = cancel): ");
+				if (path.empty()) { wcout << L"Save cancelled.\n"; break; }
+				currentPath = path;
 			}
-			else if (newPath == L"current") {
-				newPath = GetCurrentProcessDir() + L"VolumeInfo.config";
+			if (writeConfigFile(currentPath, working)) {
+				dirty = false;
+				wcout << L"Saved to " << currentPath << L"\n";
 			}
-			else if (newPath.empty()) {
-				break;
-			}
-			HFreezeFilePrivate::SetConfigPath(newPath);
-			wcout << L"Config path updated to: " << HFreezeFilePrivate::GetConfigPath() << L"\n";
-			{
-				auto reloaded = loadConfig();
-				if (reloaded) { working = *reloaded; wcout << L"Reloaded from new path.\n"; }
+			else {
+				wcout << L"ERROR: Failed to write " << currentPath << L"\n";
 			}
 			break;
 		}
-		case 7:
+		case 6: { // Save as
+			wstring path = inputLine(L"Save as (empty = cancel): ");
+			if (path.empty()) { wcout << L"Save cancelled.\n"; break; }
+			if (writeConfigFile(path, working)) {
+				currentPath = path;
+				dirty = false;
+				wcout << L"Saved to " << currentPath << L"\n";
+			}
+			else {
+				wcout << L"ERROR: Failed to write " << path << L"\n";
+			}
+			break;
+		}
+		case 7: { // Open
+			if (dirty && !confirmDiscard()) break;
+			wstring path = inputLine(L"File to open (empty = cancel): ");
+			if (path.empty()) { wcout << L"Open cancelled.\n"; break; }
+			HConfigFile loaded = makeEmptyConfig();
+			if (readConfigFile(path, loaded)) {
+				working = loaded;
+				currentPath = path;
+				dirty = false;
+				wcout << L"Opened " << currentPath << L"\n";
+			}
+			else {
+				wcout << L"ERROR: Failed to read " << path
+					<< L" (needs " << FRZ_CONFIG_SIZE << L" bytes).\n";
+			}
+			break;
+		}
+		case 8: { // New
+			if (dirty && !confirmDiscard()) break;
+			working = makeEmptyConfig();
+			currentPath.clear();
+			dirty = false;
+			wcout << L"New empty config created.\n";
+			break;
+		}
+		case 9: // Exit
+			if (dirty && !confirmDiscard()) break;
 			wcout << L"Goodbye.\n";
 			return;
 		default:
