@@ -374,9 +374,8 @@ void registerObject(ConsoleMenu& menu) {
 			table.addColumn(L"介绍");
 			table.addColumn(L"特点");
 			table.addRow(L"Api", L"与希沃冰点服务交互", L"安全性最高");
-			table.addRow(L"Driver", L"与希沃冰点驱动交互", L"速度最快");
+			table.addRow(L"Driver", L"与希沃冰点驱动交互", L"速度最快，功能最全");
 			table.addRow(L"File", L"修改本地冰点文件", L"高度自定义");
-			table.addRow(L"", L" ", L"但只能在无冰点时编辑");
 			table.addRow(L"Hook", L"驱动运行时内存篡改", L"支持动态修改");
 			table.addRow(L"", L" + 内核执行流劫持", L"");
 			table.addRow(L"Disk", L"驱动级删除配置", L"通用性强");
@@ -397,6 +396,10 @@ void registerObject(ConsoleMenu& menu) {
 			}
 			wstring progPath = GetExternalProgramPath(L"HugoFreezeDriver.exe");
 			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--set " + input);
+			});
+		freezeMenu.addCommand(L"drv.run", L"运行HugoFreezeDriver.exe", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoFreezeDriver.exe");
+			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath);
 			});
 		freezeMenu.addCommand(L"drv.hlp", L"帮助", [](ConsoleMenu& menu, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoFreezeDriver.exe");
