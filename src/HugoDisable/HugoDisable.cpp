@@ -104,7 +104,7 @@ void SetSeewoService(bool disable)
 	else {
 		auto res = key.TryOpen(kRegRoot, kRegPath, KEY_WRITE | KEY_WOW64_64KEY);
 		if (!res.Failed()) {
-			key.TryDeleteValue(kRegValue);
+			std::ignore = key.TryDeleteValue(kRegValue);
 		}
 		wcout << L"希沃服务已启用" << endl;
 		WuLog::Info( L"Enabled Seewo service (removed IFEO)");

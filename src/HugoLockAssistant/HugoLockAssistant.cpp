@@ -122,7 +122,7 @@ int APIENTRY wWinMain(
 	bool launch = parser.hasCommand(L"launch");
 
 	if (launch) {
-		int ret = (int)RunExternalProgram(targetPath, L"open", args, L"", hide ? SW_HIDE : SW_SHOWNORMAL);
+		int ret = reinterpret_cast<int>(RunExternalProgram(targetPath, L"open", args, L"", hide ? SW_HIDE : SW_SHOWNORMAL));
 		if (ret <= 32) {
 			FatalError(L"Failed to start " + exeName + L". Error: " + std::to_wstring(GetLastError()));
 		}
@@ -140,7 +140,7 @@ int APIENTRY wWinMain(
 		CopyToClipboard(fullCmd);
 	}
 	else if (msgRet == IDRETRY) {
-		int ret = (int)RunExternalProgram(targetPath, L"open", args, L"", hide ? SW_HIDE : SW_SHOWNORMAL);
+		int ret = reinterpret_cast<int>(RunExternalProgram(targetPath, L"open", args, L"", hide ? SW_HIDE : SW_SHOWNORMAL));
 		if (ret <= 32) {
 			FatalError(L"Failed to start " + exeName + L". Error: " + std::to_wstring(GetLastError()));
 		}

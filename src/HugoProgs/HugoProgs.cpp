@@ -33,6 +33,7 @@
 #include "HugoUtils/GPL3.h"
 #include "ConsoleTable.h"
 #include <WinUtils/WinReg.h>
+#include "ExtensionMenu.h"
 
 using namespace std;
 using namespace WinUtils;
@@ -985,4 +986,7 @@ void registerObject(ConsoleMenu& menu) {
 			ExecuteProgramInCurrentConsole(progPath, L"--help");
 			});
 	}
+
+	// 从 extension.ini 加载自定义菜单项
+	LoadExtensionMenu(menu);
 }

@@ -57,6 +57,7 @@ Release中HugoProgs.zip为该项目完整编译产物，前往[HugoSetup](https:
   结合使用介绍修改该文件来达到不同的功能，如果想要界面化的方式，见HugoWidgets，但可惜的是由于开发者时间精力有限，其没有自启动与锁屏相关功能，如果想做出贡献，欢迎加入。
 
 - 之后每次开机，将自动启动`Launcher.exe`并按照配置逐个打开目标程序
+- 需要扩展菜单时，在程序目录放置 `extension.ini` 注册自定义命令（详见[用户文档](docs/User.md#75-extensionini-自定义菜单项)与[HugoProgs 介绍](docs/HugoProgs.md)）
 - 子项目 HugoProgs 详细介绍[见此](docs/HugoProgs.md)
 
 ## 运行方式

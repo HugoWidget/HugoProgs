@@ -188,6 +188,22 @@ config/service/uninstall   卸载自启动服务
 
 或直接使用 bundle 中的 `Install.exe` / `UnInstall.exe`。
 
+### 7.5 `extension.ini` 自定义菜单项
+
+在程序目录放置 `extension.ini`，即可在不重新编译的情况下向主菜单注册自定义命令（统一显示在 `extension` 子菜单下）。每个节定义一条菜单项，**节名即命令名**（大小写敏感，与内置命令规则一致）：
+
+```ini
+[MyTool]
+Desc = Description
+Program = .\\tools\\MyTool.bat
+Params = --foo bar
+RequireAdmin = false
+InConsole = true
+ShowWnd = 1
+```
+
+完整用法见 [HugoProgs.md](HugoProgs.md)
+
 ## 8. `.hps` 脚本
 
 完整语法见项目文档 [hps.md](./hps.md)。

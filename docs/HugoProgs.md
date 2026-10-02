@@ -51,6 +51,33 @@ Root>>
 
 见[使用介绍](hps.md)
 
+### 5. 自定义菜单项（`extension.ini`）
+
+在程序目录放置 `extension.ini`，无需重新编译即可向主菜单注册自定义命令，统一显示在 `extension` 子菜单下。每个节定义一条菜单项，**节名即命令名**（大小写敏感）：
+
+```ini
+[MyTool]
+Desc = Description
+Program = .\\tools\\MyTool.bat
+Params = --foo bar
+RequireAdmin = false
+InConsole = true
+ShowWnd = 1
+```
+
+| 字段           | 说明                                                                     | 默认值  |
+| -------------- | ------------------------------------------------------------------------ | ------- |
+| `Desc`         | 菜单中显示的描述                                                         | 节名    |
+| `Program`      | 目标程序路径。相对路径以程序目录为基准解析；裸文件名按 `PATH` 查找        | 必填    |
+| `Params`       | 传给目标的命令行参数                                                     | 空      |
+| `RequireAdmin` | 是否需要管理员权限（亦接受 `RunAsAdmin`；`true/1/yes` 或 `false/0/no`）   | `false` |
+| `InConsole`    | 是否在当前窗口内输出（阻塞运行并继承标准输入/输出/错误）                 | `false` |
+| `ShowWnd`      | 是否显示窗口（`0` 为不显示）                                             | 显示    |
+
+- `InConsole=true` 时目标程序在当前控制台阻塞运行并输出；`false` 时以独立窗口启动、立即返回。
+- `RequireAdmin=true` 且当前进程非管理员时，会先提示确认，确认后以管理员身份（`runas`）启动，此时输出不在当前窗口显示。
+- 字段键名大小写不敏感，`;`/`#` 开头的行视为注释；中文描述可保存为 UTF-8 或 UTF-16，程序会自适应识别。
+
 ## 使用方法
 ### 前置要求
 - 文件依赖：需将 HugoProgs.exe 与所有依赖的子工具放在**同一目录**，详见Release；

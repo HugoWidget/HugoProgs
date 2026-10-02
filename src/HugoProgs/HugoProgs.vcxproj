@@ -131,9 +131,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ExtensionMenu.cpp" />
     <ClCompile Include="HugoProgs.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ExtensionMenu.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ConsoleTable.h" />
   </ItemGroup>
