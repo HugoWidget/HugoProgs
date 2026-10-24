@@ -25,6 +25,7 @@
 #include <conio.h>
 #include <ShlObj.h>
 #include <fstream>
+#include <atomic>
 
 #include "WinUtils/Console.h"
 #include "WinUtils/WinUtils.h" 
@@ -38,6 +39,23 @@
 using namespace std;
 using namespace WinUtils;
 namespace fs = filesystem;
+
+namespace
+{
+	BOOL WINAPI IgnoreCtrlCHandler(DWORD ctrlType)
+	{
+		if (ctrlType == CTRL_C_EVENT || ctrlType == CTRL_BREAK_EVENT)
+			return TRUE;
+		return FALSE;
+	}
+
+	void InstallIgnoreCtrlC()
+	{
+		SetConsoleCtrlHandler(IgnoreCtrlCHandler, FALSE);
+		SetConsoleCtrlHandler(IgnoreCtrlCHandler, TRUE);
+	}
+}
+
 void registerObject(ConsoleMenu& menu);
 // 获取外部程序完整路径
 wstring GetExternalProgramPath(const wstring& programName);
@@ -112,6 +130,7 @@ int wmain(int argc, wchar_t* argv[])
 {
 	Console console;
 	console.setLocale();
+	InstallIgnoreCtrlC();
 
 	wstring rawCmdLine = GetCommandLineW();
 	wstring argsPart = ExtractArguments(rawCmdLine);
@@ -209,32 +228,25 @@ bool ExecuteProgramInCurrentConsole(const wstring& programPath, const wstring& a
 	BOOL ret = CreateProcessW(
 		nullptr,
 		const_cast<wchar_t*>(cmdLine.c_str()),
-		nullptr,
-		nullptr,
-		TRUE,
-		0,
-		nullptr,
+		nullptr, nullptr, TRUE, 0, nullptr,
 		GetDirFromPath(programPath).c_str(),
-		&si,
-		&pi
+		&si, &pi
 	);
 
-	if (ret)
-	{
-		WaitForSingleObject(pi.hProcess, INFINITE);
-		if (exitCode)
-			GetExitCodeProcess(pi.hProcess, exitCode);
-		CloseHandle(pi.hProcess);
-		CloseHandle(pi.hThread);
-		return true;
-	}
-	else
+	if (!ret)
 	{
 		wcerr << L"\n错误：启动程序失败，错误码 " << GetLastError() << endl;
 		return false;
 	}
-}
 
+	WaitForSingleObject(pi.hProcess, INFINITE);
+
+	if (exitCode)
+		GetExitCodeProcess(pi.hProcess, exitCode);
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
+	return true;
+}
 
 void registerObject(ConsoleMenu& menu) {
 
@@ -718,9 +730,12 @@ void registerObject(ConsoleMenu& menu) {
 				ExecuteProgramInCurrentConsole(progPath, L"--uninstall");
 			});
 		launchMenu.addCommand(L"hlp", L"帮助", [](ConsoleMenu&, Args) {
-			wstring progPath = GetExternalProgramPath(L"HugoInstaller.exe");
-			if (!progPath.empty())
-				ExecuteProgramInCurrentConsole(progPath, L"--help");
+			wstring launchPath = GetExternalProgramPath(L"HugoLaunchTool.exe");
+			if (!launchPath.empty())
+				ExecuteProgramInCurrentConsole(launchPath, L"--help");
+			wstring installPath = GetExternalProgramPath(L"HugoInstaller.exe");
+			if (!installPath.empty())
+				ExecuteProgramInCurrentConsole(installPath, L"--help");
 			});
 	}
 
@@ -751,6 +766,16 @@ void registerObject(ConsoleMenu& menu) {
 			wcout << L"这些工具不适合在此调用，可使用execute命令来执行，\n"
 				<< L"使用方式详见帮助文档。";
 			});
+		lockMenu.addCommand(L"hlp", L"HugoLock 帮助", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoLock.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath, L"--help");
+			});
+		lockMenu.addCommand(L"assist.hlp", L"HugoLockAssistant 帮助", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoLockAssistant.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath, L"--help");
+			});
 	}
 
 	// ==================== 子菜单：希沃密码工具 ====================
@@ -775,6 +800,11 @@ void registerObject(ConsoleMenu& menu) {
 			wstring progPath = GetExternalProgramPath(L"HugoBreak.exe");
 			if (!progPath.empty())
 				ExecuteProgramInCurrentConsole(progPath);
+			});
+		pswMenu.addCommand(L"break.hlp", L"修改dll工具帮助", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoBreak.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath, L"--help");
 			});
 	}
 
@@ -924,6 +954,9 @@ void registerObject(ConsoleMenu& menu) {
 		configMenu.addCommand(L"task", L"编辑任务配置", [](ConsoleMenu&, Args) {
 			RunExternalProgram(GetCurrentProcessDir() + L"tasks.ini");
 			});
+		configMenu.addCommand(L"ext", L"编辑扩展配置", [](ConsoleMenu&, Args) {
+			RunExternalProgram(GetCurrentProcessDir() + L"extension.ini");
+			});
 		auto& serviceMenu = configMenu.addSubmenu(L"service", L"服务管理");
 		{
 			serviceMenu.addCommand(L"install", L"安装自启动服务", [](ConsoleMenu&, Args args) {
@@ -957,6 +990,11 @@ void registerObject(ConsoleMenu& menu) {
 			wstring progPath = GetExternalProgramPath(L"HugoScreenSaver.exe");
 			ExecuteProgramInCurrentConsole(progPath);
 			});
+		screensaverMenu.addCommand(L"hlp", L"帮助", [](ConsoleMenu&, Args args) {
+			wstring progPath = GetExternalProgramPath(L"HugoScreenSaver.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath, L"--help");
+			});
 	}
 
 	auto& wndrecMenu = menu.addSubmenu(L"wndrec", L"窗口记录与拦截");
@@ -964,6 +1002,33 @@ void registerObject(ConsoleMenu& menu) {
 		wndrecMenu.addCommand(L"run", L"运行", [](ConsoleMenu&, Args args) {
 			wstring progPath = GetExternalProgramPath(L"HugoWndRec.exe");
 			ExecuteProgramInCurrentConsole(progPath, L"", false);
+			});
+	}
+
+	// ==================== 子菜单：内存扫描 ====================
+	auto& scanMenu = menu.addSubmenu(L"scan", L"内存扫描工具");
+	{
+		scanMenu.addCommand(L"extract", L"提取希沃密码", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoScan.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath, L"--extract");
+			});
+		scanMenu.addCommand(L"mem", L"内存特征码扫描 <进程名|PID> <特征码>", [](ConsoleMenu&, Args args) {
+			auto params = args.getParams(L"");
+			if (params.size() < 2) {
+				wcout << L"用法: mem <进程名|PID> <特征码>  例: mem SeewoCore.exe \"48 8B ?? 89 05\"\n";
+				return;
+			}
+			wstring pattern = params[1];
+			for (size_t i = 2; i < params.size(); ++i) pattern += L' ' + params[i];
+			wstring progPath = GetExternalProgramPath(L"HugoScan.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath, L"--scan " + params[0] + L" \"" + pattern + L"\"");
+			});
+		scanMenu.addCommand(L"hlp", L"帮助", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoScan.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath, L"--help");
 			});
 	}
 

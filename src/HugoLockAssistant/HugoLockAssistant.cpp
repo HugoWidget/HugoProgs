@@ -28,12 +28,26 @@
 
 #include "WinUtils/CmdParser.h"
 #include "WinUtils/WinUtils.h"
+#include "WinUtils/Logger.h"
 using namespace WinUtils;
 using namespace std;
 namespace fs = std::filesystem;
 
+static const wchar_t* kUsage =
+L"用法:\n"
+L"  HugoLockAssistant.exe --method=<dbg|launchtool|frontend|lock> --mode=<assist|direct|disable>\n"
+L"                        [--extracmd=<可选命令>] [--hide] [--launch]\n\n"
+L"参数:\n"
+L"  --method   要调用的子工具\n"
+L"  --mode     传给子工具的运行模式\n"
+L"  --extracmd 追加到子工具命令行的额外参数\n"
+L"  --hide     以隐藏窗口方式启动子工具\n"
+L"  --launch   跳过确认对话框直接启动\n"
+L"  --help, -h, /?  显示此帮助信息";
+
 static void FatalError(const std::wstring& msg)
 {
+	WuLog::Error(msg);
 	MessageBoxW(nullptr, msg.c_str(), L"HugoLockAssistant", MB_ICONERROR);
 	ExitProcess(1);
 }
@@ -63,20 +77,28 @@ int APIENTRY wWinMain(
 	CmdParser parser(true);
 	string_t cmdLineStr(lpCmdLine);
 	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+	LoggerCore::Inst().SetDefaultStrategies(L"HugoLockAssistant.log");
+	LoggerCore::Inst().EnableApartment(DftLogger);
 
 	if (!parser.parse(ExtractArguments(GetCommandLine()))) {
 		FatalError(L"Command line syntax error.");
+	}
+
+	if (parser.hasCommand(L"help") || parser.hasCommand(L"h") || parser.hasCommand(L"?")) {
+		MessageBoxW(nullptr, kUsage, L"HugoLockAssistant", MB_ICONINFORMATION);
+		return 0;
 	}
 
 	auto methodOpt = parser.getParam(L"method", 0);
 	auto modeOpt = parser.getParam(L"mode", 0);
 
 	if (!methodOpt || !modeOpt) {
-		FatalError(L"Usage: HugoLockAssistant --method=<dbg|launchtool|frontend|lock> --mode=<assist|direct|disable> [--extracmd=<optional>] [--hide] [--launch]");
+		FatalError(kUsage);
 	}
 
 	std::wstring method = *methodOpt;
 	std::wstring mode = *modeOpt;
+	WuLog::Info(L"method={}, mode={}", method, mode);
 
 	std::wstring exeName;
 	if (method == L"dbg")           exeName = L"HugoDbg.exe";
@@ -122,6 +144,7 @@ int APIENTRY wWinMain(
 	bool launch = parser.hasCommand(L"launch");
 
 	if (launch) {
+		WuLog::Info(L"启动子工具: " + targetPath + L" " + args);
 		int ret = reinterpret_cast<int>(RunExternalProgram(targetPath, L"open", args, L"", hide ? SW_HIDE : SW_SHOWNORMAL));
 		if (ret <= 32) {
 			FatalError(L"Failed to start " + exeName + L". Error: " + std::to_wstring(GetLastError()));

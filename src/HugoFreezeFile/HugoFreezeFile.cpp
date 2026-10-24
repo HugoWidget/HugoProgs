@@ -30,6 +30,7 @@
 #include "WinUtils/Console.h"
 #include "WinUtils/StrConvert.h"
 #include "WinUtils/WinUtils.h"
+#include "WinUtils/Logger.h"
 #include "HugoUtils/HugoFreeze/HFreezeConfig.h"
 #include "HugoUtils/HugoFreeze/HFreezeDef.h"
 #include "HugoUtils/HugoFreeze/HFreezeFileBackend.h"
@@ -468,6 +469,7 @@ static void interactiveLoop() {
 			else {
 				wcout << L"ERROR: Failed to read " << path
 					<< L" (needs " << FRZ_CONFIG_SIZE << L" bytes).\n";
+				WuLog::Error(L"打开配置失败: " + path);
 			}
 			break;
 		}
@@ -492,8 +494,10 @@ static void interactiveLoop() {
 int wmain(int argc, wchar_t* argv[]) {
 	Console console;
 	console.setLocale();
+	LoggerCore::Inst().SetDefaultStrategies(L"HugoFreezeFile.log");
+	LoggerCore::Inst().EnableApartment(DftLogger);
 
-	wcout << L"HugoFreezeFile - SWFreeze VolumeInfo.config Manager\n";
+	wcout << L"HugoFreezeFile - Seewo VolumeInfo.config Manager\n";
 	interactiveLoop();
 	return 0;
 }

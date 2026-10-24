@@ -176,7 +176,7 @@ void InteractiveMenu()
 		system("cls");
 
 		tcout << TS("\n=== Hugo 日志文件清理工具 ===\n")
-			<< TS("当前目录: ") << GetCurrentProcessDir() << TS("\n")
+			<< TS("程序目录: ") << GetCurrentProcessDir() << TS("\n")
 			<< TS("1. 列出匹配的文件 (Hugo*.log) 并可选择用记事本打开\n")
 			<< TS("2. 删除所有匹配的文件\n")
 			<< TS("0. 退出程序\n")
@@ -244,20 +244,20 @@ int wmain(int argc, wchar_t* argv[])
 			return 1;
 		}
 
-		if (parser.hasCommand(TS("help")) || parser.hasCommand(TS("-h")))
+		if (parser.hasCommand(TS("help")) || parser.hasCommand(TS("h")))
 		{
 			PrintHelp(TS("HugoLogs"));
 			return 0;
 		}
 
-		if (parser.hasCommand(TS("list")) || parser.hasCommand(TS("-l")))
+		if (parser.hasCommand(TS("list")) || parser.hasCommand(TS("l")))
 		{
 			auto files = GetMatchingFiles();
 			ListFiles(files, false);
 			return 0;
 		}
 
-		if (parser.hasCommand(TS("delete")) || parser.hasCommand(TS("-d")))
+		if (parser.hasCommand(TS("delete")) || parser.hasCommand(TS("d")))
 		{
 			auto files = GetMatchingFiles();
 			int deleted = DeleteFiles(files, false);

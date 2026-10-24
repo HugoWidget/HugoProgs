@@ -7,6 +7,7 @@
   <Project Path="src/HugoBreak/HugoBreak.vcxproj" Id="8d223d10-019b-4bdd-8109-f20cdf06e761">
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>
+  <Project Path="src/HugoCapture/HugoCapture.vcxproj" Id="ab89fdf1-3e49-41e9-a232-e571980c5399" />
   <Project Path="src/HugoDeps/HugoDeps.vcxproj" Id="2009ad88-8b61-4fbb-bb7b-583cf30a0122">
     <BuildDependency Project="deps/HugoUtils/HugoUtils.vcxproj" />
   </Project>
@@ -53,9 +54,7 @@
   <Project Path="src/HugoLogs/HugoLogs.vcxproj" Id="b58dd3b1-a654-4a04-81aa-dad73c9fd873">
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>
-  <Project Path="src/HugoMonitor/HugoMonitor.vcxproj" Id="92ad1f41-771e-4ed0-966e-cdef8ca2077e">
-    <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
-  </Project>
+  <Project Path="src/HugoMonitor/HugoMonitor.vcxproj" Id="cb58a9d0-6d25-4c65-9833-c77b450f7794" />
   <Project Path="src/HugoMount/HugoMount.vcxproj" Id="7bd4dfd9-690b-4d01-9a86-612ffcd9ccb0">
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>
@@ -66,6 +65,9 @@
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>
   <Project Path="src/HugoProtect/HugoProtect.vcxproj" Id="3f39f9b3-5755-45a9-9a6d-bba8ac177f8b">
+    <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
+  </Project>
+  <Project Path="src/HugoScan/HugoScan.vcxproj" Id="06bd1bfd-db8a-4f58-848e-3622b9a0191a">
     <BuildDependency Project="src/HugoDeps/HugoDeps.vcxproj" />
   </Project>
   <Project Path="src/HugoScreenSaver/HugoScreenSaver.vcxproj" Id="31377715-12e6-495e-9a50-876ec3b32499">

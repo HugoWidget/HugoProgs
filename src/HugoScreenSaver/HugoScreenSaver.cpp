@@ -123,6 +123,15 @@ void ScreenSaverMonitorLoop(bool enableBlacklist)
 	}
 }
 
+static void PrintUsage()
+{
+	std::wcout << L"HugoScreenSaver - 希沃屏幕保护程序自动解除工具\n"
+		<< L"用法:\n"
+		<< L"  HugoScreenSaver.exe              持续监测并解除屏幕保护（默认启用窗口去重黑名单）\n"
+		<< L"  HugoScreenSaver.exe keep         禁用窗口去重黑名单\n"
+		<< L"  HugoScreenSaver.exe --help, -h   显示此帮助信息\n";
+}
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
 	_In_ LPWSTR lpCmdLine,
@@ -130,19 +139,26 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
+	Console console;
+	console.setLocale();
+	LoggerCore::Inst().SetDefaultStrategies(L"HugoScreenSaver.log");
+	LoggerCore::Inst().EnableApartment(DftLogger);
+
+	CmdParser parser;
+	if (!parser.parse(ExtractArguments(GetCommandLineW()))) {
+		WuLog::Error(L"命令行语法错误");
+		return 1;
+	}
+	if (parser.hasCommand(L"help") || parser.hasCommand(L"h") || parser.hasCommand(L"?")) {
+		PrintUsage();
+		return 0;
+	}
+
 	RequireAdminPrivilege(true);
 	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 	EnsureSingleInstance(true);
 
-	Console console;
-	console.setLocale();
-	//LoggerCore::Inst().AddStrategy<FileLogStrategy>(GetCurrentProcessDir() + L"HugoScreenSaver.log");
-	LoggerCore::Inst().AddStrategy<DebugLogStrategy>();
-	LoggerCore::Inst().EnableApartment(DftLogger);
-
-	CmdParser parser;
-	(void)parser.parse(ExtractArguments(GetCommandLineW()));
-	WuLog::Info(L"HugoScreenSaver - Automatic Seewo screensaver dismisser");
+	WuLog::Info(L"HugoScreenSaver 启动，窗口黑名单: {}", !parser.hasCommand(L"keep"));
 	ScreenSaverMonitorLoop(!parser.hasCommand(L"keep"));
 
 	return 0;

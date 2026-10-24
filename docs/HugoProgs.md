@@ -6,7 +6,7 @@ HugoProgs 是基于 C++ 开发的 Windows 平台**一站式希沃运维工具集
 ## 核心功能
 ### 1. 菜单化整合管理
 将多个独立的希沃运维工具整合为分层式控制台菜单，支持：
-- 完整命令调用（如 `mount list`）、快捷数字调用（如 `c1` 执行当前菜单第一个命令、`s2` 进入第二个子菜单）；
+- 完整命令调用（用 `/` 连接层级，如 `mount/list`、`mount/mnt 0 1 Z`）、快捷数字调用（如 `c1` 执行当前菜单第一个命令、`s2` 进入第二个子菜单）；
 
 - 通用命令：
 
@@ -21,20 +21,23 @@ HugoProgs 是基于 C++ 开发的 Windows 平台**一站式希沃运维工具集
 
 ```cmd
 [Submenus]
-1.  basic       - 希沃服务与网络控制
-2.  config      - 配置与自启动
-3.  execute     - 执行外部程序
-4.  fprotect    - 希沃文件保护工具
-5.  freeze      - 希沃冰点配置工具
-6.  hps         - .hps 脚本文件绑定
-7.  inject      - DLL注入工具
-8.  launch      - 希沃启动工具
-9.  lock        - 希沃锁屏工具
-10. logs        - 日志
-11. mount       - 希沃虚拟磁盘管理器
-12. psw         - 希沃密码工具
+1.  mount       - 希沃虚拟磁盘管理器
+2.  freeze      - 希沃冰点配置工具
+3.  basic       - 希沃服务与网络控制
+4.  inject      - DLL注入工具
+5.  launch      - 希沃启动工具
+6.  fprotect    - 希沃文件保护工具
+7.  lock        - 希沃锁屏工具
+8.  psw         - 希沃密码工具
+9.  winpe       - WinPE工具
+10. hps         - .hps 脚本文件绑定
+11. execute     - 执行外部程序
+12. config      - 配置与自启动
 13. screensaver - 屏幕保护程序
-14. winpe       - WinPE工具
+14. wndrec      - 窗口记录与拦截
+15. scan        - 内存扫描工具
+16. logs        - 日志
+17. extension   - 自定义菜单项（存在 extension.ini 时出现）
 [Commands]
 1.  common - 查看通用命令
 ====================
@@ -91,6 +94,8 @@ ShowWnd = 1
 
 - 权限限制：虚拟磁盘管理、文件保护等功能依赖管理员权限，建议全程以管理员身份运行；
 - 官方冰点工具、终止希沃进程等操作会以独立窗口运行，其余操作默认在当前控制台运行；
+- 命令名大小写敏感；使用 `/` 连接菜单层级，如 `mount/mnt 0 1 Z`。
+
 
 ## 许可证
 本项目采用 GNU General Public License v3.0 (GPLv3) 许可证开源，详见 LICENSE 文件。

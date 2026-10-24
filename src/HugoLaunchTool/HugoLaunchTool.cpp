@@ -1,4 +1,4 @@
-/*
+ï»¿/*
  * Copyright 2025-2026 howdy213, JYardX
  *
  * This file is part of HugoProgs.
@@ -46,51 +46,51 @@ const wstring kLaunchToolName = L"HugoLaunchTool.exe";
 
 void StartSeewoService() {
 	TerminateProcessesByName(kLaunchToolName);
-	WuLog::Info( L"Terminated " + kLaunchToolName);
+	WuLog::Info(L"Terminated " + kLaunchToolName);
 
 	WinSvcMgr serviceManager(kServiceName);
 	if (serviceManager.Start()) {
-		wcout << L"Ï£ÎÖºËÐÄ·þÎñÒÑÆô¶¯" << endl;
-		WuLog::Info( L"Started service: " + kServiceName);
+		wcout << L"å¸Œæ²ƒæ ¸å¿ƒæœåŠ¡å·²å¯åŠ¨" << endl;
+		WuLog::Info(L"Started service: " + kServiceName);
 	}
 	else {
-		wcerr << L"Æô¶¯·þÎñÊ§°Ü" << endl;
+		wcerr << L"å¯åŠ¨æœåŠ¡å¤±è´¥" << endl;
 	}
 }
 
 void SingleStopProcesses() {
 	int closed = TerminateMultipleProcesses(kProcessesToTerminate);
-	wcout << L"ÒÑÖÕÖ¹ " << closed << L" ¸öÏ£ÎÖ½ø³Ì" << endl;
-	WuLog::Info( L"Single stop: terminated " + to_wstring(closed) + L" processes");
+	wcout << L"å·²ç»ˆæ­¢ " << closed << L" ä¸ªå¸Œæ²ƒè¿›ç¨‹" << endl;
+	WuLog::Info(L"Single stop: terminated " + to_wstring(closed) + L" processes");
 }
 
 void StartMonitorAndWaitForStop() {
 
 	MonitorHandle handle = StartProcessMonitor(GetModuleHandle(nullptr),
 		kProcessesToTerminate,
-		1000); // 1Ãë¼ì²éÒ»´Î
+		1000); // 1ç§’æ£€æŸ¥ä¸€æ¬¡
 	if (!handle.hStopEvent) {
-		wcerr << L"ÎÞ·¨Æô¶¯½ø³Ì¼à¿Ø" << endl;
+		wcerr << L"æ— æ³•å¯åŠ¨è¿›ç¨‹ç›‘æŽ§" << endl;
 		return;
 	}
 
-	wcout << L"Ï£ÎÖ½ø³Ì¼à¿ØÒÑÆô¶¯£¬°´ÈÎÒâ¼üÍ£Ö¹..." << endl;
+	wcout << L"å¸Œæ²ƒè¿›ç¨‹ç›‘æŽ§å·²å¯åŠ¨ï¼ŒæŒ‰ä»»æ„é”®åœæ­¢..." << endl;
 	if (console.get() == -1)while (1)Sleep(10);
-	wcout << L"ÕýÔÚÍ£Ö¹¼à¿Ø..." << endl;
+	wcout << L"æ­£åœ¨åœæ­¢ç›‘æŽ§..." << endl;
 
 	StopProcessMonitor(handle);
-	wcout << L"¼à¿ØÒÑÍ£Ö¹£¬Ïà¹Ø½ø³Ì´¦ÀíÍê±Ï" << endl;
-	WuLog::Info( L"Terminated Seewo processes");
+	wcout << L"ç›‘æŽ§å·²åœæ­¢ï¼Œç›¸å…³è¿›ç¨‹å¤„ç†å®Œæ¯•" << endl;
+	WuLog::Info(L"Terminated Seewo processes");
 }
 
 void PrintHelp() {
-	wcout << L"ÓÃ·¨: HugoLaunchTool.exe [Ñ¡Ïî]\n"
-		<< L"Ñ¡Ïî:\n"
-		<< L"  --start, -start    Æô¶¯Ï£ÎÖºËÐÄ·þÎñ\n"
-		<< L"  --stop, -stop      ³ÖÐø¼à¿Ø²¢Í£Ö¹Ï£ÎÖ½ø³Ì£¨°´¼üÍË³ö£©\n"
-		<< L"  --kill, -kill      µ¥´ÎÍ£Ö¹Ï£ÎÖ½ø³Ì£¨Á¢¼´ÖÕÖ¹£©\n"
-		<< L"  --help, -h         ÏÔÊ¾´Ë°ïÖú\n"
-		<< L"ÎÞ²ÎÊýÔò½øÈë½»»¥²Ëµ¥\n";
+	wcout << L"ç”¨æ³•: HugoLaunchTool.exe [é€‰é¡¹]\n"
+		<< L"é€‰é¡¹:\n"
+		<< L"  --start, -start    å¯åŠ¨å¸Œæ²ƒæ ¸å¿ƒæœåŠ¡\n"
+		<< L"  --stop, -stop      æŒç»­ç›‘æŽ§å¹¶åœæ­¢å¸Œæ²ƒè¿›ç¨‹ï¼ˆæŒ‰é”®é€€å‡ºï¼‰\n"
+		<< L"  --kill, -kill      å•æ¬¡åœæ­¢å¸Œæ²ƒè¿›ç¨‹ï¼ˆç«‹å³ç»ˆæ­¢ï¼‰\n"
+		<< L"  --help, -h         æ˜¾ç¤ºæ­¤å¸®åŠ©\n"
+		<< L"æ— å‚æ•°åˆ™è¿›å…¥äº¤äº’èœå•\n";
 }
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance,
@@ -108,11 +108,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 
 		wstring cmdLine = lpCmdLine ? lpCmdLine : L"";
 
-		// ÃüÁîÐÐÄ£Ê½
+		// å‘½ä»¤è¡Œæ¨¡å¼
 		if (!cmdLine.empty()) {
 			CmdParser parser(true);
 			if (!parser.parse(cmdLine)) {
-				wcerr << L"ÃüÁîÐÐ½âÎöÊ§°Ü" << endl;
+				wcerr << L"å‘½ä»¤è¡Œè§£æžå¤±è´¥" << endl;
 				return 1;
 			}
 
@@ -134,26 +134,26 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 				return 0;
 			}
 
-			wcerr << L"Î´ÖªÑ¡Ïî£¬Ê¹ÓÃ --help ²é¿´°ïÖú" << endl;
+			wcerr << L"æœªçŸ¥é€‰é¡¹ï¼Œä½¿ç”¨ --help æŸ¥çœ‹å¸®åŠ©" << endl;
 			return 1;
 		}
 
 		console.require();
-		// ½»»¥²Ëµ¥Ä£Ê½
+		// äº¤äº’èœå•æ¨¡å¼
 		int choice = -1;
 		do {
 			console.clear();
-			wcout << L"\n=== Ï£ÎÖ·þÎñ¿ØÖÆ¹¤¾ß ===\n"
-				<< L"1. Æô¶¯Ï£ÎÖºËÐÄ·þÎñ\n"
-				<< L"2. ¼à¿Ø²¢Í£Ö¹Ï£ÎÖ½ø³Ì\n"
-				<< L"3. µ¥´ÎÖÕÖ¹Ï£ÎÖ½ø³Ì\n"
-				<< L"0. ÍË³ö³ÌÐò\n"
-				<< L"ÇëÊäÈëÑ¡Ôñ: ";
+			wcout << L"\n=== å¸Œæ²ƒæœåŠ¡æŽ§åˆ¶å·¥å…· ===\n"
+				<< L"1. å¯åŠ¨å¸Œæ²ƒæ ¸å¿ƒæœåŠ¡\n"
+				<< L"2. ç›‘æŽ§å¹¶åœæ­¢å¸Œæ²ƒè¿›ç¨‹\n"
+				<< L"3. å•æ¬¡ç»ˆæ­¢å¸Œæ²ƒè¿›ç¨‹\n"
+				<< L"0. é€€å‡ºç¨‹åº\n"
+				<< L"è¯·è¾“å…¥é€‰æ‹©: ";
 			wcin >> choice;
 			if (wcin.fail()) {
 				wcin.clear();
 				wcin.ignore(1024, L'\n');
-				wcerr << L"ÊäÈëÎÞÐ§£¬ÇëÊäÈëÊý×Ö" << endl;
+				wcerr << L"è¾“å…¥æ— æ•ˆï¼Œè¯·è¾“å…¥æ•°å­—" << endl;
 				system("pause");
 				continue;
 			}
@@ -171,11 +171,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 				SingleStopProcesses();
 				break;
 			case 0:
-				wcout << L"ÍË³ö³ÌÐò¡£" << endl;
-				WuLog::Info( L"User exited");
+				wcout << L"é€€å‡ºç¨‹åºã€‚" << endl;
+				WuLog::Info(L"User exited");
 				break;
 			default:
-				wcerr << L"ÎÞÐ§Ñ¡Ôñ£¬ÇëÖØÐÂÊäÈë" << endl;
+				wcerr << L"æ— æ•ˆé€‰æ‹©ï¼Œè¯·é‡æ–°è¾“å…¥" << endl;
 				break;
 			}
 			if (choice != 0) {
@@ -186,8 +186,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 		return 0;
 	}
 	catch (const exception& e) {
-		wcerr << L"ÖÂÃü´íÎó: " << ConvertString<wstring>(e.what()) << endl;
-		WuLog::Error( L"Fatal: " + ConvertString<wstring>(e.what()));
+		wcerr << L"è‡´å‘½é”™è¯¯: " << ConvertString<wstring>(e.what()) << endl;
+		WuLog::Error(L"Fatal: " + ConvertString<wstring>(e.what()));
 		return 1;
 	}
 }

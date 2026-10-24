@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <iostream>
 #include <string>
 #include <vector>
@@ -18,7 +18,7 @@ public:
 
 	void addRow(const std::vector<std::wstring>& row) {
 		if (row.size() != column_count_) {
-			throw std::invalid_argument("ÐÐÊý¾ÝÁÐÊýÓë±íÍ·ÁÐÊý²»Ò»ÖÂ");
+			throw std::invalid_argument("è¡Œæ•°æ®åˆ—æ•°ä¸Žè¡¨å¤´åˆ—æ•°ä¸ä¸€è‡´");
 		}
 		rows_.push_back(row);
 	}
@@ -65,12 +65,12 @@ private:
 	}
 
 	static int charWidth(wchar_t wc) {
-		if ((wc >= 0x1100 && wc <= 0x115F) ||   // º«ÎÄ¸¨Òô
-			(wc >= 0x2E80 && wc <= 0xA4CF) ||   // ÖÐÈÕº«²¿Ê×¡¢ºº×ÖµÈ
-			(wc >= 0xAC00 && wc <= 0xD7A3) ||   // º«ÎÄÒô½Ú
-			(wc >= 0xF900 && wc <= 0xFAFF) ||   // ÖÐÈÕº«¼æÈÝ±íÒâÎÄ×Ö
-			(wc >= 0xFE30 && wc <= 0xFE4F) ||   // ÖÐÈÕº«¼æÈÝÐÎÊ½
-			(wc >= 0xFF00 && wc <= 0xFF60) ||   // È«½ÇASCII¡¢È«½Ç±êµã
+		if ((wc >= 0x1100 && wc <= 0x115F) ||   // éŸ©æ–‡è¾…éŸ³
+			(wc >= 0x2E80 && wc <= 0xA4CF) ||   // ä¸­æ—¥éŸ©éƒ¨é¦–ã€æ±‰å­—ç­‰
+			(wc >= 0xAC00 && wc <= 0xD7A3) ||   // éŸ©æ–‡éŸ³èŠ‚
+			(wc >= 0xF900 && wc <= 0xFAFF) ||   // ä¸­æ—¥éŸ©å…¼å®¹è¡¨æ„æ–‡å­—
+			(wc >= 0xFE30 && wc <= 0xFE4F) ||   // ä¸­æ—¥éŸ©å…¼å®¹å½¢å¼
+			(wc >= 0xFF00 && wc <= 0xFF60) ||   // å…¨è§’ASCIIã€å…¨è§’æ ‡ç‚¹
 			(wc >= 0xFFE0 && wc <= 0xFFE6)) {
 			return 2;
 		}

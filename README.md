@@ -18,7 +18,8 @@ Visual Studio 2022
 
 | 程序文件                               | 核心功能                                                     |
 | -------------------------------------- | ------------------------------------------------------------ |
-| **[HugoBreak](docs/HugoBreak.md)** | 修改`bind_zmodule.dll`以解除密码 |
+| **[HugoBreak](docs/HugoBreak.md)** | 修改 `bind_zmodule.dll` 以解除密码 |
+| [**HugoCapture**](docs/HugoCapture.md) | 实时检测希沃软件截取屏幕的行为并提醒。 |
 | **[HugoDisable](docs/HugoDisable.md)** | 禁用 `SeewoServiceAssistant.exe`或阻止其通过防火墙；禁用希沃更新 |
 | **[HugoFakeVerify](docs/HugoFakeVerify.md)** | 一个空程序。                                                 |
 | **[HugoFreezeApi](docs/HugoFreezeApi.md)** | 通过本地服务 API 与希沃冰点服务交互，可设置冻结磁盘、查询冻结状态、尝试保护操作。 |
@@ -38,8 +39,9 @@ Visual Studio 2022
 | **[HugoPassword](docs/HugoPassword.md)** | 枚举以找回希沃管家/锁屏密码。                                |
 | **[HugoProgs](docs/HugoProgs.md)** | 主菜单程序，集成所有工具，提供交互界面，支持脚本执行。           |
 | **[HugoProtect](docs/HugoProtect.md)** | 开关希沃的文件保护功能。                                     |
-| [**HugoScreenSaver**](docs/HugoScreenSaver.md) | 管理希沃屏幕保护 |
-| [**HugoWndRec**](docs/HugoWndRec.md) | 管理希沃窗口 |
+| [**HugoScan**](docs/HugoScan.md) | 扫描 `SeewoCore.exe` 内存以获取部分信息。 |
+| [**HugoScreenSaver**](docs/HugoScreenSaver.md) | 管理希沃屏幕保护。 |
+| [**HugoWndRec**](docs/HugoWndRec.md) | 管理希沃窗口。 |
 ## 说明
 
 Release中HugoProgs.zip为该项目完整编译产物，前往[HugoSetup](https://github.com/HugoWidget/HugoSetup)获取已配置版本
@@ -128,8 +130,6 @@ OpenSSL: [Apache-2.0 license](licenses/LICENSE-OpenSSL)
 [swhelper](https://sw.s3.fan/swhelper/introduce.html)：部分项目（HugoMount，HugoFreezeDriver等）方案来源
 
 [bruteforce_passwordv3](https://github.com/CatMe0w/bruteforce_passwordv3)：Password V3 算法
-
-[NoMoreMonitor](https://github.com/lilith-is-all-you-need/NoMoreMonitor)：HugoMonitor 方案来源
 
 ## 免责声明
 

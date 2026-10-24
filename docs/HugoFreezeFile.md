@@ -60,6 +60,10 @@ HugoFreezeFile.exe
 - 冻结 / 解冻相关配置通常需要重启或由驱动重新加载后生效；
 - 本工具不会自动备份目标配置，请自行保留副本。
 
+## 日志
+
+运行日志写入程序目录下的 `HugoFreezeFile.log`，记录启动、默认配置读取、打开/保存结果以及失败原因。
+
 ## 许可证
 
 本项目采用 GNU General Public License v3.0 (GPLv3) 许可证开源，详见 LICENSE 文件。

@@ -8,6 +8,8 @@
 #include <fcntl.h>
 #include <Windows.h>
 #include <WinUtils/Console.h>
+#include <WinUtils/WinUtils.h>
+#include <WinUtils/Logger.h>
 using namespace WinUtils;
 namespace fs = std::filesystem;
 
@@ -27,7 +29,10 @@ void PrintString(const wchar_t* desc, const std::optional<std::wstring>& opt) {
 
 int main() {
 	Console console;
-	console.setLocale();
+	console.setLocale();	
+	LoggerCore::Inst().SetDefaultStrategies(L"HugoInfo.log");
+	LoggerCore::Inst().EnableApartment(DftLogger);
+	WuLog::Info(L"HugoInfo 启动");
 	PrintString(L"SeewoService 版本", HInfo::getHugoVersion());
 	PrintPath(L"SeewoService 目录", HInfo::getHugoFolder());
 	PrintPath(L"SeewoDriverService 目录", HInfo::getHugoProtectDriverFolder());

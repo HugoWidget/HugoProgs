@@ -1,4 +1,4 @@
-/*
+ï»¿/*
  * Copyright 2025-2026 howdy213, JYardX
  *
  * This file is part of HugoProgs.
@@ -31,6 +31,7 @@
 #include "WinUtils/Console.h"
 #include "WinUtils/WinUtils.h"
 #include "WinUtils/CmdParser.h"
+#include "WinUtils/Logger.h"
 #include "HugoUtils/HInfo.h"
 #include <WinUtils/StrConvert.h>
 using namespace std;
@@ -46,17 +47,17 @@ const wstring backup_suffix = L".bak";
 vector<uint8_t> ReadFile(const wstring& path) {
     FILE* file = nullptr;
     _wfopen_s(&file, path.c_str(), L"rb");
-    if (!file) throw runtime_error("ÎŞ·¨´ò¿ªÎÄ¼ş: " + ConvertString<string>(path));
+    if (!file) throw runtime_error("æ— æ³•æ‰“å¼€æ–‡ä»¶: " + ConvertString<string>(path));
 
     fseek(file, 0, SEEK_END);
     long size = ftell(file);
     fseek(file, 0, SEEK_SET);
-    if (size < 0) { fclose(file); throw runtime_error("»ñÈ¡ÎÄ¼ş´óĞ¡Ê§°Ü"); }
+    if (size < 0) { fclose(file); throw runtime_error("è·å–æ–‡ä»¶å¤§å°å¤±è´¥"); }
 
     vector<uint8_t> buffer(static_cast<size_t>(size));
     if (fread(buffer.data(), 1, buffer.size(), file) != buffer.size()) {
         fclose(file);
-        throw runtime_error("¶ÁÈ¡ÎÄ¼şÊ§°Ü");
+        throw runtime_error("è¯»å–æ–‡ä»¶å¤±è´¥");
     }
     fclose(file);
     return buffer;
@@ -65,11 +66,11 @@ vector<uint8_t> ReadFile(const wstring& path) {
 void WriteFile(const wstring& path, const vector<uint8_t>& data) {
     FILE* file = nullptr;
     _wfopen_s(&file, path.c_str(), L"wb");
-    if (!file) throw runtime_error("ÎŞ·¨´´½¨ÎÄ¼ş: " + ConvertString<string>(path));
+    if (!file) throw runtime_error("æ— æ³•åˆ›å»ºæ–‡ä»¶: " + ConvertString<string>(path));
 
     if (fwrite(data.data(), 1, data.size(), file) != data.size()) {
         fclose(file);
-        throw runtime_error("Ğ´ÈëÎÄ¼şÊ§°Ü");
+        throw runtime_error("å†™å…¥æ–‡ä»¶å¤±è´¥");
     }
     fclose(file);
 }
@@ -105,7 +106,7 @@ fs::path GetDllPath() {
     HInfo info;
     auto folder = info.getHugoFolder();
     if (!folder.has_value())
-        throw runtime_error("Î´ÕÒµ½Ï£ÎÖ¹Ü¼Ò°²×°Â·¾¶");
+        throw runtime_error("æœªæ‰¾åˆ°å¸Œæ²ƒç®¡å®¶å®‰è£…è·¯å¾„");
     return *folder / L"SeewoCore" / L"module" / L"bind" / dll_filename;
 }
 
@@ -117,77 +118,85 @@ void Patch() {
     fs::path dll_path = GetDllPath();
     fs::path backup_path = GetBackupPath();
 
-    wcout << L"Ä¿±êÎÄ¼ş: " << dll_path << endl;
+    wcout << L"ç›®æ ‡æ–‡ä»¶: " << dll_path << endl;
     if (!fs::exists(dll_path)) {
-        wcerr << L"´íÎó£ºÎ´ÕÒµ½ " << dll_filename << L"\nÂ·¾¶£º" << dll_path << endl;
+        wcerr << L"é”™è¯¯ï¼šæœªæ‰¾åˆ° " << dll_filename << L"\nè·¯å¾„ï¼š" << dll_path << endl;
+        WuLog::Error(L"æœªæ‰¾åˆ°ç›®æ ‡æ–‡ä»¶: " + dll_path.wstring());
         return;
     }
 
     auto data = ReadFile(dll_path.wstring());
     if (!FindSequence(data, original)) {
-        wcout << L"ÎÄ¼şËÆºõÒÑ¾­±»ĞŞ²¹¹ıÁË :)" << endl;
+        wcout << L"æ–‡ä»¶ä¼¼ä¹å·²ç»è¢«ä¿®è¡¥è¿‡äº† :)" << endl;
+        WuLog::Warn(L"æ–‡ä»¶å·²è¢«ä¿®è¡¥ï¼Œè·³è¿‡: " + dll_path.wstring());
         return;
     }
 
     if (!fs::exists(backup_path)) {
         WriteFile(backup_path.wstring(), data);
-        wcout << L"ÒÑ´´½¨±¸·İ: " << backup_path << endl;
+        wcout << L"å·²åˆ›å»ºå¤‡ä»½: " << backup_path << endl;
     }
     else {
-        wcout << L"±¸·İÎÄ¼şÒÑ´æÔÚ£¬Ìø¹ı´´½¨: " << backup_path << endl;
+        wcout << L"å¤‡ä»½æ–‡ä»¶å·²å­˜åœ¨ï¼Œè·³è¿‡åˆ›å»º: " << backup_path << endl;
     }
 
     WriteFile(dll_path.wstring(), ReplaceSequence(data, original, patched));
-    wcout << L"ĞŞ²¹³É¹¦£¡" << endl;
+    wcout << L"ä¿®è¡¥æˆåŠŸï¼" << endl;
+    WuLog::Info(L"ä¿®è¡¥æˆåŠŸ: " + dll_path.wstring());
 }
 
 void Restore() {
     fs::path dll_path = GetDllPath();
     fs::path backup_path = GetBackupPath();
 
-    wcout << L"ÕıÔÚ´Ó±¸·İ»¹Ô­..." << endl;
-    wcout << L"±¸·İÎÄ¼ş: " << backup_path << endl;
-    wcout << L"Ä¿±êÎÄ¼ş: " << dll_path << endl;
+    wcout << L"æ­£åœ¨ä»å¤‡ä»½è¿˜åŸ..." << endl;
+    wcout << L"å¤‡ä»½æ–‡ä»¶: " << backup_path << endl;
+    wcout << L"ç›®æ ‡æ–‡ä»¶: " << dll_path << endl;
 
     if (!fs::exists(backup_path)) {
-        wcerr << L"´íÎó£º±¸·İÎÄ¼ş²»´æÔÚ£¬ÎŞ·¨»¹Ô­¡£" << endl;
+        wcerr << L"é”™è¯¯ï¼šå¤‡ä»½æ–‡ä»¶ä¸å­˜åœ¨ï¼Œæ— æ³•è¿˜åŸã€‚" << endl;
+        WuLog::Error(L"å¤‡ä»½æ–‡ä»¶ä¸å­˜åœ¨: " + backup_path.wstring());
         return;
     }
     if (!fs::exists(dll_path)) {
-        wcerr << L"´íÎó£ºÄ¿±ê DLL ²»´æÔÚ£¬ÎŞ·¨»¹Ô­¡£" << endl;
+        wcerr << L"é”™è¯¯ï¼šç›®æ ‡ DLL ä¸å­˜åœ¨ï¼Œæ— æ³•è¿˜åŸã€‚" << endl;
+        WuLog::Error(L"ç›®æ ‡ DLL ä¸å­˜åœ¨: " + dll_path.wstring());
         return;
     }
 
     auto backup_data = ReadFile(backup_path.wstring());
     if (!FindSequence(backup_data, original)) {
-        wcerr << L"¾¯¸æ£º±¸·İÎÄ¼şËÆºõ²»ÊÇÔ­Ê¼°æ±¾£¬ÈÔÒª»¹Ô­Âğ£¿(y/n): ";
+        wcerr << L"è­¦å‘Šï¼šå¤‡ä»½æ–‡ä»¶ä¼¼ä¹ä¸æ˜¯åŸå§‹ç‰ˆæœ¬ï¼Œä»è¦è¿˜åŸå—ï¼Ÿ(y/n): ";
         char c; cin >> c;
         if (tolower(c) != 'y') {
-            wcout << L"ÒÑÈ¡Ïû»¹Ô­¡£" << endl;
+            wcout << L"å·²å–æ¶ˆè¿˜åŸã€‚" << endl;
             return;
         }
     }
 
     WriteFile(dll_path.wstring(), backup_data);
-    wcout << L"»¹Ô­³É¹¦£¡" << endl;
+    wcout << L"è¿˜åŸæˆåŠŸï¼" << endl;
+    WuLog::Info(L"è¿˜åŸæˆåŠŸ: " + dll_path.wstring());
 }
 
 void PrintHelp() {
-    wcout << L"ÓÃ·¨: HugoBreak.exe [Ñ¡Ïî]\n"
-        << L"Ñ¡Ïî:\n"
-        << L"  --patch, -p       ĞŞ²¹ bind_zmodule.dll£¨Ä¬ÈÏ£©\n"
-        << L"  --restore, -r     ´Ó±¸·İ»¹Ô­ bind_zmodule.dll\n"
-        << L"  --help, -h        ÏÔÊ¾´Ë°ïÖú\n"
-        << L"ÎŞ²ÎÊıÔò½øÈë½»»¥²Ëµ¥\n";
+    wcout << L"ç”¨æ³•: HugoBreak.exe [é€‰é¡¹]\n"
+        << L"é€‰é¡¹:\n"
+        << L"  --patch, -p       ä¿®è¡¥ bind_zmodule.dllï¼ˆé»˜è®¤ï¼‰\n"
+        << L"  --restore, -r     ä»å¤‡ä»½è¿˜åŸ bind_zmodule.dll\n"
+        << L"  --help, -h        æ˜¾ç¤ºæ­¤å¸®åŠ©\n"
+        << L"æ— å‚æ•°åˆ™è¿›å…¥äº¤äº’èœå•\n";
 }
 
-// ---- Èë¿Ú ----
+// ---- å…¥å£ ----
 int main(int argc, char* argv[]) {
     try {
         RequireAdminPrivilege(true);
 
         Console console;
         console.setLocale();
+        LoggerCore::Inst().SetDefaultStrategies(L"HugoBreak.log");
+        LoggerCore::Inst().EnableApartment(DftLogger);
 
         wstring cmdLine = ExtractArguments(GetCommandLine());
         bool interactive = true;
@@ -195,12 +204,13 @@ int main(int argc, char* argv[]) {
         if (!cmdLine.empty()) {
             CmdParser parser(true);
             if (!parser.parse(cmdLine)) {
-                wcerr << L"ÃüÁîĞĞ½âÎöÊ§°Ü" << endl;
+                wcerr << L"å‘½ä»¤è¡Œè§£æå¤±è´¥" << endl;
+                WuLog::Error(L"å‘½ä»¤è¡Œè§£æå¤±è´¥: " + cmdLine);
                 system("pause");
                 return 1;
             }
 
-            if (parser.hasCommand(L"help") || parser.hasCommand(L"h")) {
+            if (parser.hasCommand(L"help") || parser.hasCommand(L"h") || parser.hasCommand(L"?")) {
                 PrintHelp();
                 system("pause");
                 return 0;
@@ -214,22 +224,23 @@ int main(int argc, char* argv[]) {
                 interactive = false;
             }
             if (interactive) {
-                wcerr << L"Î´ÖªÑ¡Ïî£¬Ê¹ÓÃ --help ²é¿´°ïÖú" << endl;
+                wcerr << L"æœªçŸ¥é€‰é¡¹ï¼Œä½¿ç”¨ --help æŸ¥çœ‹å¸®åŠ©" << endl;
+                WuLog::Error(L"æœªçŸ¥é€‰é¡¹: " + cmdLine);
                 system("pause");
                 return 1;
             }
         }
 
-        // ½»»¥²Ëµ¥Ä£Ê½
+        // äº¤äº’èœå•æ¨¡å¼
         if (interactive) {
             int choice = -1;
             do {
                 system("cls");
-                wcout << L"\n=== Ï£ÎÖ¹Ü¼Ò DLL ²¹¶¡¹¤¾ß ===\n"
-                    << L"1. ĞŞ²¹ " << dll_filename << L"\n"
-                    << L"2. »¹Ô­ " << dll_filename << L"\n"
-                    << L"0. ÍË³ö\n"
-                    << L"ÇëÊäÈëÑ¡Ôñ: ";
+                wcout << L"\n=== å¸Œæ²ƒç®¡å®¶ DLL è¡¥ä¸å·¥å…· ===\n"
+                    << L"1. ä¿®è¡¥ " << dll_filename << L"\n"
+                    << L"2. è¿˜åŸ " << dll_filename << L"\n"
+                    << L"0. é€€å‡º\n"
+                    << L"è¯·è¾“å…¥é€‰æ‹©: ";
 
                 wcin >> choice;
                 if (wcin.fail()) {
@@ -246,10 +257,10 @@ int main(int argc, char* argv[]) {
                     Restore();
                     break;
                 case 0:
-                    wcout << L"ÍË³ö¡£" << endl;
+                    wcout << L"é€€å‡ºã€‚" << endl;
                     break;
                 default:
-                    wcout << L"ÎŞĞ§Ñ¡Ôñ£¬ÇëÖØĞÂÊäÈë" << endl;
+                    wcout << L"æ— æ•ˆé€‰æ‹©ï¼Œè¯·é‡æ–°è¾“å…¥" << endl;
                     break;
                 }
                 if (choice != 0) system("pause");
@@ -257,7 +268,9 @@ int main(int argc, char* argv[]) {
         }
     }
     catch (const exception& e) {
-        wcerr << L"´íÎó: " << ConvertString<wstring>(e.what()) << endl;
+        wstring err = ConvertString<wstring>(e.what());
+        wcerr << L"é”™è¯¯: " << err << endl;
+        WuLog::Error(L"å¼‚å¸¸: " + err);
         system("pause");
         return 1;
     }

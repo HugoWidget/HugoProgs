@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2025-2026 howdy213, JYardX
  *
  * This file is part of HugoProgs.

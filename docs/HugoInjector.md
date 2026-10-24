@@ -17,17 +17,34 @@ HugoInjector 是基于 C++ 开发的 Windows 平台 DLL 注入/卸载工具，�
 - 进程要求：目标进程名需包含后缀（如 `notepad.exe`），确保进程匹配准确。
 
 ### 1. 命令行语法说明
-程序仅支持命令行参数操作，无交互式界面，启动时若参数不足会输出使用帮助：
+程序仅支持命令行参数操作，无交互式界面：
 
-- 注入1: <DLL路径> <目标进程名> 例:HugoInjector.exe C:\test.dll notepad.exe
-- 注入2: -inject <DLL路径> <目标进程名> 例:HugoInjector.exe -inject C:\test.dll notepad.exe
-- 卸载:  -uninject <DLL路径> <目标进程名> 例:HugoInjector.exe -uninject C:\test.dll "notepad.exe
+```text
+HugoInjector.exe <DLL路径> <目标进程名>               注入并监视目标进程
+HugoInjector.exe -inject <DLL路径> <目标进程名>       同上（显式指定 -inject）
+HugoInjector.exe -uninject <DLL路径> <目标进程名>     从所有匹配进程中卸载 DLL
+HugoInjector.exe --help, -h, /?                      显示帮助
+```
+
+示例：
+
+```bat
+HugoInjector.exe C:\test.dll notepad.exe
+HugoInjector.exe -inject C:\test.dll notepad.exe
+HugoInjector.exe -uninject C:\test.dll notepad.exe
+```
+
+参数不足时输出用法并返回非 0；参数错误时同样输出用法提示。
 
 ## 注意事项
 - 调试权限启用失败会导致注入 / 卸载操作失败，建议始终以管理员身份运行程序；
 - 注入操作会持续监控目标进程（间隔 100ms），直到程序手动终止，只要目标进程存在就会尝试注入；
 - 卸载操作会作用于所有匹配进程名的进程，而非单个进程，需确认目标进程范围后再执行；
 - 程序异常信息会直接输出到控制台，可根据提示排查路径错误、进程不存在、权限不足等问题。
+
+## 日志
+
+运行日志写入程序目录下的 `HugoInjector.log`，同时输出到控制台；可记录启动、注入/卸载目标以及异常信息。
 
 ## 许可证
 本项目采用 GNU General Public License v3.0 (GPLv3) 许可证开源，详见 LICENSE 文件。

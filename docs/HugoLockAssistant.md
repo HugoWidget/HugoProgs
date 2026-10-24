@@ -14,7 +14,10 @@ HugoLockAssistant 是一个希沃锁屏辅助程序，用于根据命令行参�
 
 ```bash
 HugoLockAssistant.exe --method=<method> --mode=<mode> [--extracmd=<额外参数>] [--hide] [--launch]
+HugoLockAssistant.exe --help, -h, /?
 ```
+
+`--help` 会弹窗显示完整用法，不要求 `--method` / `--mode`。
 
 ### 参数说明
 
@@ -82,6 +85,10 @@ HugoLockAssistant.exe --method=lock --mode=direct --hide --launch
 - 若未使用 `--launch`，程序会显示一个预览对话框，此时可根据需要选择复制命令行、直接启动或取消。
 - 启动目标程序后，本程序立即退出，不会等待子进程结束。
 - 目标程序必须与 `HugoLockAssistant.exe` 位于同一目录，否则会失败。
+
+## 日志
+
+运行日志写入程序目录下的 `HugoLockAssistant.log`，记录启动、method/mode、最终启动命令以及错误信息。
 
 ## 许可
 

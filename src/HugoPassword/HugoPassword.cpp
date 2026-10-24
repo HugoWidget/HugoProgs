@@ -1,4 +1,4 @@
-/*
+ï»¿/*
  * Copyright 2025-2026 howdy213, JYardX
  *
  * This file is part of HugoProgs.
@@ -42,20 +42,20 @@
 using namespace WinUtils;
 using namespace std;
 
-// ³£Á¿¶¨Òå
+// å¸¸é‡å®šä¹‰
 const wstring kSeewoCoreIniRelativePath = L"\\Seewo\\SeewoCore\\SeewoCore.ini";
 const char* kRegistryMachineIdPath = "SOFTWARE\\Microsoft\\SQMClient";
 const char* kRegistryMachineIdValue = "MachineId";
 const char* kIniSectionDevice = "device";
 const char* kIniKeyId = "id";
 
-// ¸¨Öúº¯Êı£ºÇåÆÁ
+// è¾…åŠ©å‡½æ•°ï¼šæ¸…å±
 void ClearScreen()
 {
 	system("cls");
 }
 
-// ÊÖ¶¯ĞÅÏ¢»ñÈ¡Æ÷
+// æ‰‹åŠ¨ä¿¡æ¯è·å–å™¨
 class ManualInfoAcquirer : public InfoAcquirer
 {
 private:
@@ -104,7 +104,7 @@ vector<CrackTask> ManualInfoAcquirer::acquire()
 	return tasks;
 }
 
-// ¿ØÖÆÌ¨½á¹ûÊä³öÀà
+// æ§åˆ¶å°ç»“æœè¾“å‡ºç±»
 class ConsoleOutput : public ResultOutput
 {
 private:
@@ -122,13 +122,13 @@ private:
 		case MODE_V1: return L"V1";
 		case MODE_V2: return L"V2";
 		case MODE_V3: return L"V3";
-		default: return L"Î´Öª";
+		default: return L"æœªçŸ¥";
 		}
 	}
 
 	wstring TypeToString(PasswordType type)
 	{
-		return (type == TYPE_ADMIN) ? L"¹ÜÀíÃÜÂë" : L"ËøÆÁÃÜÂë";
+		return (type == TYPE_ADMIN) ? L"ç®¡ç†å¯†ç " : L"é”å±å¯†ç ";
 	}
 
 public:
@@ -137,29 +137,29 @@ public:
 		vector<CrackResult> sorted = results;
 		sort(sorted.begin(), sorted.end(), CompareResult);
 
-		wcout << L"\n==================== ÆÆ½â½á¹û ====================\n";
+		wcout << L"\n==================== ç ´è§£ç»“æœ ====================\n";
 		for (const auto& res : sorted) {
 			wcout << L"[" << ModeToString(res.task.mode) << L"] "
 				<< TypeToString(res.task.type) << L" : ";
 			if (res.success) {
-				wcout << L"³É¹¦ -> " << ConvertString<wstring>(res.plaintext) << endl;
+				wcout << L"æˆåŠŸ -> " << ConvertString<wstring>(res.plaintext) << endl;
 			}
 			else {
-				wcout << L"Ê§°Ü (" << ConvertString<wstring>(res.error_message) << L")" << endl;
+				wcout << L"å¤±è´¥ (" << ConvertString<wstring>(res.error_message) << L")" << endl;
 			}
 		}
 		wcout << L"========================================================\n";
 	}
 };
 
-// ÊÖ¶¯ÊäÈëÄ£Ê½
+// æ‰‹åŠ¨è¾“å…¥æ¨¡å¼
 int RunManualMode()
 {
 	int version;
 	wstring wcipher;
-	wcout << L"ÃÜÎÄ°æ±¾ (1/2/3): ";
+	wcout << L"å¯†æ–‡ç‰ˆæœ¬ (1/2/3): ";
 	wcin >> version;
-	wcout << L"ÃÜÎÄ: ";
+	wcout << L"å¯†æ–‡: ";
 	wcin >> wcipher;
 	string cipher = ConvertString<string>(wcipher);
 
@@ -167,98 +167,98 @@ int RunManualMode()
 	vector<CrackTask> tasks = acquirer->acquire();
 
 	if (tasks.empty()) {
-		wcerr << L"´íÎó: ÎŞÆÆ½âÈÎÎñ" << endl;
+		wcerr << L"é”™è¯¯: æ— ç ´è§£ä»»åŠ¡" << endl;
 		WuLog::Log(LogLevel::Error, L"No crack tasks generated");
 		return 1;
 	}
 
-	// ´òÓ¡ÈÎÎñĞÅÏ¢
-	wcout << L"\n==================== ÆÆ½âÈÎÎñ ====================\n";
+	// æ‰“å°ä»»åŠ¡ä¿¡æ¯
+	wcout << L"\n==================== ç ´è§£ä»»åŠ¡ ====================\n";
 	for (const auto& task : tasks) {
 		wstring modeStr = (task.mode == MODE_V1) ? L"V1" :
 			(task.mode == MODE_V2) ? L"V2" : L"V3";
-		wstring typeStr = (task.type == TYPE_ADMIN) ? L"¹ÜÀíÃÜÂë" : L"ËøÆÁÃÜÂë";
-		wcout << L"Ä£Ê½: " << modeStr
-			<< L", ÀàĞÍ: " << typeStr
-			<< L", ÃÜÎÄ: " << ConvertString<wstring>(task.ciphertext)
-			<< L", Éè±¸ID: " << ConvertString<wstring>(task.device_id)
-			<< L", »úÆ÷ID: " << ConvertString<wstring>(task.machine_id)
-			<< L", Â·¾¶: " << ConvertString<wstring>(task.method)
+		wstring typeStr = (task.type == TYPE_ADMIN) ? L"ç®¡ç†å¯†ç " : L"é”å±å¯†ç ";
+		wcout << L"æ¨¡å¼: " << modeStr
+			<< L", ç±»å‹: " << typeStr
+			<< L", å¯†æ–‡: " << ConvertString<wstring>(task.ciphertext)
+			<< L", è®¾å¤‡ID: " << ConvertString<wstring>(task.device_id)
+			<< L", æœºå™¨ID: " << ConvertString<wstring>(task.machine_id)
+			<< L", è·¯å¾„: " << ConvertString<wstring>(task.method)
 			<< endl;
 	}
 	wcout << L"==========================================================\n";
 
-	// ×¼±¸½âÃÜÆ÷
+	// å‡†å¤‡è§£å¯†å™¨
 	V1Decryptor d1;
 	V2Decryptor d2;
 	V3Decryptor d3;
 	vector<Decryptor*> decryptors = { &d1, &d2, &d3 };
 
-	// Ö´ĞĞÆÆ½â
+	// æ‰§è¡Œç ´è§£
 	CrackExecutor executor;
 	vector<CrackResult> results = executor.execute(tasks, decryptors);
 
-	// Êä³ö½á¹û
+	// è¾“å‡ºç»“æœ
 	ConsoleOutput output;
 	output.output(results);
 
 	return 0;
 }
 
-// ×Ô¶¯¶ÁÈ¡Ä£Ê½
+// è‡ªåŠ¨è¯»å–æ¨¡å¼
 int RunAutoMode()
 {
 	unique_ptr<InfoAcquirer> acquirer = make_unique<AutoInfoAcquirer>();
 	vector<CrackTask> tasks = acquirer->acquire();
 
 	if (tasks.empty()) {
-		wcerr << L"´íÎó: ÎŞÆÆ½âÈÎÎñ" << endl;
+		wcerr << L"é”™è¯¯: æ— ç ´è§£ä»»åŠ¡" << endl;
 		WuLog::Log(LogLevel::Error, L"No crack tasks generated");
 		return 1;
 	}
 
-	// ´òÓ¡ÈÎÎñĞÅÏ¢
-	wcout << L"\n==================== ÆÆ½âÈÎÎñ ====================\n";
+	// æ‰“å°ä»»åŠ¡ä¿¡æ¯
+	wcout << L"\n==================== ç ´è§£ä»»åŠ¡ ====================\n";
 	for (const auto& task : tasks) {
 		wstring modeStr = (task.mode == MODE_V1) ? L"V1" :
 			(task.mode == MODE_V2) ? L"V2" : L"V3";
-		wstring typeStr = (task.type == TYPE_ADMIN) ? L"¹ÜÀíÃÜÂë" : L"ËøÆÁÃÜÂë";
-		wcout << L"Ä£Ê½: " << modeStr
-			<< L", ÀàĞÍ: " << typeStr
-			<< L", ÃÜÎÄ: " << ConvertString<wstring>(task.ciphertext)
-			<< L", Éè±¸ID: " << ConvertString<wstring>(task.device_id)
-			<< L", »úÆ÷ID: " << ConvertString<wstring>(task.machine_id)
-			<< L", Â·¾¶: " << ConvertString<wstring>(task.method)
+		wstring typeStr = (task.type == TYPE_ADMIN) ? L"ç®¡ç†å¯†ç " : L"é”å±å¯†ç ";
+		wcout << L"æ¨¡å¼: " << modeStr
+			<< L", ç±»å‹: " << typeStr
+			<< L", å¯†æ–‡: " << ConvertString<wstring>(task.ciphertext)
+			<< L", è®¾å¤‡ID: " << ConvertString<wstring>(task.device_id)
+			<< L", æœºå™¨ID: " << ConvertString<wstring>(task.machine_id)
+			<< L", è·¯å¾„: " << ConvertString<wstring>(task.method)
 			<< endl;
 	}
 	wcout << L"==========================================================\n";
 
-	// ×¼±¸½âÃÜÆ÷
+	// å‡†å¤‡è§£å¯†å™¨
 	V1Decryptor d1;
 	V2Decryptor d2;
 	V3Decryptor d3;
 	vector<Decryptor*> decryptors = { &d1, &d2, &d3 };
 
-	// Ö´ĞĞÆÆ½â
+	// æ‰§è¡Œç ´è§£
 	CrackExecutor executor;
 	vector<CrackResult> results = executor.execute(tasks, decryptors);
 
-	// Êä³ö½á¹û
+	// è¾“å‡ºç»“æœ
 	ConsoleOutput output;
 	output.output(results);
 
 	return 0;
 }
 
-// ÏÔÊ¾°ïÖúĞÅÏ¢
+// æ˜¾ç¤ºå¸®åŠ©ä¿¡æ¯
 void PrintHelp(const wstring& programName)
 {
-	wcout << L"ÓÃ·¨: " << programName << L" [Ñ¡Ïî]\n"
-		<< L"Ñ¡Ïî:\n"
-		<< L"  --manual      ÊÖ¶¯ÊäÈëÄ£Ê½\n"
-		<< L"  --auto        ×Ô¶¯¶ÁÈ¡Ä£Ê½\n"
-		<< L"  --help, -h    ÏÔÊ¾´Ë°ïÖú\n"
-		<< L"ÎŞ²ÎÊıÔò½øÈë½»»¥²Ëµ¥\n";
+	wcout << L"ç”¨æ³•: " << programName << L" [é€‰é¡¹]\n"
+		<< L"é€‰é¡¹:\n"
+		<< L"  --manual      æ‰‹åŠ¨è¾“å…¥æ¨¡å¼\n"
+		<< L"  --auto        è‡ªåŠ¨è¯»å–æ¨¡å¼\n"
+		<< L"  --help, -h    æ˜¾ç¤ºæ­¤å¸®åŠ©\n"
+		<< L"æ— å‚æ•°åˆ™è¿›å…¥äº¤äº’èœå•\n";
 }
 
 int wmain(int argc, wchar_t* argv[])
@@ -266,11 +266,11 @@ int wmain(int argc, wchar_t* argv[])
 	try {
 		Console().setLocale();
 
-		// ÈÕÖ¾ÅäÖÃ£º½öÎÄ¼ş
+		// æ—¥å¿—é…ç½®ï¼šä»…æ–‡ä»¶
 		LoggerCore::Inst().SetDefaultStrategies(L"HugoPassword.log");
 		LoggerCore::Inst().EnableApartment(DftLogger);
 
-		// ÃüÁîĞĞÄ£Ê½
+		// å‘½ä»¤è¡Œæ¨¡å¼
 		if (argc > 1) {
 			wstring cmdLine;
 			for (int i = 1; i < argc; ++i) {
@@ -279,7 +279,7 @@ int wmain(int argc, wchar_t* argv[])
 
 			CmdParser parser(true);
 			if (!parser.parse(cmdLine)) {
-				wcerr << L"ÃüÁîĞĞ½âÎöÊ§°Ü" << endl;
+				wcerr << L"å‘½ä»¤è¡Œè§£æå¤±è´¥" << endl;
 				return 1;
 			}
 
@@ -295,24 +295,24 @@ int wmain(int argc, wchar_t* argv[])
 				return RunAutoMode();
 			}
 
-			wcerr << L"Î´ÖªÑ¡Ïî£¬Ê¹ÓÃ --help ²é¿´°ïÖú" << endl;
+			wcerr << L"æœªçŸ¥é€‰é¡¹ï¼Œä½¿ç”¨ --help æŸ¥çœ‹å¸®åŠ©" << endl;
 			return 1;
 		}
 
-		// ½»»¥²Ëµ¥Ä£Ê½
+		// äº¤äº’èœå•æ¨¡å¼
 		int choice = -1;
 		do {
 			ClearScreen();
-			wcout << L"\n=== Ï£ÎÖÃÜÂëÆÆ½â¹¤¾ß ===\n"
-				<< L"1. ÊÖ¶¯ÊäÈëÄ£Ê½\n"
-				<< L"2. ×Ô¶¯¶ÁÈ¡Ä£Ê½\n"
-				<< L"0. ÍË³ö³ÌĞò\n"
-				<< L"ÇëÊäÈëÑ¡Ôñ: ";
+			wcout << L"\n=== å¸Œæ²ƒå¯†ç ç ´è§£å·¥å…· ===\n"
+				<< L"1. æ‰‹åŠ¨è¾“å…¥æ¨¡å¼\n"
+				<< L"2. è‡ªåŠ¨è¯»å–æ¨¡å¼\n"
+				<< L"0. é€€å‡ºç¨‹åº\n"
+				<< L"è¯·è¾“å…¥é€‰æ‹©: ";
 			wcin >> choice;
 			if (wcin.fail()) {
 				wcin.clear();
 				wcin.ignore(1024, L'\n');
-				wcerr << L"ÊäÈëÎŞĞ§£¬ÇëÊäÈëÊı×Ö" << endl;
+				wcerr << L"è¾“å…¥æ— æ•ˆï¼Œè¯·è¾“å…¥æ•°å­—" << endl;
 				system("pause");
 				continue;
 			}
@@ -322,21 +322,21 @@ int wmain(int argc, wchar_t* argv[])
 			case 1:
 				result = RunManualMode();
 				if (result != 0) {
-					wcerr << L"ÊÖ¶¯Ä£Ê½Ö´ĞĞÊ§°Ü" << endl;
+					wcerr << L"æ‰‹åŠ¨æ¨¡å¼æ‰§è¡Œå¤±è´¥" << endl;
 				}
 				break;
 			case 2:
 				result = RunAutoMode();
 				if (result != 0) {
-					wcerr << L"×Ô¶¯Ä£Ê½Ö´ĞĞÊ§°Ü" << endl;
+					wcerr << L"è‡ªåŠ¨æ¨¡å¼æ‰§è¡Œå¤±è´¥" << endl;
 				}
 				break;
 			case 0:
-				wcout << L"ÍË³ö³ÌĞò¡£" << endl;
+				wcout << L"é€€å‡ºç¨‹åºã€‚" << endl;
 				WuLog::Log(LogLevel::Info, L"User exited");
 				break;
 			default:
-				wcerr << L"ÎŞĞ§Ñ¡Ôñ£¬ÇëÖØĞÂÊäÈë" << endl;
+				wcerr << L"æ— æ•ˆé€‰æ‹©ï¼Œè¯·é‡æ–°è¾“å…¥" << endl;
 				break;
 			}
 			if (choice != 0) {
@@ -347,7 +347,7 @@ int wmain(int argc, wchar_t* argv[])
 		return 0;
 	}
 	catch (const exception& e) {
-		wcerr << L"ÖÂÃü´íÎó: " << ConvertString<wstring>(e.what()) << endl;
+		wcerr << L"è‡´å‘½é”™è¯¯: " << ConvertString<wstring>(e.what()) << endl;
 		WuLog::Log(LogLevel::Error, L"Fatal: " + ConvertString<wstring>(e.what()));
 		return 1;
 	}

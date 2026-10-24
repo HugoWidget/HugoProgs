@@ -100,10 +100,28 @@ void DisableUnlockLoop() {
 	}
 }
 
+static void PrintUsage() {
+	std::wcout << L"HugoLock - 希沃锁屏辅助工具\n"
+		<< L"用法:\n"
+		<< L"  HugoLock.exe                     以 direct 模式运行（默认）\n"
+		<< L"  HugoLock.exe --mode=<direct|assist|disable>\n"
+		<< L"                                   指定运行模式\n"
+		<< L"  HugoLock.exe --help, -h, /?      显示此帮助信息\n";
+}
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
 	_In_ LPWSTR lpCmdLine,
 	_In_ int nCmdShow) {
+	CmdParser helpParser(true);
+	if (helpParser.parse(lpCmdLine, CmdParser::ParseMode::Normal) &&
+		(helpParser.hasCommand(L"help") || helpParser.hasCommand(L"h") || helpParser.hasCommand(L"?"))) {
+		Console helpConsole;
+		helpConsole.setLocale();
+		PrintUsage();
+		return 0;
+	}
+
 	RequireAdminPrivilege(true);
 	DWORD dwUIAccessErr = UIAccess::RequireUIAccess();
 	if (dwUIAccessErr != ERROR_SUCCESS) {
@@ -118,8 +136,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	EnsureSingleInstance(true);
 	Console console;
 	console.setLocale();
-	LoggerCore::Inst().AddStrategy<FileLogStrategy>(L"HugoLock.log");
-	LoggerCore::Inst().AddStrategy<DebugLogStrategy>();
+	LoggerCore::Inst().SetDefaultStrategies(L"HugoLock.log");
 	LoggerCore::Inst().EnableApartment(DftLogger);
 
 	CmdParser parser(true);
