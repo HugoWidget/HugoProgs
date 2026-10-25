@@ -20,6 +20,6 @@
 
 #include "WinUtils/ConsoleMenu.h"
 
-// Load custom menu items from extension.ini in the program directory and register
-// them into a dedicated top-level submenu. Does nothing when the file is absent.
+ // Load custom menu items from extension.ini in the program directory and register
+ // them into a dedicated top-level submenu. Does nothing when the file is absent.
 void LoadExtensionMenu(WinUtils::ConsoleMenu& menu);

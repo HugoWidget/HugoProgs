@@ -21,6 +21,12 @@
     <ClCompile Include="ExtensionMenu.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="HugoProgsCommon.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="RegisterCommands.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -30,6 +36,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="ExtensionMenu.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="HugoProgsCommon.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RegisterCommands.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

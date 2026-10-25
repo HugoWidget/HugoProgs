@@ -133,9 +133,13 @@
   <ItemGroup>
     <ClCompile Include="ExtensionMenu.cpp" />
     <ClCompile Include="HugoProgs.cpp" />
+    <ClCompile Include="HugoProgsCommon.cpp" />
+    <ClCompile Include="RegisterCommands.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ExtensionMenu.h" />
+    <ClInclude Include="HugoProgsCommon.h" />
+    <ClInclude Include="RegisterCommands.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ConsoleTable.h" />
   </ItemGroup>
