@@ -136,7 +136,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	EnsureSingleInstance(true);
 	Console console;
 	console.setLocale();
-	LoggerCore::Inst().SetDefaultStrategies(L"HugoLock.log");
+	LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoLock.log");
 	LoggerCore::Inst().EnableApartment(DftLogger);
 
 	CmdParser parser(true);

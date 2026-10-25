@@ -28,6 +28,7 @@
 #include "WinUtils/Logger.h"
 #include "WinUtils/CmdParser.h"
 #include <WinUtils/StrConvert.h>
+#include <WinUtils/WinUtils.h>
 
 #pragma comment(lib, "advapi32.lib")
 
@@ -102,7 +103,7 @@ int wmain(int argc, wchar_t* argv[])
 		Console().setLocale();
 
 		// 日志配置：仅文件
-		LoggerCore::Inst().SetDefaultStrategies(L"HugoFreezeApi.log");
+		LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoFreezeApi.log");
 		LoggerCore::Inst().EnableApartment(DftLogger);
 
 		HFreezeApi freezeApi;

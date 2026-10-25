@@ -390,7 +390,7 @@ int wmain(int argc, wchar_t* argv[])
         Console().setLocale();
 
         // 日志配置：仅文件
-        LoggerCore::Inst().SetDefaultStrategies(L"HugoInstaller.log");
+        LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoInstaller.log");
         LoggerCore::Inst().EnableApartment(DftLogger);
 
         // 命令行模式

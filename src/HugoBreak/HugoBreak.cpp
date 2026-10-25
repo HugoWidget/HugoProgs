@@ -195,7 +195,7 @@ int main(int argc, char* argv[]) {
 
         Console console;
         console.setLocale();
-        LoggerCore::Inst().SetDefaultStrategies(L"HugoBreak.log");
+        LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoBreak.log");
         LoggerCore::Inst().EnableApartment(DftLogger);
 
         wstring cmdLine = ExtractArguments(GetCommandLine());

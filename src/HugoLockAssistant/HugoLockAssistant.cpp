@@ -77,7 +77,7 @@ int APIENTRY wWinMain(
 	CmdParser parser(true);
 	string_t cmdLineStr(lpCmdLine);
 	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-	LoggerCore::Inst().SetDefaultStrategies(L"HugoLockAssistant.log");
+	LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoLockAssistant.log");
 	LoggerCore::Inst().EnableApartment(DftLogger);
 
 	if (!parser.parse(ExtractArguments(GetCommandLine()))) {

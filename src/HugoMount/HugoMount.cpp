@@ -304,7 +304,7 @@ int wmain(int argc, wchar_t* argv[])
 		EnsureSingleInstance(true);
 		Console().setLocale();
 
-		LoggerCore::Inst().SetDefaultStrategies(L"HugoMount.log");
+		LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoMount.log");
 		LoggerCore::Inst().EnableApartment(DftLogger);
 
 		HMount instance;

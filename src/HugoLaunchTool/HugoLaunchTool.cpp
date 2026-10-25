@@ -103,7 +103,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 		console.setLocale();
 		SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
-		LoggerCore::Inst().SetDefaultStrategies(L"HugoLaunchTool.log");
+		LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoLaunchTool.log");
 		LoggerCore::Inst().EnableApartment(DftLogger);
 
 		wstring cmdLine = lpCmdLine ? lpCmdLine : L"";

@@ -141,7 +141,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(lpCmdLine);
 	Console console;
 	console.setLocale();
-	LoggerCore::Inst().SetDefaultStrategies(L"HugoScreenSaver.log");
+	LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoScreenSaver.log");
 	LoggerCore::Inst().EnableApartment(DftLogger);
 
 	CmdParser parser;

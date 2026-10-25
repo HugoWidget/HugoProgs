@@ -30,7 +30,7 @@ void PrintString(const wchar_t* desc, const std::optional<std::wstring>& opt) {
 int main() {
 	Console console;
 	console.setLocale();	
-	LoggerCore::Inst().SetDefaultStrategies(L"HugoInfo.log");
+	LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoInfo.log");
 	LoggerCore::Inst().EnableApartment(DftLogger);
 	WuLog::Info(L"HugoInfo 启动");
 	PrintString(L"SeewoService 版本", HInfo::getHugoVersion());

@@ -236,7 +236,7 @@ int wmain(int argc, wchar_t* argv[])
 		EnsureSingleInstance(true);
 		Console().setLocale();
 
-		LoggerCore::Inst().SetDefaultStrategies(L"HugoDisable.log");
+		LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoDisable.log");
 		LoggerCore::Inst().EnableApartment(DftLogger);
 
 		FirewallGuard fwGuard;

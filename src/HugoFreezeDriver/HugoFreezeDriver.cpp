@@ -585,7 +585,7 @@ int wmain(int argc, wchar_t* argv[]) {
         RequireAdminPrivilege(true);
         Console().setLocale();
 
-        LoggerCore::Inst().SetDefaultStrategies(L"HugoFreezeDriver.log");
+        LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoFreezeDriver.log");
         LoggerCore::Inst().EnableApartment(DftLogger);
         HFreezeDriver manager;
         FreezeResult initRes = manager.Init();

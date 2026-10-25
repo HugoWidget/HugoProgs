@@ -494,7 +494,7 @@ static void interactiveLoop() {
 int wmain(int argc, wchar_t* argv[]) {
 	Console console;
 	console.setLocale();
-	LoggerCore::Inst().SetDefaultStrategies(L"HugoFreezeFile.log");
+	LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoFreezeFile.log");
 	LoggerCore::Inst().EnableApartment(DftLogger);
 
 	wcout << L"HugoFreezeFile - Seewo VolumeInfo.config Manager\n";
