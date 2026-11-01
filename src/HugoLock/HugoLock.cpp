@@ -118,6 +118,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		(helpParser.hasCommand(L"help") || helpParser.hasCommand(L"h") || helpParser.hasCommand(L"?"))) {
 		Console helpConsole;
 		helpConsole.setLocale();
+		helpConsole.attach();
 		PrintUsage();
 		return 0;
 	}

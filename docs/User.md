@@ -52,7 +52,7 @@ HugoProgs 由多个子项目组成，同名子项目作为菜单驱动的控制�
 1. 解压 bundle 到一个固定目录（建议路径不含中文与空格）。
 2. 双击 `Start.exe`，或右键 `HugoProgs.exe` → 以管理员身份运行。
 4. 在主菜单中执行操作。
-5. 需要自动化时，编辑 `Launcher.ini` 并注册自启动服务（见第 7 节）。
+5. 需要自动化时，编辑 `Launcher.ini` 并选择一种自启动方式（服务自启或任务计划自启，见第 7 节）。
 
 ## 5. 界面与交互规则
 
@@ -124,9 +124,16 @@ HugoWidget 提供多种管理冰点还原的方式，可按需取用：
 | ------------------- | ------------------------------------------------------- |
 | `auto`              | 用默认编辑器打开 `Launcher.ini`（自启动配置）           |
 | `task`              | 用默认编辑器打开 `tasks.ini`（任务计划配置）            |
+| `ext`               | 用默认编辑器打开 `extension.ini`（自定义菜单项）        |
+| `uac`               | 打开 Windows「用户账户控制」设置                        |
+| `hlp`               | 输出各配置项说明（`Launcher.ini` / `tasks.ini` / 服务等） |
+| `autorun.hlp`        | 服务自启与任务计划自启的对比（启动速度、UAC 提权窗口） |
 | `service/install`   | 安装自启动服务（`AutoStartService.exe /install`）       |
 | `service/uninstall` | 卸载自启动服务（`AutoStartService.exe /uninstall`）     |
 | `service/query`     | 查询服务状态（输出服务路径，并显示「已注册 / 未注册」） |
+| `taskplan/install`  | 创建计划任务 `HugoProgs_Launcher`（登录时以最高权限启动 Launcher，需管理员权限） |
+| `taskplan/uninstall`| 删除上述计划任务                                        |
+| `taskplan/query`    | 查询计划任务是否存在                                    |
 
 ### 6.7 `scan` — 内存扫描工具
 
@@ -142,8 +149,11 @@ HugoWidget 提供多种管理冰点还原的方式，可按需取用：
 
 ### 7.1 自启动链路
 
+两种自启动方式**只选一种**，实质都是启动 `Launcher.exe` 而非 `HugoProgs.exe`：
+
 ```text
-AutoStartService 服务启动
+方式A：AutoStartService 服务启动（系统启动时触发，最快）
+方式B：计划任务 HugoProgs_Launcher（用户登录后触发）
 └--> Launcher 启动 -----> 依次调用各种程序
       |
       | 若有 TaskManager
@@ -151,7 +161,11 @@ AutoStartService 服务启动
       └-----> 则按配置在指定时刻调用程序
 ```
 
-注册自启动服务实质是由 `AutoStartService.exe` 启动 `Launcher.exe` 而非 `HugoProgs.exe`：开机后由服务拉起 Launcher，Launcher 再按 `Launcher.ini` 逐个打开目标程序。
+- **服务自启**：由 `AutoStartService.exe` 在系统启动时拉起 Launcher，速度最快；服务本身以 SYSTEM 身份运行、不弹 UAC，但 `Launcher.ini` 中 `RunAsAdmin=true` 的程序仍会弹 UAC 确认框。
+- **任务计划自启**：由 Windows 任务计划程序在用户登录后以最高权限启动 Launcher，无需安装服务；一般不再弹 UAC，但 `RunAsAdmin=true` 的程序仍可能弹。
+- 是否弹出 UAC 窗口取决于 `Launcher.ini` 的配置；可在 `config/autorun.hlp` 查看完整对比，在 `config/uac` 打开 Windows 用户账户控制设置。
+
+首次启动时的 `guide` 引导会要求先选择自启动方式。
 
 ### 7.2 `Launcher.ini` 配置
 
@@ -190,15 +204,23 @@ Program=.\TaskManager.exe
 
 `Launcher.ini` 默认配置中包含 `.\TaskManager`，配合 `tasks.ini`（菜单 `config/task` 打开）实现**按指定时刻调用程序**的能力。其配置方法类似于 `Launcher.exe`，参见 [WinTools](https://github.com/howdy213/WinTools)。若不需要定时任务，可以把对应节从 `Launcher.ini` 中移除。
 
-### 7.4 注册 / 查询 / 卸载服务
+### 7.4 注册 / 查询 / 卸载自启动
+
+任选一种方式（两种只选一种）：
 
 ```text
+方式A 服务自启（需管理员权限）
 config/service/install     安装自启动服务
 config/service/query       查询服务状态
 config/service/uninstall   卸载自启动服务
+
+方式B 任务计划自启（需管理员权限）
+config/taskplan/install    创建计划任务 HugoProgs_Launcher（登录时以最高权限启动 Launcher）
+config/taskplan/query      查询计划任务是否存在
+config/taskplan/uninstall  删除计划任务
 ```
 
-或直接使用 bundle 中的 `Install.exe` / `UnInstall.exe`。
+服务方式也可直接使用 bundle 中的 `Install.exe` / `UnInstall.exe`；任务计划方式实质是调用系统 `schtasks.exe`，也可在「任务计划程序」中手动管理。
 
 ### 7.5 `extension.ini` 自定义菜单项
 

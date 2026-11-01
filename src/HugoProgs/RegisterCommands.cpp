@@ -72,6 +72,50 @@ namespace
 			wcout << L"请输入 y 或 n。\n";
 		}
 	}
+
+	// 计划任务名称（用户登录时启动 Launcher，替代服务自启）
+	const wstring kAutoStartTaskName = L"HugoProgs_Launcher";
+
+	// 引导中的自启动方式选择：0=暂不设置，1=服务自启，2=任务计划自启（回车默认 1）
+	int AskAutoStartMethod()
+	{
+		while (true)
+		{
+			wcout << L"\n请选择开机自启动方式（两种方式只选一种）：\n"
+				<< L"  1) 服务自启  —— 服务在系统启动时拉起 Launcher，\n"
+				<< L"                    速度快，但可能弹出 UAC 窗口\n"
+				<< L"  2) 任务计划  —— 在用户登录时拉起 Launcher，不安装服务\n"
+				<< L"  0) 暂不设置  —— 稍后可在 config 菜单中设置\n"
+				<< L"详细对比可执行 config/autorun.hlp\n";
+
+			wstring input = ReadUserInput(L"选择 [0-2]（回车默认 1）: ");
+
+			size_t start = input.find_first_not_of(L" \t\r\n");
+			if (start == wstring::npos)
+				return 1;
+
+			size_t end = input.find_last_not_of(L" \t\r\n");
+			wstring value = input.substr(start, end - start + 1);
+
+			if (value == L"0") return 0;
+			if (value == L"1") return 1;
+			if (value == L"2") return 2;
+
+			wcout << L"无效输入，请输入 0、1 或 2。\n";
+		}
+	}
+
+	wstring GetSystemToolPath(const wstring& tool)
+	{
+		wchar_t dir[MAX_PATH]{};
+		GetWindowsDirectoryW(dir, MAX_PATH);
+		return wstring(dir) + L"\\System32\\" + tool;
+	}
+
+	bool RunSchtasks(const wstring& arguments, DWORD* exitCode = nullptr)
+	{
+		return ExecuteProgramInCurrentConsole(GetSystemToolPath(L"schtasks.exe"), arguments, true, exitCode);
+	}
 }
 
 bool IsGuideCompleted()
@@ -89,8 +133,8 @@ void MarkGuideCompleted()
 void RunGuide(ConsoleMenu& menu)
 {
 	wcout << L"\n==================== HugoProgs 使用引导 ====================\n";
-	wcout << L"依赖关系：TaskManager 依赖 Launcher 启动；Launcher 依赖 AutoStartService 注册。\n";
-	wcout << L"建议配置顺序：AutoStartService -> Launcher.ini -> tasks.ini。\n\n";
+	wcout << L"依赖关系：TaskManager 依赖 Launcher 启动；Launcher 由 AutoStartService 或任务计划程序拉起。\n";
+	wcout << L"建议配置顺序：选择自启动方式 -> Launcher.ini -> tasks.ini。\n\n";
 
 	if (AskYesNo(L"是否现在跳过引导？[y/N] ", false))
 	{
@@ -99,18 +143,26 @@ void RunGuide(ConsoleMenu& menu)
 		return;
 	}
 
-	// 1. 自启动服务
-	if (AskYesNo(L"1/3 是否注册自启动服务 AutoStartService？需要管理员权限。[Y/n] ", true))
+	// 1. 开机自启动方式
+	switch (AskAutoStartMethod())
 	{
+	case 1:
 		if (!IsCurrentProcessAdmin())
 		{
-			wcout << L"当前不是管理员，安装可能失败。可稍后执行 privilege 提权。\n";
+			wcout << L"当前不是管理员，安装服务可能失败。可稍后执行 privilege 提权。\n";
 		}
 		menu.execute(L"config/service/install", true);
-	}
-	else
-	{
-		wcout << L"已跳过自启动服务注册。\n";
+		break;
+	case 2:
+		if (!IsCurrentProcessAdmin())
+		{
+			wcout << L"当前不是管理员，创建计划任务可能失败。可稍后执行 privilege 提权。\n";
+		}
+		menu.execute(L"config/taskplan/install", true);
+		break;
+	default:
+		wcout << L"已跳过自启动设置，稍后可执行 config/service/install 或 config/taskplan/install。\n";
+		break;
 	}
 
 	// 2. Launcher.ini
@@ -639,10 +691,12 @@ void registerObject(ConsoleMenu& menu)
 			if (!progPath.empty())
 				ExecuteProgramInCurrentConsole(progPath, L"--uninstall");
 			});
-		launchMenu.addCommand(L"hlp", L"帮助", [](ConsoleMenu&, Args) {
+		launchMenu.addCommand(L"lt.hlp", L"LaunchTool 帮助", [](ConsoleMenu&, Args) {
 			wstring launchPath = GetExternalProgramPath(L"HugoLaunchTool.exe");
 			if (!launchPath.empty())
 				ExecuteProgramInCurrentConsole(launchPath, L"--help");
+			});
+		launchMenu.addCommand(L"inst.hlp", L"Installer 帮助", [](ConsoleMenu&, Args) {
 			wstring installPath = GetExternalProgramPath(L"HugoInstaller.exe");
 			if (!installPath.empty())
 				ExecuteProgramInCurrentConsole(installPath, L"--help");
@@ -677,12 +731,7 @@ void registerObject(ConsoleMenu& menu)
 				<< L"使用方式详见帮助文档。";
 			});
 		lockMenu.addCommand(L"hlp", L"HugoLock 帮助", [](ConsoleMenu&, Args) {
-			wstring progPath = GetExternalProgramPath(L"HugoLock.exe");
-			if (!progPath.empty())
-				ExecuteProgramInCurrentConsole(progPath, L"--help");
-			});
-		lockMenu.addCommand(L"assist.hlp", L"HugoLockAssistant 帮助", [](ConsoleMenu&, Args) {
-			wstring progPath = GetExternalProgramPath(L"HugoLockAssistant.exe");
+			wstring progPath = GetExternalProgramPath(L"32-bit\\HugoLock.exe");
 			if (!progPath.empty())
 				ExecuteProgramInCurrentConsole(progPath, L"--help");
 			});
@@ -867,6 +916,70 @@ void registerObject(ConsoleMenu& menu)
 		configMenu.addCommand(L"ext", L"编辑扩展配置", [](ConsoleMenu&, Args) {
 			RunExternalProgram(GetCurrentProcessDir() + L"extension.ini");
 			});
+		configMenu.addCommand(L"uac", L"打开UAC设置", [](ConsoleMenu&, Args) {
+			wstring exePath = GetSystemToolPath(L"UserAccountControlSettings.exe");
+			HINSTANCE ret = RunExternalProgram(exePath);
+			wcout << ((INT_PTR)ret <= 32 ? L"打开失败\n" : L"已打开 Windows 用户账户控制设置\n");
+			});
+		configMenu.addCommand(L"hlp", L"配置项说明", [](ConsoleMenu&, Args) {
+			wcout << L"\nconfig 配置项说明\n"
+				<< L"  auto        打开 Launcher.ini：定义由 Launcher 依次启动的程序\n"
+				<< L"              字段 Program / Params / RunAsAdmin / ShowWnd\n"
+				<< L"  task        打开 tasks.ini：TaskManager 定时任务配置（在指定时刻调用程序）\n"
+				<< L"  ext         打开 extension.ini：向主菜单注册自定义命令\n"
+				<< L"  uac         打开 Windows「用户账户控制」设置\n"
+				<< L"  service/*   用 AutoStartService 注册开机自启服务（系统启动即拉起 Launcher）\n"
+				<< L"  taskplan/*  用 Windows 任务计划程序在用户登录时启动 Launcher\n"
+				<< L"  autorun.hlp 服务自启与任务计划自启的对比\n\n"
+				<< L"依赖关系：Launcher 按 Launcher.ini 启动程序；\n"
+				<< L"          TaskManager 按 tasks.ini 在指定时刻调用程序，需由 Launcher 先启动。\n";
+			});
+		configMenu.addCommand(L"autorun.hlp", L"服务自启与任务计划对比", [](ConsoleMenu&, Args) {
+			wcout << L"\n开机自启方式对比\n"
+				<< L"\n1) 服务自启（config/service/install，AutoStartService）\n"
+				<< L"   触发时机：系统启动时，早于用户登录\n"
+				<< L"   启动速度：最快\n"
+				<< L"   UAC 窗口：服务以 SYSTEM 身份运行，服务本身不弹 UAC；\n"
+				<< L"             但 Launcher.ini 中 RunAsAdmin=true 的程序仍会弹 UAC 确认框\n"
+				<< L"             （是否出现视 Launcher 配置而定）\n"
+				<< L"   注意：需要安装并常驻服务，部分环境可能被安全软件拦截\n"
+				<< L"\n2) 任务计划自启（config/taskplan/install）\n"
+				<< L"   触发时机：用户登录后\n"
+				<< L"   启动速度：比服务自启稍慢（需等登录完成）\n"
+				<< L"   UAC 窗口：任务以「最高权限」运行时通常不弹 UAC\n"
+				<< L"   注意：不安装服务，登录即生效，删除计划任务即可停用\n"
+				<< L"\n建议：两种方式只选一种，避免 Launcher 被重复启动。\n";
+			});
+		auto& taskplanMenu = configMenu.addSubmenu(L"taskplan", L"任务计划程序");
+		{
+			taskplanMenu.addCommand(L"install", L"创建登录自启计划任务", [](ConsoleMenu&, Args) {
+				if (!IsCurrentProcessAdmin()) {
+					wcout << L"错误：创建计划任务（最高权限）需要管理员权限。\n";
+					return;
+				}
+				wstring launcher = GetExternalProgramPath(L"Launcher.exe");
+				if (launcher.empty()) return;
+				wstring args = L"/create /tn " + kAutoStartTaskName + L" /tr \\\"" + launcher +
+					L"\\\" /sc onlogon /rl highest /f";
+				DWORD exitCode = 0;
+				RunSchtasks(args, &exitCode);
+				wcout << (exitCode == 0
+					? L"已创建计划任务 " + kAutoStartTaskName + L"：用户登录时以最高权限运行 Launcher。\n"
+					: L"创建失败，退出码 " + to_wstring(exitCode) + L"。\n");
+				});
+			taskplanMenu.addCommand(L"uninstall", L"删除计划任务", [](ConsoleMenu&, Args) {
+				DWORD exitCode = 0;
+				RunSchtasks(L"/delete /tn " + kAutoStartTaskName + L" /f", &exitCode);
+				wcout << (exitCode == 0
+					? L"计划任务已删除。\n"
+					: L"删除失败，退出码 " + to_wstring(exitCode) + L"。\n");
+				});
+			taskplanMenu.addCommand(L"query", L"查询计划任务", [](ConsoleMenu&, Args) {
+				DWORD exitCode = 0;
+				RunSchtasks(L"/query /tn " + kAutoStartTaskName, &exitCode);
+				wcout << L"计划任务状态: " << (exitCode == 0 ? L"已创建" : L"未创建") << L"\n";
+				});
+		}
 		auto& serviceMenu = configMenu.addSubmenu(L"service", L"服务管理");
 		{
 			serviceMenu.addCommand(L"install", L"安装自启动服务", [](ConsoleMenu&, Args args) {

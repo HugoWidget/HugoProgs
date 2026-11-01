@@ -39,7 +39,7 @@ Visual Studio 2022
 | **[HugoPassword](docs/HugoPassword.md)** | 枚举以找回希沃管家/锁屏密码。                                |
 | **[HugoProgs](docs/HugoProgs.md)** | 主菜单程序，集成所有工具，提供交互界面，支持脚本执行。           |
 | **[HugoProtect](docs/HugoProtect.md)** | 开关希沃的文件保护功能。                                     |
-| [**HugoScan**](docs/HugoScan.md) | 扫描 `SeewoCore.exe` 内存以获取部分信息。 |
+| [**HugoScan**](docs/HugoScan.md) | 扫描进程内存：提取希沃密码、按特征码持续扫描。 |
 | [**HugoScreenSaver**](docs/HugoScreenSaver.md) | 管理希沃屏幕保护。 |
 | [**HugoWndRec**](docs/HugoWndRec.md) | 管理希沃窗口。 |
 ## 说明
@@ -52,28 +52,38 @@ Release中HugoProgs.zip为该项目完整编译产物，前往[HugoSetup](https:
 
 - 双击`Start.exe`或管理员运行`HugoProgs.exe`
 
-- 管理员权限下前往 config/service/install 注册自启动服务（实质是启动`Launcher.exe`而非`HugoProgs.exe`）
+- 选择一种开机自启动方式（两种只选一种，实质都是启动`Launcher.exe`而非`HugoProgs.exe`）：
+  - `config/service/install`：注册 `AutoStartService` 服务自启，系统启动即拉起 Launcher，速度最快，需要管理员权限；
+  - `config/taskplan/install`：创建 Windows 计划任务 `HugoProgs_Launcher`，用户登录后启动 Launcher，无需安装服务。
+  
+  两者的启动速度与 UAC 提权窗口表现对比见 `config/autorun.hlp`，配置项概览见 `config/hlp`；可通过 `config/uac` 打开 Windows 用户账户控制设置。
 
 - 在 config/auto 修改启动配置（也就是`Launcher.ini`）
 
   结合使用介绍修改该文件来达到不同的功能，如果想要界面化的方式，见HugoWidgets，但可惜的是由于开发者时间精力有限，其没有自启动与锁屏相关功能，如果想做出贡献，欢迎加入。
 
-- 之后每次开机，将自动启动`Launcher.exe`并按照配置逐个打开目标程序
+- 之后每次开机，将自动启动`Launcher.exe`并按照配置逐个打开目标程序（首次启动的 `guide` 引导也会要求先选择自启动方式）
 - 需要扩展菜单时，在程序目录放置 `extension.ini` 注册自定义命令（详见[用户文档](docs/User.md#75-extensionini-自定义菜单项)与[HugoProgs 介绍](docs/HugoProgs.md)）
 - 子项目 HugoProgs 详细介绍[见此](docs/HugoProgs.md)
 
 ## 运行方式
 
-1. 自启动
+1. 自启动（两种方式，只选一种）
 
 ```
-AutoStartService服务启动
-└--> Launcher启动 -----> 依次调用各种程序
+方式A：AutoStartService 服务启动（系统启动时，最快）
+方式B：计划任务 HugoProgs_Launcher（用户登录后）
+└--> Launcher 启动 -----> 依次调用各种程序
       |
       | 若有TaskManager
       |
       └-----> 则按配置在指定时刻调用程序
 ```
+
+- 服务自启：`config/service/install`（管理员权限），`config/service/query` 查询，`config/service/uninstall` 卸载
+- 任务计划：`config/taskplan/install`（管理员权限），`config/taskplan/query` 查询，`config/taskplan/uninstall` 删除
+- 两者的启动速度与是否弹 UAC 提权窗口（视 `Launcher.ini` 的 `RunAsAdmin` 配置而定）对比见 `config/autorun.hlp`
+- 配置项说明见 `config/hlp`；需要调整 UAC 行为可执行 `config/uac` 打开 Windows 用户账户控制设置
 
 2. 手动打开
 
