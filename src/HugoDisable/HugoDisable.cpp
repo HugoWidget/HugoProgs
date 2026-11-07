@@ -230,11 +230,26 @@ void ExecuteCommand(const wstring& cmd, FirewallGuard& fw)
 
 int wmain(int argc, wchar_t* argv[])
 {
+	Console console;
+	console.setLocale();
+
+	wstring cmdLine;
+	for (int i = 1; i < argc; ++i) {
+		cmdLine += (i > 1 ? L" " : L"") + wstring(argv[i]);
+	}
+	CmdParser parser(true);
+	bool parseOk = (argc <= 1) || parser.parse(cmdLine);
+
+	if (parseOk && argc > 1 &&
+		(parser.hasCommand(L"help") || parser.hasCommand(L"-h"))) {
+		PrintHelp();
+		return 0;
+	}
+
 	try {
 		RequireAdminPrivilege(true);
 		SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 		EnsureSingleInstance(true);
-		Console().setLocale();
 
 		LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoDisable.log");
 		LoggerCore::Inst().EnableApartment(DftLogger);
@@ -243,20 +258,9 @@ int wmain(int argc, wchar_t* argv[])
 
 		// 命令行模式
 		if (argc > 1) {
-			wstring cmdLine;
-			for (int i = 1; i < argc; ++i) {
-				cmdLine += (i > 1 ? L" " : L"") + wstring(argv[i]);
-			}
-
-			CmdParser parser(true);
-			if (!parser.parse(cmdLine)) {
+			if (!parseOk) {
 				wcerr << L"命令行解析失败" << endl;
 				return 1;
-			}
-
-			if (parser.hasCommand(L"help") || parser.hasCommand(L"-h")) {
-				PrintHelp();
-				return 0;
 			}
 
 			// 支持的命令列表

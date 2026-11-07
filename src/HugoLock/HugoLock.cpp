@@ -113,12 +113,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
 	_In_ LPWSTR lpCmdLine,
 	_In_ int nCmdShow) {
-	CmdParser helpParser(true);
-	if (helpParser.parse(lpCmdLine, CmdParser::ParseMode::Normal) &&
-		(helpParser.hasCommand(L"help") || helpParser.hasCommand(L"h") || helpParser.hasCommand(L"?"))) {
-		Console helpConsole;
-		helpConsole.setLocale();
-		helpConsole.attach();
+	Console console;
+	console.setLocale();
+	console.attach();
+
+	CmdParser parser(true);
+	bool parseOk = parser.parse(lpCmdLine, CmdParser::ParseMode::Normal);
+
+	if (parseOk &&
+		(parser.hasCommand(L"help") || parser.hasCommand(L"h") || parser.hasCommand(L"?"))) {
 		PrintUsage();
 		return 0;
 	}
@@ -135,13 +138,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 	EnsureSingleInstance(true);
-	Console console;
-	console.setLocale();
 	LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoLock.log");
 	LoggerCore::Inst().EnableApartment(DftLogger);
 
-	CmdParser parser(true);
-	if (!parser.parse(lpCmdLine, CmdParser::ParseMode::Normal)) {
+	if (!parseOk) {
 		WuLog::Error(L"Failed to parse command line");
 		return 1;
 	}

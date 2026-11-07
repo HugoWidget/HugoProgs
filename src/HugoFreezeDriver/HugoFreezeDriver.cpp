@@ -581,9 +581,25 @@ void PrintHelp() {
 }
 
 int wmain(int argc, wchar_t* argv[]) {
+    Console console;
+    console.setLocale();
+
+    wstring cmdLine;
+    for (int i = 1; i < argc; ++i) {
+        if (i > 1) cmdLine += L" ";
+        cmdLine += argv[i];
+    }
+    CmdParser parser(true);
+    bool parseOk = (argc <= 1) || parser.parse(cmdLine);
+
+    if (parseOk && argc > 1 &&
+        (parser.hasCommand(L"help") || parser.hasCommand(L"-h"))) {
+        PrintHelp();
+        return 0;
+    }
+
     try {
         RequireAdminPrivilege(true);
-        Console().setLocale();
 
         LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoFreezeDriver.log");
         LoggerCore::Inst().EnableApartment(DftLogger);
@@ -600,22 +616,9 @@ int wmain(int argc, wchar_t* argv[]) {
             ~ManagerGuard() { mgr.Cleanup(); }
         } guard{ manager };
         if (argc > 1) {
-
-            wstring cmdLine;
-            for (int i = 1; i < argc; ++i) {
-                if (i > 1) cmdLine += L" ";
-                cmdLine += argv[i];
-            }
-
-            CmdParser parser(true);
-            if (!parser.parse(cmdLine)) {
+            if (!parseOk) {
                 wcerr << L"命令行解析失败" << endl;
                 return 1;
-            }
-
-            if (parser.hasCommand(L"help") || parser.hasCommand(L"-h")) {
-                PrintHelp();
-                return 0;
             }
 
             if (parser.hasCommand(L"query")) {

@@ -98,29 +98,33 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 	_In_ LPWSTR lpCmdLine,
 	_In_ int nShowCmd)
 {
+	console.setLocale();
+	console.attach();
+
+	wstring cmdLine = lpCmdLine ? lpCmdLine : L"";
+	CmdParser parser(true);
+	bool parseOk = cmdLine.empty() || parser.parse(cmdLine);
+
+	if (parseOk && !cmdLine.empty() &&
+		(parser.hasCommand(L"help") || parser.hasCommand(L"h"))) {
+		PrintHelp();
+		return 0;
+	}
+
 	try {
 		RequireAdminPrivilege(true);
-		console.setLocale();
-		console.attach();
 		SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
 		LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoLaunchTool.log");
 		LoggerCore::Inst().EnableApartment(DftLogger);
 
-		wstring cmdLine = lpCmdLine ? lpCmdLine : L"";
-
 		// 命令行模式
 		if (!cmdLine.empty()) {
-			CmdParser parser(true);
-			if (!parser.parse(cmdLine)) {
+			if (!parseOk) {
 				wcerr << L"命令行解析失败" << endl;
 				return 1;
 			}
 
-			if (parser.hasCommand(L"help") || parser.hasCommand(L"h")) {
-				PrintHelp();
-				return 0;
-			}
 			if (parser.hasCommand(L"start")) {
 				StartSeewoService();
 				return 0;

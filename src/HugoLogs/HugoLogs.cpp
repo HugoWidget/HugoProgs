@@ -224,30 +224,33 @@ void InteractiveMenu()
 int wmain(int argc, wchar_t* argv[])
 {
 	console.setLocale();
+
+	string_t cmdLine;
+	for (int i = 1; i < argc; ++i)
+	{
+		if (i > 1) cmdLine += TS(" ");
+		cmdLine += argv[i];
+	}
+	CmdParser parser(true);
+	bool parseOk = (argc <= 1) || parser.parse(cmdLine);
+
+	if (parseOk && argc > 1 &&
+		(parser.hasCommand(TS("help")) || parser.hasCommand(TS("h"))))
+	{
+		PrintHelp(TS("HugoLogs"));
+		return 0;
+	}
+
 	LoggerCore::Inst().ClearStrategies();
 	LoggerCore::Inst().AddStrategy<ConsoleLogStrategy>();
 
 	// 命令行模式
 	if (argc > 1)
 	{
-		string_t cmdLine;
-		for (int i = 1; i < argc; ++i)
-		{
-			if (i > 1) cmdLine += TS(" ");
-			cmdLine += argv[i];
-		}
-
-		CmdParser parser(true);
-		if (!parser.parse(cmdLine))
+		if (!parseOk)
 		{
 			tcerr << TS("命令行解析失败。") << endl;
 			return 1;
-		}
-
-		if (parser.hasCommand(TS("help")) || parser.hasCommand(TS("h")))
-		{
-			PrintHelp(TS("HugoLogs"));
-			return 0;
 		}
 
 		if (parser.hasCommand(TS("list")) || parser.hasCommand(TS("l")))

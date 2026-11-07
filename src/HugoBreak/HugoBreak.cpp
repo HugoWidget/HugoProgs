@@ -189,32 +189,36 @@ void PrintHelp() {
 }
 
 // ---- 入口 ----
-int main(int argc, char* argv[]) {
+int wmain(int argc, wchar_t* argv[]) {
+    Console console;
+    console.setLocale();
+
+    wstring cmdLine = ExtractArguments(GetCommandLine());
+    CmdParser parser(true);
+    bool parseOk = cmdLine.empty() || parser.parse(cmdLine);
+
+    if (parseOk && !cmdLine.empty() &&
+        (parser.hasCommand(L"help") || parser.hasCommand(L"h") || parser.hasCommand(L"?"))) {
+        PrintHelp();
+        return 0;
+    }
+
     try {
         RequireAdminPrivilege(true);
 
-        Console console;
-        console.setLocale();
         LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoBreak.log");
         LoggerCore::Inst().EnableApartment(DftLogger);
 
-        wstring cmdLine = ExtractArguments(GetCommandLine());
         bool interactive = true;
 
         if (!cmdLine.empty()) {
-            CmdParser parser(true);
-            if (!parser.parse(cmdLine)) {
+            if (!parseOk) {
                 wcerr << L"命令行解析失败" << endl;
                 WuLog::Error(L"命令行解析失败: " + cmdLine);
                 system("pause");
                 return 1;
             }
 
-            if (parser.hasCommand(L"help") || parser.hasCommand(L"h") || parser.hasCommand(L"?")) {
-                PrintHelp();
-                system("pause");
-                return 0;
-            }
             if (parser.hasCommand(L"patch") || parser.hasCommand(L"p")) {
                 Patch();
                 interactive = false;

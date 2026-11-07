@@ -95,9 +95,24 @@ void PrintHelp(const wstring& programName)
 
 int wmain(int argc, wchar_t* argv[])
 {
+	Console console;
+	console.setLocale();
+
+	wstring cmdLine;
+	for (int i = 1; i < argc; ++i) {
+		cmdLine += (i > 1 ? L" " : L"") + wstring(argv[i]);
+	}
+	CmdParser parser(true);
+	bool parseOk = (argc <= 1) || parser.parse(cmdLine);
+
+	if (parseOk && argc > 1 &&
+		(parser.hasCommand(L"help") || parser.hasCommand(L"-h"))) {
+		PrintHelp(GetCurrentProcessName());
+		return 0;
+	}
+
 	try {
 		RequireAdminPrivilege(true);
-		Console().setLocale();
 
 		// 日志配置：仅文件
 		LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoProtect.log");
@@ -105,20 +120,9 @@ int wmain(int argc, wchar_t* argv[])
 
 		// 命令行模式
 		if (argc > 1) {
-			wstring cmdLine;
-			for (int i = 1; i < argc; ++i) {
-				cmdLine += (i > 1 ? L" " : L"") + wstring(argv[i]);
-			}
-
-			CmdParser parser(true);
-			if (!parser.parse(cmdLine)) {
+			if (!parseOk) {
 				wcerr << L"命令行解析失败" << endl;
 				return 1;
-			}
-
-			if (parser.hasCommand(L"help") || parser.hasCommand(L"-h")) {
-				PrintHelp(GetCurrentProcessName());
-				return 0;
 			}
 
 			if (parser.hasCommand(L"enable") || parser.hasCommand(L"-enable")) {

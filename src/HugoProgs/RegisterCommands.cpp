@@ -427,7 +427,7 @@ void registerObject(ConsoleMenu& menu)
 			});
 		auto& hookMenu = freezeMenu.addSubmenu(L"hook", L"运行HugoFrzDrvHook.exe");
 		{
-			hookMenu.addCommand(L"about-hook", L"关于HugoFrzDrvHook.exe", [](ConsoleMenu& menu, Args) {
+			hookMenu.addCommand(L"abt", L"关于HugoFrzDrvHook.exe", [](ConsoleMenu& menu, Args) {
 				if (!IsCurrentProcessAdmin()) {
 					wcout << L"注意：HugoFrzDrvHook.exe 需要管理员权限才能正常运行\n";
 				}
@@ -609,7 +609,7 @@ void registerObject(ConsoleMenu& menu)
 			wstring progPath = GetExternalProgramPath(L"HugoDisable.exe");
 			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--clear-rules");
 			});
-		basicMenu.addCommand(L"hlp", L"帮助", [](ConsoleMenu&, Args) {
+		basicMenu.addCommand(L"hlp", L"HugoDisable 帮助", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoDisable.exe");
 			if (!progPath.empty()) ExecuteProgramInCurrentConsole(progPath, L"--help");
 			});
@@ -727,8 +727,7 @@ void registerObject(ConsoleMenu& menu)
 	auto& lockMenu = menu.addSubmenu(L"lock", L"希沃锁屏工具");
 	{
 		lockMenu.addCommand(L"info", L"说明", [=](ConsoleMenu&, Args) {
-			wcout << L"这些工具不适合在此调用，可使用execute命令来执行，\n"
-				<< L"使用方式详见帮助文档。";
+			wcout << L"这些工具不适合在此调用，使用方式详见帮助文档。";
 			});
 		lockMenu.addCommand(L"hlp", L"HugoLock 帮助", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"32-bit\\HugoLock.exe");
@@ -788,7 +787,6 @@ void registerObject(ConsoleMenu& menu)
 	// ==================== 子菜单：.hps 文件绑定 ====================
 	auto& hpsMenu = menu.addSubmenu(L"hps", L".hps 脚本文件绑定");
 	{
-
 		// 命令：关联 .hps 文件
 		hpsMenu.addCommand(L"assoc", L"将 .hps 文件关联到 HugoProgs",
 			[](ConsoleMenu&, Args) {
@@ -1072,6 +1070,42 @@ void registerObject(ConsoleMenu& menu)
 		logsMenu.addCommand(L"hlp", L"帮助", [](ConsoleMenu&, Args args) {
 			wstring progPath = GetExternalProgramPath(L"HugoLogs.exe");
 			ExecuteProgramInCurrentConsole(progPath, L"--help");
+			});
+	}
+
+	// ==================== 子菜单：希沃管家调试注入 ====================
+	auto& dbgMenu = menu.addSubmenu(L"dbg", L"希沃管家调试注入");
+	{
+		dbgMenu.addCommand(L"run", L"启动调试注入", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoDbg.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath, L"");
+			});
+		dbgMenu.addCommand(L"custom", L"自定义参数（手动输入命令行）", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoDbg.exe");
+			if (progPath.empty())
+				return;
+			wstring extraArgs = ReadUserInput(L"传入的命令行参数（留空取消）：");
+			if (extraArgs.empty()) {
+				wcout << L"未输入参数，已取消。\n";
+				return;
+			}
+			ExecuteProgramInCurrentConsole(progPath, extraArgs);
+			});
+		dbgMenu.addCommand(L"cleanup", L"清理", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoDbg.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath, L"--cleanup");
+			});
+		dbgMenu.addCommand(L"test", L"测试", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoDbg.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath, L"--test");
+			});
+		dbgMenu.addCommand(L"hlp", L"帮助", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoDbg.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath, L"--help");
 			});
 	}
 

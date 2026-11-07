@@ -37,7 +37,8 @@ HugoProgs 是基于 C++ 开发的 Windows 平台**一站式希沃运维工具集
 14. wndrec      - 窗口记录与拦截
 15. scan        - 内存扫描工具
 16. logs        - 日志
-17. extension   - 自定义菜单项（存在 extension.ini 时出现）
+17. dbg         - 希沃管家调试注入
+18. extension   - 自定义菜单项（存在 extension.ini 时出现）
 [Commands]
 1.  common - 查看通用命令
 ====================

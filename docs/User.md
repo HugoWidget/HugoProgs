@@ -104,7 +104,7 @@ HugoWidget 提供多种管理冰点还原的方式，可按需取用：
 
 该子菜单下的 `info` 用于提示：**锁屏类工具不适合在此直接调用**，请使用 `execute` 命令手动执行，具体用法见对应工具文档（[HugoLock](./HugoLock.md)、[HugoLockAssistant](./HugoLockAssistant.md)），该工具请使用 `Launcher` 来实现自启。
 
-`hlp` / `assist.hlp` 分别转发 `HugoLock.exe --help` 与 `HugoLockAssistant.exe --help`（后者以弹窗显示）。
+`hlp` 转发 `HugoLock.exe --help`。
 
 ### 6.4 `winpe` — WinPE 工具
 
@@ -137,13 +137,25 @@ HugoWidget 提供多种管理冰点还原的方式，可按需取用：
 
 ### 6.7 `scan` — 内存扫描工具
 
-| 命令            | 说明                                                            |
-| --------------- | --------------------------------------------------------------- |
-| `extract`       | 提取希沃密码（`HugoScan.exe --extract`，针对 `SeewoCore.exe`）  |
-| `mem`           | `mem <进程名\|PID> <特征码>`，持续内存扫描（`--scan`）          |
-| `hlp`           | 查看 `HugoScan.exe --help`                                       |
+| 命令      | 说明                                       |
+| --------- | ------------------------------------------ |
+| `extract` | 提取希沃密码（针对 `SeewoCore.exe`）       |
+| `mem`     | `mem <进程名\|PID> <特征码>`，持续内存扫描 |
+| `hlp`     | 查看 `HugoScan.exe --help`                 |
 
 特征码支持 `48 8B ?? 89 05`（HEX，`??` 通配）、`ascii:Hello`、`"Hello"`。扫描结果不去重，按轮次输出命中地址与上下文。详见 [HugoScan](./HugoScan.md)。
+
+### 6.8 `dbg` — 希沃管家调试注入（HugoDbg）
+
+> 调用发布包中的 `HugoDbg.exe`；该工具属于独立项目，详见 [HugoDbg](https://github.com/HugoWidget/HugoDbg)。
+
+| 命令      | 说明                                                 |
+| --------- | ---------------------------------------------------- |
+| `run`     | 启动调试注入                                         |
+| `custom`  | 手动输入命令行参数并传给 `HugoDbg.exe`（留空则取消） |
+| `cleanup` | 执行一次性清理                                       |
+| `test`    | 执行一次性注入测试                                   |
+| `hlp`     | 查看 `HugoDbg.exe --help`                            |
 
 ## 7. 配置与开机自启动
 
@@ -215,7 +227,7 @@ config/service/query       查询服务状态
 config/service/uninstall   卸载自启动服务
 
 方式B 任务计划自启（需管理员权限）
-config/taskplan/install    创建计划任务 HugoProgs_Launcher（登录时以最高权限启动 Launcher）
+config/taskplan/install    创建计划任务 HugoProgs_Launcher
 config/taskplan/query      查询计划任务是否存在
 config/taskplan/uninstall  删除计划任务
 ```

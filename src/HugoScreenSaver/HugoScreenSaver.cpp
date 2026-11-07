@@ -127,8 +127,8 @@ static void PrintUsage()
 {
 	std::wcout << L"HugoScreenSaver - 希沃屏幕保护程序自动解除工具\n"
 		<< L"用法:\n"
-		<< L"  HugoScreenSaver.exe              持续监测并解除屏幕保护（默认启用窗口去重黑名单）\n"
-		<< L"  HugoScreenSaver.exe keep         禁用窗口去重黑名单\n"
+		<< L"  HugoScreenSaver.exe              持续监测并解除屏幕保护\n"
+		<< L"  HugoScreenSaver.exe --keep       禁用窗口去重黑名单\n"
 		<< L"  HugoScreenSaver.exe --help, -h   显示此帮助信息\n";
 }
 
@@ -141,18 +141,21 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(lpCmdLine);
 	Console console;
 	console.setLocale();
-	LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoScreenSaver.log");
-	LoggerCore::Inst().EnableApartment(DftLogger);
 
 	CmdParser parser;
 	if (!parser.parse(ExtractArguments(GetCommandLineW()))) {
-		WuLog::Error(L"命令行语法错误");
+		wcerr << L"命令行语法错误" << endl;
 		return 1;
 	}
+
 	if (parser.hasCommand(L"help") || parser.hasCommand(L"h") || parser.hasCommand(L"?")) {
+		console.attach();
 		PrintUsage();
 		return 0;
 	}
+
+	LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoScreenSaver.log");
+	LoggerCore::Inst().EnableApartment(DftLogger);
 
 	RequireAdminPrivilege(true);
 	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);

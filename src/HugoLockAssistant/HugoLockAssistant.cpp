@@ -76,9 +76,6 @@ int APIENTRY wWinMain(
 {
 	CmdParser parser(true);
 	string_t cmdLineStr(lpCmdLine);
-	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-	LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoLockAssistant.log");
-	LoggerCore::Inst().EnableApartment(DftLogger);
 
 	if (!parser.parse(ExtractArguments(GetCommandLine()))) {
 		FatalError(L"Command line syntax error.");
@@ -88,6 +85,10 @@ int APIENTRY wWinMain(
 		MessageBoxW(nullptr, kUsage, L"HugoLockAssistant", MB_ICONINFORMATION);
 		return 0;
 	}
+
+	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+	LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoLockAssistant.log");
+	LoggerCore::Inst().EnableApartment(DftLogger);
 
 	auto methodOpt = parser.getParam(L"method", 0);
 	auto modeOpt = parser.getParam(L"mode", 0);
