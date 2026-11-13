@@ -58,6 +58,7 @@ bool ExecuteProgramInCurrentConsole(
 	bool wait,
 	DWORD* exitCode)
 {
+	wcout << L"[执行]" << programPath << L" " << args << endl;
 	if (!wait) {
 		RunExternalProgram(programPath, L"open", args);
 		return true;

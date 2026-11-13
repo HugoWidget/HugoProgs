@@ -64,6 +64,14 @@ void SingleStopProcesses() {
 	WuLog::Info(L"Single stop: terminated " + to_wstring(closed) + L" processes");
 }
 
+// Restart = kill then start, in a single process so ordering is guaranteed
+void RestartSeewo() {
+	SingleStopProcesses();
+	Sleep(500);
+	StartSeewoService();
+	WuLog::Info(L"Restart completed");
+}
+
 void StartMonitorAndWaitForStop() {
 
 	MonitorHandle handle = StartProcessMonitor(GetModuleHandle(nullptr),
@@ -86,10 +94,11 @@ void StartMonitorAndWaitForStop() {
 void PrintHelp() {
 	wcout << L"用法: HugoLaunchTool.exe [选项]\n"
 		<< L"选项:\n"
-		<< L"  --start, -start    启动希沃核心服务\n"
-		<< L"  --stop, -stop      持续监控并停止希沃进程（按键退出）\n"
-		<< L"  --kill, -kill      单次停止希沃进程（立即终止）\n"
-		<< L"  --help, -h         显示此帮助\n"
+		<< L"  --start, -start     启动希沃核心服务\n"
+		<< L"  --stop, -stop       持续监控并停止希沃进程（按键退出）\n"
+		<< L"  --kill, -kill       单次停止希沃进程（立即终止）\n"
+		<< L"  --restart, -restart 重启希沃相关进程\n"
+		<< L"  --help, -h          显示此帮助\n"
 		<< L"无参数则进入交互菜单\n";
 }
 
@@ -138,6 +147,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 				SingleStopProcesses();
 				return 0;
 			}
+			if (parser.hasCommand(L"restart")) {
+				RestartSeewo();
+				return 0;
+			}
 
 			wcerr << L"未知选项，使用 --help 查看帮助" << endl;
 			return 1;
@@ -159,6 +172,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 				wcin.clear();
 				wcin.ignore(1024, L'\n');
 				wcerr << L"输入无效，请输入数字" << endl;
+				// Extraction failure sets choice to 0; reset it so the loop does not exit
+				choice = -1;
 				system("pause");
 				continue;
 			}

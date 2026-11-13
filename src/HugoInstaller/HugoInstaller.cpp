@@ -378,9 +378,9 @@ void PrintHelp()
 {
     wcout << L"用法: HugoInstaller.exe [选项]\n"
         << L"选项:\n"
-        << L"  --install, -install    安装希沃服务\n"
+        << L"  --install, -install     安装希沃服务\n"
         << L"  --uninstall, -uninstall 卸载希沃服务\n"
-        << L"  --help, -h             显示此帮助\n"
+        << L"  --help, -h              显示此帮助\n"
         << L"无参数则进入交互菜单\n";
 }
 
@@ -439,6 +439,8 @@ int wmain(int argc, wchar_t* argv[])
                 wcin.clear();
                 wcin.ignore((numeric_limits<streamsize>::max)(), L'\n');
                 wcerr << L"输入无效，请输入数字" << endl;
+                // Extraction failure sets choice to 0; reset it so the loop does not exit
+                choice = -1;
                 system("pause");
                 continue;
             }

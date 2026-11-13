@@ -226,6 +226,8 @@ void InteractiveMode(HMount& instance)
 			wcin.clear();
 			wcin.ignore(1024, L'\n');
 			wcerr << L"输入无效，请输入数字" << endl;
+			// Extraction failure sets choice to 0; reset it so the loop does not exit
+			choice = -1;
 			system("pause");
 			continue;
 		}

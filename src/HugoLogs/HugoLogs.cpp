@@ -187,6 +187,8 @@ void InteractiveMenu()
 			wcin.clear();
 			wcin.ignore((numeric_limits<streamsize>::max)(), L'\n');
 			tcerr << TS("输入无效，请输入数字。") << endl;
+			// Extraction failure sets choice to 0; reset it so the loop does not exit
+			choice = -1;
 			console.get();
 			continue;
 		}

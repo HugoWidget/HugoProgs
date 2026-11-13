@@ -680,6 +680,12 @@ void registerObject(ConsoleMenu& menu)
 				ExecuteProgramInCurrentConsole(progPath, L"--kill", false);
 			});
 
+		launchMenu.addCommand(L"restart", L"重启希沃相关进程", [](ConsoleMenu&, Args) {
+			wstring progPath = GetExternalProgramPath(L"HugoLaunchTool.exe");
+			if (!progPath.empty())
+				ExecuteProgramInCurrentConsole(progPath, L"--restart");
+			});
+
 		launchMenu.addCommand(L"inst", L"安装希沃管家", [](ConsoleMenu&, Args) {
 			wstring progPath = GetExternalProgramPath(L"HugoInstaller.exe");
 			if (!progPath.empty())
@@ -1029,12 +1035,21 @@ void registerObject(ConsoleMenu& menu)
 	// ==================== 子菜单：内存扫描 ====================
 	auto& scanMenu = menu.addSubmenu(L"scan", L"内存扫描工具");
 	{
-		scanMenu.addCommand(L"extract", L"提取希沃密码", [](ConsoleMenu&, Args) {
+		// 扫描类命令执行前，询问是否先重启希沃（launch/restart）
+		auto restart = [](ConsoleMenu& menu)
+			{
+				if (!AskYesNo(L"是否先重启希沃？[y/N]: ", false))
+					return;
+				menu.execute(L"launch/restart", false);
+			};
+
+		scanMenu.addCommand(L"extract", L"提取希沃密码", [restart](ConsoleMenu& menu, Args) {
+			restart(menu);
 			wstring progPath = GetExternalProgramPath(L"HugoScan.exe");
 			if (!progPath.empty())
 				ExecuteProgramInCurrentConsole(progPath, L"--extract");
 			});
-		scanMenu.addCommand(L"mem", L"内存特征码扫描 <进程名|PID> <特征码>", [](ConsoleMenu&, Args args) {
+		scanMenu.addCommand(L"mem", L"内存特征码扫描 <进程名|PID> <特征码>", [restart](ConsoleMenu& menu, Args args) {
 			auto params = args.getParams(L"");
 			if (params.size() < 2) {
 				wcout << L"用法: mem <进程名|PID> <特征码>  例: mem SeewoCore.exe \"48 8B ?? 89 05\"\n";
@@ -1042,6 +1057,7 @@ void registerObject(ConsoleMenu& menu)
 			}
 			wstring pattern = params[1];
 			for (size_t i = 2; i < params.size(); ++i) pattern += L' ' + params[i];
+			restart(menu);
 			wstring progPath = GetExternalProgramPath(L"HugoScan.exe");
 			if (!progPath.empty())
 				ExecuteProgramInCurrentConsole(progPath, L"--scan " + params[0] + L" \"" + pattern + L"\"");
