@@ -248,7 +248,7 @@ int wmain(int argc, wchar_t* argv[])
 
 	try {
 		RequireAdminPrivilege(true);
-		SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+		EnableDpiAwareness();
 		EnsureSingleInstance(true);
 
 		LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoDisable.log");

@@ -136,7 +136,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		WuLog::Info(L"UIAccess enabled successfully");
 	}
 
-	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+	EnableDpiAwareness();
 	EnsureSingleInstance(true);
 	LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoLock.log");
 	LoggerCore::Inst().EnableApartment(DftLogger);

@@ -122,7 +122,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 
 	try {
 		RequireAdminPrivilege(true);
-		SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+		EnableDpiAwareness();
 
 		LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoLaunchTool.log");
 		LoggerCore::Inst().EnableApartment(DftLogger);

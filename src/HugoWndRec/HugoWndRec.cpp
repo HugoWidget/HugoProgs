@@ -554,7 +554,7 @@ int wmain(int argc, wchar_t* argv[])
 {
 	Console().setLocale();
 	SetProcessDPIAware();
-	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+	EnableDpiAwareness();
 	EnsureSingleInstance(true);
 
 	LoggerCore::Inst().SetDefaultStrategies(LOG_FILE.wstring());

@@ -157,8 +157,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoScreenSaver.log");
 	LoggerCore::Inst().EnableApartment(DftLogger);
 
-	RequireAdminPrivilege(true);
-	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+	RequireAdminPrivilege(true); 
+	EnableDpiAwareness();
 	EnsureSingleInstance(true);
 
 	WuLog::Info(L"HugoScreenSaver 启动，窗口黑名单: {}", !parser.hasCommand(L"keep"));

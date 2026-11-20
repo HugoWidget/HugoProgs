@@ -692,7 +692,11 @@ void registerObject(ConsoleMenu& menu)
 				ExecuteProgramInCurrentConsole(progPath, L"--install");
 			});
 
-		launchMenu.addCommand(L"uninst", L"卸载希沃管家", [](ConsoleMenu&, Args) {
+		launchMenu.addCommand(L"uninst", L"卸载希沃管家", [](ConsoleMenu& menu, Args) {
+			bool closeFileProtection = AskYesNo(L"是否需要关闭文件保护？[Y/n]", true);
+			if(closeFileProtection) {
+				menu.execute(L"fprotect/disable", false);
+			}
 			wstring progPath = GetExternalProgramPath(L"HugoInstaller.exe");
 			if (!progPath.empty())
 				ExecuteProgramInCurrentConsole(progPath, L"--uninstall");

@@ -54,7 +54,7 @@ int wmain(int argc, wchar_t* argv[])
 	LoggerCore::Inst().SetDefaultStrategies(GetCurrentProcessDir() + L"HugoInjector.log");
 	LoggerCore::Inst().AddStrategy<ConsoleLogStrategy>();
 	LoggerCore::Inst().EnableApartment(DftLogger);
-	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+	EnableDpiAwareness();
 
 	if (argc < 2 || !parseOk)
 	{
